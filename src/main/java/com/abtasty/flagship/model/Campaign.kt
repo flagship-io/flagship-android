@@ -8,7 +8,7 @@ import java.lang.Exception
 
 
 @Parcelize
-data class Campaign(
+internal data class Campaign(
     val id : String,
     val variationGroupId : String,
     val variation : Variation
@@ -29,7 +29,7 @@ data class Campaign(
 }
 
 @Parcelize
-data class Variation(
+internal data class Variation(
     val id : String, val modifications : Modifications?
 ) : Parcelable {
 
@@ -44,7 +44,7 @@ data class Variation(
 }
 
 @Parcelize
-data class Modifications (
+internal data class Modifications (
     val type : String,
     val values : HashMap<String, @RawValue Any>
 ) : Parcelable {

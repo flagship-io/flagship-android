@@ -2,14 +2,20 @@ package com.abtasty.flagship.main
 
 import android.util.Log
 import com.abtasty.flagship.api.ApiManager
+import com.abtasty.flagship.api.Hit
+import com.abtasty.flagship.utils.Logger
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import java.lang.Exception
 
 /**
- * CanaryBay main class
+ * Flagship main class
  */
-class CanaryBay {
+class Flagship {
+
+    enum class LogMode {
+        NONE, ALL, ERRORS, VERBOSE
+    }
 
     companion object {
 
@@ -24,6 +30,7 @@ class CanaryBay {
         @PublishedApi
         internal var modifications = HashMap<String, Any>()
 
+
         fun init(clientId: String) {
             this.clientId = clientId
         }
@@ -33,18 +40,22 @@ class CanaryBay {
             this.visitorId = visitorId
         }
 
-        fun updateModifications(campaignCustomId : String = "", lambda: (HashMap<String, Any>?) -> (Unit)) {
-            GlobalScope.async {
+        fun enableLog(mode : LogMode) {
+            Logger.logMode = mode
+        }
+
+        fun updateCampaignModifications(campaignCustomId : String = "", lambda: (HashMap<String, Any>?) -> (Unit) = {}): Deferred<Unit> {
+            return GlobalScope.async {
                 ApiManager.instance.sendCampaignRequest(campaignCustomId, context)
                 lambda(modifications)
             }
         }
 
-        internal fun updateContextValue(key : String, value : Any) {
+        private fun updateContextValue(key : String, value : Any) {
             if (value is Number || value is Boolean || value is String) {
                 context[key] = value
             } else {
-                Log.e("[CanaryBay][error]", "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING")
+                Log.e("[Flagship][error]", "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING")
             }
         }
 
@@ -67,9 +78,10 @@ class CanaryBay {
 
         inline fun <reified T> getModification(key : String, default : T) : T {
             return try {
+                //todo send activate
                 modifications.getOrElse(key, { default }) as T
             } catch (e : Exception) {
-                Log.e("[CanaryBay][error]", "CanaryBay.getValue \"$key\" types are different")
+                Log.e("[Flagship][error]", "Flagship.getValue \"$key\" types are different")
                 default
             }
 
@@ -80,9 +92,13 @@ class CanaryBay {
                 if (p.value is Boolean || p.value is Number || p.value is String) {
                     modifications[p.key] = p.value
                 } else {
-                    Log.e("[CanaryBay][error]", "Context update : Your data \"${p.key}\" is not a type of NUMBER, BOOLEAN or STRING")
+                    Log.e("[Flagship][error]", "Context update : Your data \"${p.key}\" is not a type of NUMBER, BOOLEAN or STRING")
                 }
             }
+        }
+
+        fun sendHitTracking(hit : Hit.Builder) {
+           ApiManager.instance.sendHitTracking(hit)
         }
     }
 }
