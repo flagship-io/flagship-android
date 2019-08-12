@@ -148,7 +148,7 @@ class FlagshipAuto : Application.ActivityLifecycleCallbacks {
                 request?.let { req ->
                     req.await()
                     activity?.let {
-                        applyModifications(it.findViewById(android.R.id.content))
+                        it.runOnUiThread {  applyModifications(it.findViewById(android.R.id.content)) }
                     }
                 }
             } catch (e: Exception) {

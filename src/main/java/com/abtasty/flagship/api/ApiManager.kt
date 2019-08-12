@@ -38,6 +38,7 @@ internal class ApiManager  {
         fun withUrl(url: String): B
         fun withBodyParams(jsonObject: JSONObject) : B
         fun withBodyParam(key : String, value : Any) : B
+        fun withBodyParams(params: HashMap<String, Any>): B
     }
 
     open class PostRequest : Callback {
@@ -91,6 +92,13 @@ internal class ApiManager  {
 
         override fun withUrl(url: String): B {
             instance.url = url
+            return this as B
+        }
+
+        override fun withBodyParams(params : HashMap<String, Any>) : B {
+            for (k in params) {
+                instance.jsonBody.put(k.key, k.value)
+            }
             return this as B
         }
 
@@ -164,12 +172,10 @@ internal class ApiManager  {
         }
     }
 
-    internal fun sendHitTracking(hit : Hit.Builder) {
-        if (hit.isValid()) {
-            Hit.HitRequestBuilder()
-                .withHit(hit)
-                .build()
-                .fire(true)
-        }
+    internal fun <T> sendHitTracking(hit: Hit.Builder<T>) {
+        Hit.HitRequestBuilder()
+            .withHit(hit)
+            .build()
+            .fire(true)
     }
 }

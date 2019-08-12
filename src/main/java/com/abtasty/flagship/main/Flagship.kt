@@ -1,9 +1,11 @@
 package com.abtasty.flagship.main
 
+import android.content.Context
 import android.util.Log
 import com.abtasty.flagship.api.ApiManager
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.utils.Logger
+import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -30,13 +32,15 @@ class Flagship {
         @PublishedApi
         internal var modifications = HashMap<String, Any>()
 
+        internal var deviceContext = HashMap<String, Any>()
 
-        fun init(clientId: String) {
+        fun init(appContext : Context, clientId: String) {
+
             this.clientId = clientId
+            Utils.loadDeviceContext(appContext.applicationContext)
         }
 
         fun setVisitorId(visitorId: String) {
-//            updateContext(VISITOR_ID, visitorId)
             this.visitorId = visitorId
         }
 
@@ -97,7 +101,7 @@ class Flagship {
             }
         }
 
-        fun sendHitTracking(hit : Hit.Builder) {
+        fun <T> sendHitTracking(hit : Hit.Builder<T>) {
            ApiManager.instance.sendHitTracking(hit)
         }
     }
