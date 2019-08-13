@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
 
 android {
     compileSdkVersion 28
@@ -36,13 +38,14 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation "androidx.core:core-ktx:+"
+    implementation "androidx.core:core-ktx:1.0.2"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
+//    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation "androidx.room:room-runtime:2.2.0-alpha02"
+    kapt "androidx.room:room-compiler:2.2.0-alpha02"
 }
 repositories {
     mavenCentral()

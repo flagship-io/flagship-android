@@ -1,10 +1,14 @@
 package com.abtasty.flagship.api
 
 import androidx.annotation.IntRange
+import com.abtasty.flagship.database.DatabaseManager
+import com.abtasty.flagship.database.HitData
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.utils.Logger
+import okhttp3.Call
+import okhttp3.Response
 import org.json.JSONObject
-import kotlin.collections.ArrayList
+import java.io.IOException
 
 class Hit {
 
@@ -18,13 +22,15 @@ class Hit {
 
     enum class EventCategory(var key: String) { ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT("User Engagement")}
 
-    enum class Key(var key: String) {
+    enum class KeyMap(var key: String) {
         TYPE("t"),
         CLIENT_ID("cid"),
         VISITOR_ID("vid"),
         DATA_SOURCE("ds"),
         APP("APP"),
+
         ORIGIN("dl"),
+
         TRANSACTION_ID("tid"),
         TRANSACTION_AFFILIATION("ta"),
         TRANSACTION_REVENUE("tr"),
@@ -35,11 +41,13 @@ class Hit {
         TRANSACTION_SHIPPING_METHOD("sm"),
         TRANSACTION_ITEM_COUNT("icn"),
         TRANSACTION_COUPON("tcc"),
+
         ITEM_NAME("in"),
         ITEM_PRICE("ip"),
         ITEM_QUANTITY("iq"),
         ITEM_CODE("ic"),
         ITEM_CATEGORY("iv"),
+
         EVENT_CATEGORY("ec"),
         EVENT_ACTION("ea"),
         EVENT_LABEL("el"),
@@ -48,111 +56,64 @@ class Hit {
         DEVICE_RESOLUTION("sr"),
         DEVICE_LOCALE("ul"),
         TIMESTAMP("cst"),
-        SESSION_NUMBER("sn")
-
+        SESSION_NUMBER("sn"),
+        IP("uip"),
+        QUEUE_TIME("qt")
     }
 
     internal class HitRequest : ApiManager.PostRequest() {
 
         override fun build() {
-            jsonBody.put(Key.CLIENT_ID.key, Flagship.clientId)
-            jsonBody.put(Key.DATA_SOURCE.key, Key.APP)
-            jsonBody.put(Key.VISITOR_ID.key, Flagship.visitorId)
+            jsonBody.put(KeyMap.CLIENT_ID.key, Flagship.clientId)
+            jsonBody.put(KeyMap.DATA_SOURCE.key, KeyMap.APP)
+            jsonBody.put(KeyMap.VISITOR_ID.key, Flagship.visitorId)
             super.build()
+        }
+
+        override fun fire(async: Boolean) {
+            System.out.println("#I 3) ${requestId} ${jsonBody}")
+            if (requestId == -1L)
+                requestId = DatabaseManager.getInstance().insertHit(this)
+            super.fire(async)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            if (response.isSuccessful)
+                removeHit()
+            super.onResponse(call, response)
         }
 
         override fun parseResponse(): Boolean {
             return true
         }
 
+        override fun onFailure(call: Call, e: IOException) {
+
+        }
+
+        private fun removeHit() {
+            DatabaseManager.getInstance().removeHit(this)
+        }
     }
 
     internal class HitRequestBuilder : ApiManager.PostRequestBuilder<HitRequestBuilder, HitRequest>() {
+
         override var instance = HitRequest()
 
         init {
             withUrl(ApiManager.instance.ARIANE)
-            withBodyParam(Hit.Key.TIMESTAMP.key, System.currentTimeMillis())
+            withBodyParam(Hit.KeyMap.TIMESTAMP.key, System.currentTimeMillis())
             withBodyParams(Flagship.deviceContext)
         }
 
-//        fun withType(type : Type) : HitRequestBuilder {
-//            return withBodyParam(Key.TYPE.key, type.toString())
-//        }
-
-        fun withHit(hit : Builder<*>) : HitRequestBuilder {
+        fun withHit(hit : HitBuilder<*>) : HitRequestBuilder {
             withBodyParams(hit.data)
+            if (hit.requestId > -1L)
+                withRequestId(hit.requestId)
             return this
         }
     }
 
-    abstract class HitBuilderInterface<B> {
-
-        var data = JSONObject()
-
-        internal fun withParams(jsonObject: JSONObject) : B {
-            for (k in jsonObject.keys()) {
-                data.put(k, jsonObject.get(k))
-            }
-            return this as B
-        }
-
-        internal fun withParam(key : String, value : Any) : B {
-            data.put(key, value)
-            return this as B
-        }
-
-        internal fun withHitParam(key : Key, value : Any) : B {
-            data.put(key.key, value)
-            return this as B
-        }
-
-        /**
-         * Specifies which campaign and variation a user see at one point
-         *
-         * @param campaignId id of the campaign
-         * @param variationId id of the variation
-         */
-        fun withCampaignId(campaignId : String, variationId : String) : B {
-            return withParam("c[$campaignId]", variationId)
-        }
-
-        /**
-         * Specifies the number of session for the current user
-         *
-         * @param sessionNumber number of session
-         */
-        fun withSessionNumber(sessionNumber : Int) : B {
-            return withHitParam(Key.SESSION_NUMBER, sessionNumber)
-        }
-
-        /**
-         * Specifies a custom dimension. Each custom dimension has an associated index.
-         * There is a maximum of 20 custom dimensions.
-         * The dimension index must be a positive integer between 1 and 20, inclusive.
-         *
-         * @param index index from 1 to 20
-         * @param value name of the dimension
-         */
-        fun withCustomDimension(@IntRange(from = 1, to = 20) index : Int, value : String) : B {
-            return withParam("cd[$index]", value)
-        }
-
-        /**
-         * Specifies a custom metric. Each custom metric has an associated index.
-         * There is a maximum of 20 custom metrics.
-         * The metric index must be a positive integer between 1 and 20, inclusive.
-         *
-         * @param index index from 1 to 20
-         * @param value name of the metric
-         */
-        fun withCustomMetric(@IntRange(from = 1, to = 20) index : Int, value : String) : B {
-            return withParam("cd[$index]", value)
-        }
-    }
-
-    abstract class Builder<T> : HitBuilderInterface<T>() {
-    }
 
     /**
      * PageView Hit Builder
@@ -161,11 +122,11 @@ class Hit {
      *
      * @param origin interface name
      */
-    class PageView(origin : String) : Builder<PageView>() {
+    class PageView(origin : String) : HitBuilder<PageView>() {
 
         init {
-            withHitParam(Key.TYPE, Type.PAGEVIEW)
-            withHitParam(Key.ORIGIN, origin)
+            withHitParam(KeyMap.TYPE, Type.PAGEVIEW)
+            withHitParam(KeyMap.ORIGIN, origin)
         }
     }
 
@@ -179,12 +140,12 @@ class Hit {
      *  @param affiliation affiliation name
      *
      */
-    class Transaction(transactionId: String, affiliation: String) : Builder<Transaction>() {
+    class Transaction(transactionId: String, affiliation: String) : HitBuilder<Transaction>() {
 
         init {
-            withHitParam(Key.TYPE, Type.TRANSACTION)
-            withHitParam(Key.TRANSACTION_ID, transactionId)
-            withHitParam(Key.TRANSACTION_AFFILIATION, affiliation)
+            withHitParam(KeyMap.TYPE, Type.TRANSACTION)
+            withHitParam(KeyMap.TRANSACTION_ID, transactionId)
+            withHitParam(KeyMap.TRANSACTION_AFFILIATION, affiliation)
         }
 
         /**
@@ -193,7 +154,7 @@ class Hit {
          * @param revenue total revenue
          */
         fun withTotalRevenue(revenue : Float) : Transaction {
-            withHitParam(Key.TRANSACTION_REVENUE, revenue)
+            withHitParam(KeyMap.TRANSACTION_REVENUE, revenue)
             return this
         }
 
@@ -203,7 +164,7 @@ class Hit {
          * @param shipping total of the shipping costs
          */
         fun withShippingCost(shipping : Float) : Transaction {
-            withHitParam(Key.TRANSACTION_SHIPPING, shipping)
+            withHitParam(KeyMap.TRANSACTION_SHIPPING, shipping)
             return this
         }
 
@@ -213,7 +174,7 @@ class Hit {
          * @param shipping shipping method used for the transaction
          */
         fun withShippingMethod(shipping : String) : Transaction {
-            withHitParam(Key.TRANSACTION_SHIPPING_METHOD, shipping)
+            withHitParam(KeyMap.TRANSACTION_SHIPPING_METHOD, shipping)
             return this
         }
 
@@ -224,7 +185,7 @@ class Hit {
          *
          */
         fun withTaxes(taxes : Float) : Transaction {
-            withHitParam(Key.TRANSACTION_TAX, taxes)
+            withHitParam(KeyMap.TRANSACTION_TAX, taxes)
             return this
         }
 
@@ -234,7 +195,7 @@ class Hit {
          * @param currency currency used for the transaction
          */
         fun withCurrency(currency : String) : Transaction {
-            withHitParam(Key.TRANSACTION_CURRENCY, currency)
+            withHitParam(KeyMap.TRANSACTION_CURRENCY, currency)
             return this
         }
 
@@ -244,7 +205,7 @@ class Hit {
          * @param paymentMethod method used for the payment
          */
         fun withPaymentMethod(paymentMethod : String) : Transaction {
-            withHitParam(Key.TRANSACTION_PAYMENT_METHOD, paymentMethod)
+            withHitParam(KeyMap.TRANSACTION_PAYMENT_METHOD, paymentMethod)
             return this
         }
 
@@ -254,7 +215,7 @@ class Hit {
          * @param itemCount number of item
          */
         fun withItemCount(itemCount : Int) : Transaction {
-            withHitParam(Key.TRANSACTION_ITEM_COUNT, itemCount)
+            withHitParam(KeyMap.TRANSACTION_ITEM_COUNT, itemCount)
             return this
         }
 
@@ -264,7 +225,7 @@ class Hit {
          * @param coupon coupon code
          */
         fun withCouponCode(coupon : String) : Transaction {
-            withHitParam(Key.TRANSACTION_COUPON, coupon)
+            withHitParam(KeyMap.TRANSACTION_COUPON, coupon)
             return this
         }
     }
@@ -279,12 +240,12 @@ class Hit {
      * @param name product name
      *
      */
-    class Item(transactionId: String, productName : String) : Builder<Item>() {
+    class Item(transactionId: String, productName : String) : HitBuilder<Item>() {
 
         init {
-            withHitParam(Key.TYPE, Type.ITEM)
-            withHitParam(Key.TRANSACTION_ID, transactionId)
-            withHitParam(Key.ITEM_NAME, productName)
+            withHitParam(KeyMap.TYPE, Type.ITEM)
+            withHitParam(KeyMap.TRANSACTION_ID, transactionId)
+            withHitParam(KeyMap.ITEM_NAME, productName)
         }
 
 
@@ -295,7 +256,7 @@ class Hit {
          *
          */
         fun withPrice(price : Float) : Item {
-            withHitParam(Key.ITEM_PRICE, price)
+            withHitParam(KeyMap.ITEM_PRICE, price)
             return this
         }
 
@@ -305,7 +266,7 @@ class Hit {
          * @param quantity nb of item
          */
         fun withItemQuantity(quantity : Int) : Item {
-            withHitParam(Key.ITEM_QUANTITY, quantity)
+            withHitParam(KeyMap.ITEM_QUANTITY, quantity)
             return this
         }
 
@@ -315,7 +276,7 @@ class Hit {
          * @param itemCode item SKU or code
          */
         fun withItemCode(itemCode : String) : Item {
-            withHitParam(Key.ITEM_CODE, itemCode)
+            withHitParam(KeyMap.ITEM_CODE, itemCode)
             return this
         }
 
@@ -325,7 +286,7 @@ class Hit {
          * @param category name of the item category
          */
         fun withItemCategory(category : String) : Item {
-            withHitParam(Key.ITEM_CATEGORY, category)
+            withHitParam(KeyMap.ITEM_CATEGORY, category)
             return this
         }
     }
@@ -336,12 +297,12 @@ class Hit {
      * @param category category of the event (ACTION_TRACKING or USER_ENGAGEMENT) @required
      * @param action the event action @required
      */
-    class Event(category : EventCategory, action : String) : Builder<Event>() {
+    class Event(category : EventCategory, action : String) : HitBuilder<Event>() {
 
         init {
-            withHitParam(Key.TYPE, Type.EVENT)
-            withHitParam(Key.EVENT_CATEGORY, category.key)
-            withHitParam(Key.EVENT_ACTION, action)
+            withHitParam(KeyMap.TYPE, Type.EVENT)
+            withHitParam(KeyMap.EVENT_CATEGORY, category.key)
+            withHitParam(KeyMap.EVENT_ACTION, action)
         }
 
         /**
@@ -350,7 +311,7 @@ class Hit {
          * @param label label of the event
          */
         fun withEventLabel(label : String) : Event {
-            withHitParam(Key.EVENT_LABEL, label)
+            withHitParam(KeyMap.EVENT_LABEL, label)
             return this
         }
 
@@ -361,8 +322,23 @@ class Hit {
          */
         fun withEventValue(value : Number) : Event {
             if (value.toInt() > 0)
-                withHitParam(Key.EVENT_VALUE, value)
+                withHitParam(KeyMap.EVENT_VALUE, value)
             return this
+        }
+    }
+
+    internal class GenericHitFromData(hitData: HitData) : HitBuilder<GenericHitFromData>() {
+
+        init {
+            try {
+                val data = JSONObject(hitData.content)
+                withRequestId(hitData.id!!)
+                withParams(data)
+                withHitParam(KeyMap.QUEUE_TIME, System.currentTimeMillis() - data.getLong(KeyMap.TIMESTAMP.key))
+                System.out.println("#I 1) ${this.requestId} ${this.data}")
+            } catch (e : Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

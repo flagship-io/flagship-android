@@ -14,14 +14,14 @@ class Utils {
             loadLocale(context)
         }
 
-        internal fun loadDeviceResolution(context: Context) {
+        private fun loadDeviceResolution(context: Context) {
             val displayMetrics = context.resources.displayMetrics
-            Flagship.deviceContext[Hit.Key.DEVICE_RESOLUTION.key] = "${displayMetrics.widthPixels}x${displayMetrics.heightPixels}"
+            Flagship.deviceContext[Hit.KeyMap.DEVICE_RESOLUTION.key] = "${displayMetrics.widthPixels}x${displayMetrics.heightPixels}"
         }
 
-        internal fun loadLocale(context: Context) {
+        private fun loadLocale(context: Context) {
             val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
-            Flagship.deviceContext[Hit.Key.DEVICE_LOCALE.key] = locale.toString()
+            Flagship.deviceContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale.toString().toLowerCase().replace("_", "-")
         }
     }
 }

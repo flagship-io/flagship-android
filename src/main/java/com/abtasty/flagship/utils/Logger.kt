@@ -8,7 +8,8 @@ internal class Logger {
 
     internal enum class TAG(val value: String) {
         HIT("[HIT]"),
-        POST("[POST]")
+        POST("[POST]"),
+        DB("[DB]")
     }
 
     internal enum class LogType {

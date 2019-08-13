@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.abtasty.flagship.api.ApiManager
 import com.abtasty.flagship.api.Hit
+import com.abtasty.flagship.api.HitBuilder
+import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.Deferred
@@ -34,10 +36,15 @@ class Flagship {
 
         internal var deviceContext = HashMap<String, Any>()
 
+        internal var sessionStart : Long = -1
+
         fun init(appContext : Context, clientId: String) {
 
             this.clientId = clientId
+            sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
+            DatabaseManager.getInstance().init(appContext.applicationContext)
+            DatabaseManager.getInstance().fireNonSentHitRequest()
         }
 
         fun setVisitorId(visitorId: String) {
@@ -101,7 +108,7 @@ class Flagship {
             }
         }
 
-        fun <T> sendHitTracking(hit : Hit.Builder<T>) {
+        fun <T> sendHitTracking(hit : HitBuilder<T>) {
            ApiManager.instance.sendHitTracking(hit)
         }
     }

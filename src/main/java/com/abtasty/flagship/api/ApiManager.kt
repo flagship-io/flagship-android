@@ -4,8 +4,6 @@ import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.utils.Logger
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -36,6 +34,7 @@ internal class ApiManager  {
 
         fun build(): I
         fun withUrl(url: String): B
+        fun withRequestId(requestId : Long) : B
         fun withBodyParams(jsonObject: JSONObject) : B
         fun withBodyParam(key : String, value : Any) : B
         fun withBodyParams(params: HashMap<String, Any>): B
@@ -47,6 +46,8 @@ internal class ApiManager  {
         internal open var jsonBody = JSONObject()
         internal var request: Request? = null
         internal var response : Response? = null
+
+        internal var requestId = -1L
 
         open fun build() {
 
@@ -61,9 +62,9 @@ internal class ApiManager  {
         open fun fire(async : Boolean) {
             build()
             request?.let {
+                logRequest(async)
                 if (!async) {
                     response = ApiManager.instance.client.newCall(it).execute()
-                    Logger.v(Logger.TAG.POST, "[${response?.code()}] " + request?.url() + " " + jsonBody)
                     parseResponse()
                 } else
                     ApiManager.instance.client.newCall(it).enqueue(this)
@@ -71,11 +72,12 @@ internal class ApiManager  {
         }
 
         override fun onFailure(call: Call, e: IOException) {
+            logFailure(e.stackTrace.toString())
         }
 
         override fun onResponse(call: Call, response: Response) {
             this.response = response
-            Logger.v(Logger.TAG.POST, "[${response?.code()}] " + request?.url() + " " + jsonBody)
+            logResponse(response.code())
             if (response.isSuccessful) {
                 parseResponse()
             }
@@ -83,6 +85,25 @@ internal class ApiManager  {
 
         open fun parseResponse() : Boolean {
             return response?.isSuccessful ?: false
+        }
+
+        protected fun getIdToString() : String {
+            return if (requestId > -1) ":$requestId" else ""
+        }
+
+        protected open fun logRequest(async: Boolean) {
+            Logger.v(Logger.TAG.POST, "[Request${getIdToString()}][async=$async] " + request?.url() + " " + jsonBody)
+        }
+
+        protected open fun logResponse(code : Int) {
+            if (code in 200..299)
+                Logger.v(Logger.TAG.POST, "[Response${getIdToString()}][$code] " + request?.url() + " " + jsonBody)
+            else
+                Logger.e(Logger.TAG.POST, "[Response${getIdToString()}][$code] " + request?.url() + " " + jsonBody)
+        }
+
+        protected open fun logFailure(message : String) {
+            Logger.e(Logger.TAG.POST, "[Response${getIdToString()}][FAIL] " + message)
         }
     }
 
@@ -111,6 +132,11 @@ internal class ApiManager  {
 
         override fun withBodyParam(key : String, value : Any) : B {
             instance.jsonBody.put(key, value)
+            return this as B
+        }
+
+        override fun withRequestId(requestId: Long): B {
+            instance.requestId = requestId
             return this as B
         }
 
@@ -172,7 +198,7 @@ internal class ApiManager  {
         }
     }
 
-    internal fun <T> sendHitTracking(hit: Hit.Builder<T>) {
+    internal fun <T> sendHitTracking(hit: HitBuilder<T>) {
         Hit.HitRequestBuilder()
             .withHit(hit)
             .build()
