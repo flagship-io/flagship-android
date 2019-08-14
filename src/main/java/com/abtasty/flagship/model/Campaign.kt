@@ -25,7 +25,6 @@ internal data class Campaign(
             } catch (e : Exception) { null }
         }
     }
-
 }
 
 @Parcelize

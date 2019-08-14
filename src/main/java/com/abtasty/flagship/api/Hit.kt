@@ -71,15 +71,15 @@ class Hit {
         }
 
         override fun fire(async: Boolean) {
-            System.out.println("#I 3) ${requestId} ${jsonBody}")
             if (requestId == -1L)
                 requestId = DatabaseManager.getInstance().insertHit(this)
             super.fire(async)
         }
 
         override fun onResponse(call: Call, response: Response) {
+            System.out.println("#HE D = > " + this.requestId)
             if (response.isSuccessful)
-                removeHit()
+                DatabaseManager.getInstance().removeHit(this)
             super.onResponse(call, response)
         }
 
@@ -88,11 +88,8 @@ class Hit {
         }
 
         override fun onFailure(call: Call, e: IOException) {
-
-        }
-
-        private fun removeHit() {
-            DatabaseManager.getInstance().removeHit(this)
+            DatabaseManager.getInstance().updateHitStatus(this)
+            super.onFailure(call, e)
         }
     }
 
@@ -101,7 +98,7 @@ class Hit {
         override var instance = HitRequest()
 
         init {
-            withUrl(ApiManager.instance.ARIANE)
+            withUrl(ApiManager.getInstance().ARIANE)
             withBodyParam(Hit.KeyMap.TIMESTAMP.key, System.currentTimeMillis())
             withBodyParams(Flagship.deviceContext)
         }
@@ -335,7 +332,6 @@ class Hit {
                 withRequestId(hitData.id!!)
                 withParams(data)
                 withHitParam(KeyMap.QUEUE_TIME, System.currentTimeMillis() - data.getLong(KeyMap.TIMESTAMP.key))
-                System.out.println("#I 1) ${this.requestId} ${this.data}")
             } catch (e : Exception) {
                 e.printStackTrace()
             }

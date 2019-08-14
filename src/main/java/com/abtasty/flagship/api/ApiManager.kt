@@ -1,5 +1,6 @@
 package com.abtasty.flagship.api
 
+import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
 import com.abtasty.flagship.model.Campaign
@@ -18,7 +19,11 @@ internal class ApiManager  {
     val ARIANE = "https://ariane.abtasty.com"
 
     companion object {
-        var instance: ApiManager = ApiManager()
+        private var instance: ApiManager = ApiManager()
+
+        @Synchronized fun getInstance() : ApiManager {
+            return instance
+        }
     }
 
     private val client: OkHttpClient by lazy {
@@ -60,14 +65,26 @@ internal class ApiManager  {
         }
 
         open fun fire(async : Boolean) {
-            build()
-            request?.let {
-                logRequest(async)
-                if (!async) {
-                    response = ApiManager.instance.client.newCall(it).execute()
-                    parseResponse()
-                } else
-                    ApiManager.instance.client.newCall(it).enqueue(this)
+            try {
+                build()
+                request?.let {
+                    logRequest(async)
+                    if (!async) {
+                        response = ApiManager.instance.client.newCall(it).execute()
+                        parseResponse()
+                    } else
+                        ApiManager.instance.client.newCall(it).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                this@PostRequest.onFailure(call, e)
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                this@PostRequest.onResponse(call, response)
+                            }
+                        })
+                }
+            } catch (e : Exception) {
+                e.printStackTrace()
             }
         }
 
@@ -81,6 +98,7 @@ internal class ApiManager  {
             if (response.isSuccessful) {
                 parseResponse()
             }
+            System.out.println("#HE =< $requestId")
         }
 
         open fun parseResponse() : Boolean {
@@ -199,6 +217,11 @@ internal class ApiManager  {
     }
 
     internal fun <T> sendHitTracking(hit: HitBuilder<T>) {
+        sendBuiltHit(hit)
+//        DatabaseManager.getInstance().fireOfflineHits(3)
+    }
+
+    internal fun <T> sendBuiltHit(hit: HitBuilder<T>) {
         Hit.HitRequestBuilder()
             .withHit(hit)
             .build()

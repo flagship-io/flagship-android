@@ -2,9 +2,11 @@ package com.abtasty.flagship.database
 
 import android.content.Context
 import androidx.room.Room
+import com.abtasty.flagship.api.ApiManager
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.utils.Logger
+import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -38,13 +40,10 @@ internal class DatabaseManager {
                 val id = it.hitDao().insertHit(
                     HitData(
                         null, Flagship.clientId ?: "", Flagship.visitorId ?: "",
-                        System.currentTimeMillis(), hit.jsonBody.toString(), false
+                        System.currentTimeMillis(), hit.jsonBody.toString(), 1
                     )
                 )
-                if (id > 0)
-                    Logger.v(Logger.TAG.DB, "[HitRequest:$id][Inserted] ${hit.jsonBody}")
-                else
-                    Logger.e(Logger.TAG.DB, "[HitRequest:$id][Not inserted] ${hit.jsonBody}")
+                Logger.v(Logger.TAG.DB, "[Insert hit:${id}][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}")
                 return id
             }
         }
@@ -54,31 +53,71 @@ internal class DatabaseManager {
     fun removeHit(hit: Hit.HitRequest) {
         db?.let {
             if (hit.requestId != -1L) {
-                val hitData = it.hitDao().getHitById(hit.requestId)
-                val nb = it.hitDao().removeHit(hitData)
-                if (nb > 0)
-                    Logger.v(Logger.TAG.DB, "[HitRequest:${hit.requestId}][Removed] ${hit.jsonBody}")
-                else
-                    Logger.v(Logger.TAG.DB, "[HitRequest:${hit.requestId}][Not removed] ${hit.jsonBody}")
+                val nb = it.hitDao().removeHit(hit.requestId)
+                Logger.v(
+                    Logger.TAG.DB,
+                    "[Remove hit:${hit.requestId}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
+                )
             }
         }
     }
 
-    fun fireNonSentHitRequest() {
+    fun updateHitStatus(hit: Hit.HitRequest) {
+        db?.let {
+            if (hit.requestId != -1L) {
+                val nb = it.hitDao().updateHitStatus(hit.requestId, 0)
+                Logger.v(
+                    Logger.TAG.DB,
+                    "[Update status:${hit.requestId}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
+                )
+
+            }
+        }
+    }
+
+//    var nonSent: Deferred<Unit?>? = null
+//
+//    fun fireOfflineHits(limit: Int = 0) {
+//        GlobalScope.async {
+//            if (nonSent != null)
+//                nonSent?.await()
+//            nonSent = GlobalScope.async {
+//                try {
+//                    db?.let {
+//                        val hits = it.hitDao().getNonSentHits(Flagship.sessionStart, limit)
+//                        Logger.v(Logger.TAG.DB, "[----]")
+//                        for (h in hits) {
+//                            Logger.v(Logger.TAG.DB, "[----][${h.id}] ${h.content}")
+//                            it.hitDao().updateHitStatus(h.id!!, 1)
+//                            ApiManager.getInstance().sendBuiltHit(Hit.GenericHitFromData(h))
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                }
+//            }
+//        }
+//    }
+
+    fun fireOfflineHits(limit: Int = 20) {
         GlobalScope.async {
-            displayAllHits()
-            db?.let {
-                val hits = it.hitDao().getNonSentHits(Flagship.sessionStart)
-                for (h in hits) {
-                    Flagship.sendHitTracking(Hit.GenericHitFromData(h))
+            try {
+                db?.let {
+                    val hits = it.hitDao().getNonSentHits(Flagship.sessionStart, limit)
+                    for (h in hits) {
+                        it.hitDao().updateHitStatus(h.id!!, 1)
+                        ApiManager.getInstance().sendBuiltHit(Hit.GenericHitFromData(h))
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
 
     fun displayAllHits() {
         db?.let {
-            val list = it.hitDao().getNonSentHits(Flagship.sessionStart)
+            val list = it.hitDao().getNonSentHits(Flagship.sessionStart, 3)
             for (h in list) {
                 Logger.v(Logger.TAG.DB, "[----][${h.id}] ${h.content}")
             }

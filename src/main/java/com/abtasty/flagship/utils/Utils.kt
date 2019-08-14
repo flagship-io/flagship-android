@@ -23,5 +23,9 @@ class Utils {
             val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
             Flagship.deviceContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale.toString().toLowerCase().replace("_", "-")
         }
+
+        internal fun logFailorSuccess(boolean: Boolean) : String {
+            return if (boolean) "Success" else "Fail"
+        }
     }
 }

@@ -2,10 +2,12 @@ package com.abtasty.flagship.extensions
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.model.Campaign
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -33,6 +35,7 @@ import kotlin.reflect.KParameter
 //        }
 //    }
 //}
+
 //
 //
 //private fun inferParam(param: KParameter, value: Any): Any? {

@@ -36,80 +36,90 @@ class Flagship {
 
         internal var deviceContext = HashMap<String, Any>()
 
-        internal var sessionStart : Long = -1
+        internal var sessionStart: Long = -1
 
-        fun init(appContext : Context, clientId: String) {
+        fun init(appContext: Context, clientId: String) {
 
             this.clientId = clientId
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
-            DatabaseManager.getInstance().fireNonSentHitRequest()
+            DatabaseManager.getInstance().fireOfflineHits()
         }
 
         fun setVisitorId(visitorId: String) {
             this.visitorId = visitorId
         }
 
-        fun enableLog(mode : LogMode) {
+        fun enableLog(mode: LogMode) {
             Logger.logMode = mode
         }
 
-        fun updateCampaignModifications(campaignCustomId : String = "", lambda: (HashMap<String, Any>?) -> (Unit) = {}): Deferred<Unit> {
+        fun updateCampaignModifications(
+            campaignCustomId: String = "",
+            lambda: (HashMap<String, Any>?) -> (Unit) = {}
+        ): Deferred<Unit> {
             return GlobalScope.async {
-                ApiManager.instance.sendCampaignRequest(campaignCustomId, context)
+                ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
                 lambda(modifications)
             }
         }
 
-        private fun updateContextValue(key : String, value : Any) {
+        private fun updateContextValue(key: String, value: Any) {
             if (value is Number || value is Boolean || value is String) {
                 context[key] = value
             } else {
-                Log.e("[Flagship][error]", "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING")
+                Log.e(
+                    "[Flagship][error]",
+                    "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
+                )
             }
         }
 
-        fun updateContext(key : String, value : Number) {
+        fun updateContext(key: String, value: Number) {
             updateContextValue(key, value)
         }
 
-        fun updateContext(key: String, value : String) {
-            updateContextValue(key, value)
-        }
-        fun updateContext(key: String, value : Boolean) {
+        fun updateContext(key: String, value: String) {
             updateContextValue(key, value)
         }
 
-        fun updateContext(values : HashMap<String, Any>) {
+        fun updateContext(key: String, value: Boolean) {
+            updateContextValue(key, value)
+        }
+
+        fun updateContext(values: HashMap<String, Any>) {
             for (p in values) {
                 updateContextValue(p.key, p.value)
             }
         }
 
-        inline fun <reified T> getModification(key : String, default : T) : T {
+        inline fun <reified T> getModification(key: String, default: T): T {
             return try {
                 //todo send activate
                 modifications.getOrElse(key, { default }) as T
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 Log.e("[Flagship][error]", "Flagship.getValue \"$key\" types are different")
                 default
             }
 
         }
 
-        internal fun updateModifications(values : HashMap<String, Any>) {
+        internal fun updateModifications(values: HashMap<String, Any>) {
             for (p in values) {
                 if (p.value is Boolean || p.value is Number || p.value is String) {
                     modifications[p.key] = p.value
                 } else {
-                    Log.e("[Flagship][error]", "Context update : Your data \"${p.key}\" is not a type of NUMBER, BOOLEAN or STRING")
+                    Log.e(
+                        "[Flagship][error]",
+                        "Context update : Your data \"${p.key}\" is not a type of NUMBER, BOOLEAN or STRING"
+                    )
                 }
             }
         }
 
-        fun <T> sendHitTracking(hit : HitBuilder<T>) {
-           ApiManager.instance.sendHitTracking(hit)
+        fun <T> sendHitTracking(hit: HitBuilder<T>) {
+            ApiManager.getInstance().sendHitTracking(hit)
         }
     }
 }

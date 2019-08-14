@@ -11,5 +11,5 @@ data class HitData(
     @ColumnInfo(name = "visitorId") var visitorId : String,
     @ColumnInfo(name = "timestamp") var timestamp: Long,
     @ColumnInfo(name = "content") var content: String,
-    @ColumnInfo(name = "sent") var sent: Boolean
+    @ColumnInfo(name = "status") var status: Int // 0 != sent, 1 pending
 )
