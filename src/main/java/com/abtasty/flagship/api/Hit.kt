@@ -29,6 +29,9 @@ class Hit {
         DATA_SOURCE("ds"),
         APP("APP"),
 
+        VARIATION_GROUP_ID("caid"),
+        VARIATION_ID("vaid"),
+
         ORIGIN("dl"),
 
         TRANSACTION_ID("tid"),

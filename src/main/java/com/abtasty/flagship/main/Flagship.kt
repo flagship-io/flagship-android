@@ -6,6 +6,8 @@ import com.abtasty.flagship.api.ApiManager
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.api.HitBuilder
 import com.abtasty.flagship.database.DatabaseManager
+import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model.Modifications
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.Deferred
@@ -31,8 +33,10 @@ class Flagship {
         @PublishedApi
         internal var context = HashMap<String, Any>()
 
+        //        @PublishedApi
+//        internal var modifications = HashMap<String, Any>()
         @PublishedApi
-        internal var modifications = HashMap<String, Any>()
+        internal var modifications = HashMap<String, Modification>()
 
         internal var deviceContext = HashMap<String, Any>()
 
@@ -55,22 +59,12 @@ class Flagship {
             Logger.logMode = mode
         }
 
-        fun updateCampaignModifications(
-            campaignCustomId: String = "",
-            lambda: (HashMap<String, Any>?) -> (Unit) = {}
-        ): Deferred<Unit> {
-            return GlobalScope.async {
-                ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-                lambda(modifications)
-            }
-        }
 
         private fun updateContextValue(key: String, value: Any) {
             if (value is Number || value is Boolean || value is String) {
                 context[key] = value
             } else {
-                Log.e(
-                    "[Flagship][error]",
+                Logger.e(Logger.TAG.CONTEXT,
                     "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                 )
             }
@@ -94,29 +88,91 @@ class Flagship {
             }
         }
 
-        inline fun <reified T> getModification(key: String, default: T): T {
+        fun getModification(key: String, default: Int): Int {
+            return getFlagshipModification(key, default)
+        }
+
+        fun getModification(key: String, default: Float): Float {
+            return getFlagshipModification(key, default)
+        }
+
+        fun getModification(key: String, default: String): String {
+            return getFlagshipModification(key, default)
+        }
+
+        fun getModification(key: String, default: Boolean): Boolean {
+            return getFlagshipModification(key, default)
+        }
+
+        fun getModification(key: String, default: Double): Double {
+            return getFlagshipModification(key, default)
+        }
+
+        fun getModification(key: String, default: Long): Long {
+            return getFlagshipModification(key, default)
+        }
+
+
+        private inline fun <reified T> getFlagshipModification(key: String, default: T): T {
             return try {
-                //todo send activate
-                modifications.getOrElse(key, { default }) as T
+                System.out.println("#Val modif = " + modifications.toString())
+                System.out.println("#Val = " + modifications[key]?.value + " : groupId = " + modifications[key]?.variationGroupId)
+//                (modifications[key]?.value ?: default) as T
+                val modification = modifications[key]
+                modification?.let {
+                    val variationGroupId = modification.variationGroupId
+                    val variationId = modification.variationId
+                    val value = modification.value
+                    (value as? T)?.let {
+                        ApiManager.getInstance().sendActivationRequest(variationGroupId, variationId)
+                        it
+                    } ?: default
+                } ?: default
+
             } catch (e: Exception) {
-                Log.e("[Flagship][error]", "Flagship.getValue \"$key\" types are different")
+                Logger.e(Logger.TAG.PARSING, "Flagship.getValue \"$key\" is missing or types are different")
                 default
             }
 
         }
 
-        internal fun updateModifications(values: HashMap<String, Any>) {
-            for (p in values) {
-                if (p.value is Boolean || p.value is Number || p.value is String) {
-                    modifications[p.key] = p.value
-                } else {
-                    Log.e(
-                        "[Flagship][error]",
-                        "Context update : Your data \"${p.key}\" is not a type of NUMBER, BOOLEAN or STRING"
-                    )
-                }
+        fun updateCampaignModifications(
+            campaignCustomId: String = "",
+            lambda: (HashMap<String, Any>?) -> (Unit) = {}
+        ): Deferred<Unit> {
+            return GlobalScope.async {
+                ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
+                val results = HashMap(modifications.mapValues { it.value.value })
+                lambda(results)
             }
         }
+
+        internal fun updateModifications(values: HashMap<String, Modification>) {
+            modifications.putAll(values)
+        }
+
+//        fun updateCampaignModifications(
+//            campaignCustomId: String = "",
+//            lambda: (HashMap<String, Any>?) -> (Unit) = {}
+//        ): Deferred<Unit> {
+//            return GlobalScope.async {
+//                ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
+//                lambda(modifications)
+//            }
+//        }
+
+//        internal fun updateModifications(values: HashMap<String, Any>) {
+//            for (p in values) {
+//                if (p.value is Boolean || p.value is Number || p.value is String) {
+//                    modifications[p.key] = p.value
+//                } else {
+//                    Log.e(
+//                        "[Flagship][error]",
+//                        "Context update : Your data \"${p.key}\" is not a type of NUMBER, BOOLEAN or STRING"
+//                    )
+//                }
+//            }
+//        }
 
         fun <T> sendHitTracking(hit: HitBuilder<T>) {
             ApiManager.getInstance().sendHitTracking(hit)

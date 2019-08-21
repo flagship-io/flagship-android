@@ -2,7 +2,6 @@ package com.abtasty.flagship.api
 
 import androidx.annotation.IntRange
 import org.json.JSONObject
-import java.sql.Timestamp
 
 abstract class HitBuilder<B> {
 

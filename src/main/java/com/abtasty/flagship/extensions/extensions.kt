@@ -71,6 +71,7 @@ import kotlin.reflect.KParameter
 
 fun View.applyFlagshipModification(propertyName: String, param: Any) {
 
+    System.out.println("#Val apply $param")
     post {
         try {
             when (propertyName) {
@@ -132,7 +133,7 @@ class FlagshipAuto : Application.ActivityLifecycleCallbacks {
             val id = root.context.resources.getIdentifier(tab[0], "id", root.context.packageName)
             if (id != 0) {
                 val v = root.findViewById<View>(id)
-                v.applyFlagshipModification(tab[1], m.value)
+                v.applyFlagshipModification(tab[1], m.value.value)
             }
         }
     }

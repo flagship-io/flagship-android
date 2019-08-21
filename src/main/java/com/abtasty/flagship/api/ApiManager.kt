@@ -1,6 +1,5 @@
 package com.abtasty.flagship.api
 
-import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
 import com.abtasty.flagship.model.Campaign
@@ -8,7 +7,6 @@ import com.abtasty.flagship.utils.Logger
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
-import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
 internal class ApiManager  {
@@ -17,6 +15,7 @@ internal class ApiManager  {
     val DOMAIN = "https://decision-api.canarybay.io/v1/"
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
+    val ACTIVATION = "activate"
 
     companion object {
         private var instance: ApiManager = ApiManager()
@@ -214,6 +213,18 @@ internal class ApiManager  {
         } catch (e : Exception) {
             e.printStackTrace()
         }
+    }
+
+    internal fun sendActivationRequest(variationGroupId: String, variationId: String) {
+
+        val request = PostRequest()
+        request.url = DOMAIN + ACTIVATION
+        request.jsonBody.put(Hit.KeyMap.VISITOR_ID.key, Flagship.visitorId)
+        request.jsonBody.put(Hit.KeyMap.CLIENT_ID.key, Flagship.clientId)
+        request.jsonBody.put(Hit.KeyMap.VARIATION_GROUP_ID.key, variationGroupId)
+        request.jsonBody.put(Hit.KeyMap.VARIATION_ID.key, variationId)
+        request.build()
+        request.fire(true)
     }
 
     internal fun <T> sendHitTracking(hit: HitBuilder<T>) {
