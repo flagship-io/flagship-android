@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.abtasty.flagship.api.ApiManager
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.GlobalScope
@@ -120,6 +121,28 @@ internal class DatabaseManager {
             val list = it.hitDao().getNonSentHits(Flagship.sessionStart, 3)
             for (h in list) {
                 Logger.v(Logger.TAG.DB, "[----][${h.id}] ${h.content}")
+            }
+        }
+    }
+
+    fun loadModifications() {
+        db?.let {
+            try {
+                val modifications = it.modificationDao().getAllModifications(Flagship.visitorId ?: "")
+                for (m in modifications) {
+                    Flagship.modifications[m.key] = Modification.fromModificationData(m)
+                }
+            } catch (e : Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun updateModifications() {
+        db?.let {
+            it.modificationDao().deleteAllModifications()
+            for (m in Flagship.modifications) {
+                it.modificationDao().insertModification(m.value.toModificationData())
             }
         }
     }

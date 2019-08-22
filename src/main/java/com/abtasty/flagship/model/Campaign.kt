@@ -1,6 +1,8 @@
 package com.abtasty.flagship.model
 
 import android.os.Parcelable
+import com.abtasty.flagship.database.ModificationData
+import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.utils.Logger
 import org.json.JSONObject
 import kotlinx.android.parcel.Parcelize
@@ -63,7 +65,7 @@ internal data class Modifications(
                 for (k in valueObj.keys()) {
                     val value = valueObj.get(k)
                     if (value is Boolean || value is Number || value is String) {
-                        values[k] = Modification(variationGroupId, variationId, value)
+                        values[k] = Modification(k, variationGroupId, variationId, value)
                     } else {
                         Logger.e(
                             Logger.TAG.PARSING,
@@ -83,7 +85,23 @@ internal data class Modifications(
 
 @Parcelize
 data class Modification(
+    val key: String,
     val variationGroupId: String,
     val variationId: String,
     val value: @RawValue Any
-) : Parcelable
+) : Parcelable {
+
+    fun toModificationData() : ModificationData {
+        val json = JSONObject().put(key, value)
+        return ModificationData(key, Flagship.visitorId ?: "", variationGroupId, variationId, json)
+    }
+
+    companion object {
+        fun fromModificationData(modification : ModificationData) : Modification {
+            return Modification(modification.key,
+                modification.variationGroupId,
+                modification.variationId,
+                modification.value.get(modification.key))
+        }
+    }
+}

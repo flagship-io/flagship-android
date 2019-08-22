@@ -1,13 +1,10 @@
 package com.abtasty.flagship.main
 
 import android.content.Context
-import android.util.Log
 import com.abtasty.flagship.api.ApiManager
-import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.api.HitBuilder
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.model.Modification
-import com.abtasty.flagship.model.Modifications
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.Deferred
@@ -53,14 +50,35 @@ class Flagship {
 
         fun setVisitorId(visitorId: String) {
             this.visitorId = visitorId
+            DatabaseManager.getInstance().loadModifications()
         }
 
         fun enableLog(mode: LogMode) {
             Logger.logMode = mode
         }
 
+        fun updateContext(key: String, value: Number, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
+            updateContextValue(key, value, syncModifications)
+        }
 
-        private fun updateContextValue(key: String, value: Any) {
+        fun updateContext(key: String, value: String, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
+            updateContextValue(key, value, syncModifications)
+        }
+
+        fun updateContext(key: String, value: Boolean, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
+            updateContextValue(key, value, syncModifications)
+        }
+
+        fun updateContext(values: HashMap<String, Any>, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
+            for (p in values) {
+                updateContextValue(p.key, p.value)
+            }
+            syncModifications?.let {
+                updateCampaignModifications("", it)
+            }
+        }
+
+        private fun updateContextValue(key: String, value: Any, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
             if (value is Number || value is Boolean || value is String) {
                 context[key] = value
             } else {
@@ -68,52 +86,37 @@ class Flagship {
                     "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                 )
             }
-        }
-
-        fun updateContext(key: String, value: Number) {
-            updateContextValue(key, value)
-        }
-
-        fun updateContext(key: String, value: String) {
-            updateContextValue(key, value)
-        }
-
-        fun updateContext(key: String, value: Boolean) {
-            updateContextValue(key, value)
-        }
-
-        fun updateContext(values: HashMap<String, Any>) {
-            for (p in values) {
-                updateContextValue(p.key, p.value)
+            syncModifications?.let {
+                updateCampaignModifications("", it)
             }
         }
 
-        fun getModification(key: String, default: Int): Int {
-            return getFlagshipModification(key, default)
+        fun getModification(key: String, default: Int, publish : Boolean = false): Int {
+            return getFlagshipModification(key, default, publish)
         }
 
-        fun getModification(key: String, default: Float): Float {
-            return getFlagshipModification(key, default)
+        fun getModification(key: String, default: Float, publish : Boolean = false): Float {
+            return getFlagshipModification(key, default, publish)
         }
 
-        fun getModification(key: String, default: String): String {
-            return getFlagshipModification(key, default)
+        fun getModification(key: String, default: String, publish : Boolean = false): String {
+            return getFlagshipModification(key, default, publish)
         }
 
-        fun getModification(key: String, default: Boolean): Boolean {
-            return getFlagshipModification(key, default)
+        fun getModification(key: String, default: Boolean, publish : Boolean = false): Boolean {
+            return getFlagshipModification(key, default, publish)
         }
 
-        fun getModification(key: String, default: Double): Double {
-            return getFlagshipModification(key, default)
+        fun getModification(key: String, default: Double, publish : Boolean = false): Double {
+            return getFlagshipModification(key, default, publish)
         }
 
-        fun getModification(key: String, default: Long): Long {
-            return getFlagshipModification(key, default)
+        fun getModification(key: String, default: Long, publish : Boolean = false): Long {
+            return getFlagshipModification(key, default, publish)
         }
 
 
-        private inline fun <reified T> getFlagshipModification(key: String, default: T): T {
+        private inline fun <reified T> getFlagshipModification(key: String, default: T, publish : Boolean = false): T {
             return try {
                 System.out.println("#Val modif = " + modifications.toString())
                 System.out.println("#Val = " + modifications[key]?.value + " : groupId = " + modifications[key]?.variationGroupId)
@@ -124,7 +127,8 @@ class Flagship {
                     val variationId = modification.variationId
                     val value = modification.value
                     (value as? T)?.let {
-                        ApiManager.getInstance().sendActivationRequest(variationGroupId, variationId)
+                        if (publish)
+                            ApiManager.getInstance().sendActivationRequest(variationGroupId, variationId)
                         it
                     } ?: default
                 } ?: default
