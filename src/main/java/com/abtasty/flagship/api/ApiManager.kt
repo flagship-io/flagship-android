@@ -102,7 +102,6 @@ internal class ApiManager {
             if (response.isSuccessful) {
                 parseResponse()
             }
-            System.out.println("#HE =< $requestId")
         }
 
         open fun parseResponse(): Boolean {
@@ -236,25 +235,19 @@ internal class ApiManager {
 
     internal fun sendActivationRequest(variationGroupId: String, variationId: String) {
 
-        val request = PostRequest()
-        request.url = DOMAIN + ACTIVATION
-        request.jsonBody.put(Hit.KeyMap.VISITOR_ID.key, Flagship.visitorId)
-        request.jsonBody.put(Hit.KeyMap.CLIENT_ID.key, Flagship.clientId)
-        request.jsonBody.put(Hit.KeyMap.VARIATION_GROUP_ID.key, variationGroupId)
-        request.jsonBody.put(Hit.KeyMap.VARIATION_ID.key, variationId)
-        request.build()
-        request.fire(true)
+        val publish = Hit.Publish(variationGroupId, variationId)
+        Hit.HitRequestBuilder(false)
+            .withHit(publish)
+            .withUrl(DOMAIN + ACTIVATION)
+            .build()
+            .fire(true)
     }
 
     internal fun <T> sendHitTracking(hit: HitBuilder<T>) {
-        sendBuiltHit(hit)
-//        DatabaseManager.getInstance().fireOfflineHits(3)
-    }
-
-    internal fun <T> sendBuiltHit(hit: HitBuilder<T>) {
         Hit.HitRequestBuilder()
             .withHit(hit)
             .build()
             .fire(true)
     }
+
 }

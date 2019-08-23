@@ -71,7 +71,6 @@ import kotlin.reflect.KParameter
 
 fun View.applyFlagshipModification(propertyName: String, param: Any) {
 
-    System.out.println("#Val apply $param")
     post {
         try {
             when (propertyName) {
@@ -148,7 +147,7 @@ class FlagshipAuto : Application.ActivityLifecycleCallbacks {
         GlobalScope.async {
             try {
                 if (request == null)
-                    request = Flagship.updateCampaignModifications()
+                    request = Flagship.syncCampaignModifications()
                 request?.let { req ->
                     req.await()
                     activity?.let {
@@ -174,7 +173,7 @@ class FlagshipAuto : Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityCreated(activity: Activity?, savedInstanceState: Bundle?) {
-        request = Flagship.updateCampaignModifications()
+        request = Flagship.syncCampaignModifications()
     }
 }
 

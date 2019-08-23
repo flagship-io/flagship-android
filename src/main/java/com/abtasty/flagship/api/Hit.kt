@@ -1,5 +1,6 @@
 package com.abtasty.flagship.api
 
+import android.graphics.drawable.Icon
 import androidx.annotation.IntRange
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.database.HitData
@@ -18,9 +19,13 @@ class Hit {
      * EVENT : Can be anything : from a click to a newsletter subscription.
      * ITEM : Represents a product and must be associated with a transaction
      */
-    enum class Type {PAGEVIEW, TRANSACTION, ITEM, EVENT}
+    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT }
 
-    enum class EventCategory(var key: String) { ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT("User Engagement")}
+    enum class EventCategory(var key: String) {
+        ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT(
+            "User Engagement"
+        )
+    }
 
     enum class KeyMap(var key: String) {
         TYPE("t"),
@@ -66,13 +71,6 @@ class Hit {
 
     internal class HitRequest : ApiManager.PostRequest() {
 
-        override fun build() {
-            jsonBody.put(KeyMap.CLIENT_ID.key, Flagship.clientId)
-            jsonBody.put(KeyMap.DATA_SOURCE.key, KeyMap.APP)
-            jsonBody.put(KeyMap.VISITOR_ID.key, Flagship.visitorId)
-            super.build()
-        }
-
         override fun fire(async: Boolean) {
             if (requestId == -1L)
                 requestId = DatabaseManager.getInstance().insertHit(this)
@@ -80,7 +78,7 @@ class Hit {
         }
 
         override fun onResponse(call: Call, response: Response) {
-            System.out.println("#HE D = > " + this.requestId)
+
             if (response.isSuccessful)
                 DatabaseManager.getInstance().removeHit(this)
             super.onResponse(call, response)
@@ -96,20 +94,31 @@ class Hit {
         }
     }
 
-    internal class HitRequestBuilder : ApiManager.PostRequestBuilder<HitRequestBuilder, HitRequest>() {
+    internal class HitRequestBuilder(includeDeviceContext : Boolean = true) :
+        ApiManager.PostRequestBuilder<HitRequestBuilder, HitRequest>() {
 
         override var instance = HitRequest()
 
         init {
             withUrl(ApiManager.getInstance().ARIANE)
-            withBodyParam(Hit.KeyMap.TIMESTAMP.key, System.currentTimeMillis())
-            withBodyParams(Flagship.deviceContext)
+            withBodyParam(KeyMap.CLIENT_ID.key, Flagship.clientId ?: "")
+            withBodyParam(KeyMap.VISITOR_ID.key, Flagship.visitorId ?: "")
+            if (includeDeviceContext) {
+                withBodyParam(Hit.KeyMap.TIMESTAMP.key, System.currentTimeMillis())
+                withBodyParam(KeyMap.DATA_SOURCE.key, KeyMap.APP)
+                withBodyParams(Flagship.deviceContext)
+            }
         }
 
-        fun withHit(hit : HitBuilder<*>) : HitRequestBuilder {
+        fun withHit(hit: HitBuilder<*>): HitRequestBuilder {
             withBodyParams(hit.data)
             if (hit.requestId > -1L)
                 withRequestId(hit.requestId)
+            return this
+        }
+
+        override fun withUrl(url: String): HitRequestBuilder {
+            super.withUrl(url)
             return this
         }
     }
@@ -122,7 +131,7 @@ class Hit {
      *
      * @param origin interface name
      */
-    class PageView(origin : String) : HitBuilder<PageView>() {
+    class PageView(origin: String) : HitBuilder<PageView>() {
 
         init {
             withHitParam(KeyMap.TYPE, Type.PAGEVIEW)
@@ -153,7 +162,7 @@ class Hit {
          *
          * @param revenue total revenue
          */
-        fun withTotalRevenue(revenue : Float) : Transaction {
+        fun withTotalRevenue(revenue: Float): Transaction {
             withHitParam(KeyMap.TRANSACTION_REVENUE, revenue)
             return this
         }
@@ -163,7 +172,7 @@ class Hit {
          *
          * @param shipping total of the shipping costs
          */
-        fun withShippingCost(shipping : Float) : Transaction {
+        fun withShippingCost(shipping: Float): Transaction {
             withHitParam(KeyMap.TRANSACTION_SHIPPING, shipping)
             return this
         }
@@ -173,7 +182,7 @@ class Hit {
          *
          * @param shipping shipping method used for the transaction
          */
-        fun withShippingMethod(shipping : String) : Transaction {
+        fun withShippingMethod(shipping: String): Transaction {
             withHitParam(KeyMap.TRANSACTION_SHIPPING_METHOD, shipping)
             return this
         }
@@ -184,7 +193,7 @@ class Hit {
          * @param taxes total taxes
          *
          */
-        fun withTaxes(taxes : Float) : Transaction {
+        fun withTaxes(taxes: Float): Transaction {
             withHitParam(KeyMap.TRANSACTION_TAX, taxes)
             return this
         }
@@ -194,7 +203,7 @@ class Hit {
          *
          * @param currency currency used for the transaction
          */
-        fun withCurrency(currency : String) : Transaction {
+        fun withCurrency(currency: String): Transaction {
             withHitParam(KeyMap.TRANSACTION_CURRENCY, currency)
             return this
         }
@@ -204,7 +213,7 @@ class Hit {
          *
          * @param paymentMethod method used for the payment
          */
-        fun withPaymentMethod(paymentMethod : String) : Transaction {
+        fun withPaymentMethod(paymentMethod: String): Transaction {
             withHitParam(KeyMap.TRANSACTION_PAYMENT_METHOD, paymentMethod)
             return this
         }
@@ -214,7 +223,7 @@ class Hit {
          *
          * @param itemCount number of item
          */
-        fun withItemCount(itemCount : Int) : Transaction {
+        fun withItemCount(itemCount: Int): Transaction {
             withHitParam(KeyMap.TRANSACTION_ITEM_COUNT, itemCount)
             return this
         }
@@ -224,7 +233,7 @@ class Hit {
          *
          * @param coupon coupon code
          */
-        fun withCouponCode(coupon : String) : Transaction {
+        fun withCouponCode(coupon: String): Transaction {
             withHitParam(KeyMap.TRANSACTION_COUPON, coupon)
             return this
         }
@@ -240,7 +249,7 @@ class Hit {
      * @param name product name
      *
      */
-    class Item(transactionId: String, productName : String) : HitBuilder<Item>() {
+    class Item(transactionId: String, productName: String) : HitBuilder<Item>() {
 
         init {
             withHitParam(KeyMap.TYPE, Type.ITEM)
@@ -255,7 +264,7 @@ class Hit {
          * @param price item price
          *
          */
-        fun withPrice(price : Float) : Item {
+        fun withPrice(price: Float): Item {
             withHitParam(KeyMap.ITEM_PRICE, price)
             return this
         }
@@ -265,7 +274,7 @@ class Hit {
          *
          * @param quantity nb of item
          */
-        fun withItemQuantity(quantity : Int) : Item {
+        fun withItemQuantity(quantity: Int): Item {
             withHitParam(KeyMap.ITEM_QUANTITY, quantity)
             return this
         }
@@ -275,7 +284,7 @@ class Hit {
          *
          * @param itemCode item SKU or code
          */
-        fun withItemCode(itemCode : String) : Item {
+        fun withItemCode(itemCode: String): Item {
             withHitParam(KeyMap.ITEM_CODE, itemCode)
             return this
         }
@@ -285,7 +294,7 @@ class Hit {
          *
          * @param category name of the item category
          */
-        fun withItemCategory(category : String) : Item {
+        fun withItemCategory(category: String): Item {
             withHitParam(KeyMap.ITEM_CATEGORY, category)
             return this
         }
@@ -297,7 +306,7 @@ class Hit {
      * @param category category of the event (ACTION_TRACKING or USER_ENGAGEMENT) @required
      * @param action the event action @required
      */
-    class Event(category : EventCategory, action : String) : HitBuilder<Event>() {
+    class Event(category: EventCategory, action: String) : HitBuilder<Event>() {
 
         init {
             withHitParam(KeyMap.TYPE, Type.EVENT)
@@ -310,7 +319,7 @@ class Hit {
          *
          * @param label label of the event
          */
-        fun withEventLabel(label : String) : Event {
+        fun withEventLabel(label: String): Event {
             withHitParam(KeyMap.EVENT_LABEL, label)
             return this
         }
@@ -320,10 +329,19 @@ class Hit {
          *
          * @param value value of the event
          */
-        fun withEventValue(value : Number) : Event {
+        fun withEventValue(value: Number): Event {
             if (value.toInt() > 0)
                 withHitParam(KeyMap.EVENT_VALUE, value)
             return this
+        }
+    }
+
+    internal class Publish(variationGroupId: String, variationId: String) :
+        HitBuilder<Publish>() {
+
+        init {
+            withHitParam(KeyMap.VARIATION_GROUP_ID, variationGroupId)
+            withHitParam(KeyMap.VARIATION_ID, variationId)
         }
     }
 
@@ -334,8 +352,11 @@ class Hit {
                 val data = JSONObject(hitData.content)
                 withRequestId(hitData.id!!)
                 withParams(data)
-                withHitParam(KeyMap.QUEUE_TIME, System.currentTimeMillis() - data.getLong(KeyMap.TIMESTAMP.key))
-            } catch (e : Exception) {
+                withHitParam(
+                    KeyMap.QUEUE_TIME,
+                    System.currentTimeMillis() - data.getLong(KeyMap.TIMESTAMP.key)
+                )
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }

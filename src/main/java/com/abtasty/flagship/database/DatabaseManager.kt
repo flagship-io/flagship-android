@@ -13,6 +13,7 @@ import kotlinx.coroutines.async
 
 internal class DatabaseManager {
 
+    private val DATABASE = "flagship-database"
     private var db: Database? = null
 
     companion object {
@@ -28,7 +29,7 @@ internal class DatabaseManager {
     }
 
     fun init(c: Context) {
-        db = Room.databaseBuilder(c, Database::class.java, "flagship-database")
+        db = Room.databaseBuilder(c, Database::class.java, DATABASE)
             .fallbackToDestructiveMigration()
             .enableMultiInstanceInvalidation()
             .allowMainThreadQueries()
@@ -44,7 +45,7 @@ internal class DatabaseManager {
                         System.currentTimeMillis(), hit.jsonBody.toString(), 1
                     )
                 )
-                Logger.v(Logger.TAG.DB, "[Insert hit:${id}][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}")
+                Logger.v(Logger.TAG.DB, "[Insert hit:$id][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}")
                 return id
             }
         }
@@ -76,30 +77,6 @@ internal class DatabaseManager {
         }
     }
 
-//    var nonSent: Deferred<Unit?>? = null
-//
-//    fun fireOfflineHits(limit: Int = 0) {
-//        GlobalScope.async {
-//            if (nonSent != null)
-//                nonSent?.await()
-//            nonSent = GlobalScope.async {
-//                try {
-//                    db?.let {
-//                        val hits = it.hitDao().getNonSentHits(Flagship.sessionStart, limit)
-//                        Logger.v(Logger.TAG.DB, "[----]")
-//                        for (h in hits) {
-//                            Logger.v(Logger.TAG.DB, "[----][${h.id}] ${h.content}")
-//                            it.hitDao().updateHitStatus(h.id!!, 1)
-//                            ApiManager.getInstance().sendBuiltHit(Hit.GenericHitFromData(h))
-//                        }
-//                    }
-//                } catch (e: Exception) {
-//                    e.printStackTrace()
-//                }
-//            }
-//        }
-//    }
-
     fun fireOfflineHits(limit: Int = 20) {
         GlobalScope.async {
             try {
@@ -107,7 +84,8 @@ internal class DatabaseManager {
                     val hits = it.hitDao().getNonSentHits(Flagship.sessionStart, limit)
                     for (h in hits) {
                         it.hitDao().updateHitStatus(h.id!!, 1)
-                        ApiManager.getInstance().sendBuiltHit(Hit.GenericHitFromData(h))
+                        ApiManager.getInstance().sendHitTracking(
+                            Hit.GenericHitFromData(h))
                     }
                 }
             } catch (e: Exception) {

@@ -16,13 +16,16 @@ import kotlinx.coroutines.async
  */
 class Flagship {
 
+    /**
+     * LogMode Types
+     */
     enum class LogMode {
         NONE, ALL, ERRORS, VERBOSE
     }
 
     companion object {
 
-        internal val VISITOR_ID = "visitorId"
+        internal const val VISITOR_ID = "visitorId"
 
         internal var clientId: String? = null
         internal var visitorId: String? = null
@@ -30,15 +33,22 @@ class Flagship {
         @PublishedApi
         internal var context = HashMap<String, Any>()
 
-        //        @PublishedApi
-//        internal var modifications = HashMap<String, Any>()
         @PublishedApi
         internal var modifications = HashMap<String, Modification>()
+
+//        val modificationMap : HashMap<String, Any>
+//            get() = HashMap(modifications.mapValues { it.value.value })
 
         internal var deviceContext = HashMap<String, Any>()
 
         internal var sessionStart: Long = -1
 
+        /**
+         * Initialize the flagship SDK
+         *
+         * @param appContext application context
+         * @param clientId key provided by ABTasty
+         */
         fun init(appContext: Context, clientId: String) {
 
             this.clientId = clientId
@@ -48,106 +58,245 @@ class Flagship {
             DatabaseManager.getInstance().fireOfflineHits()
         }
 
+        /**
+         * Set the current visitorId
+         *
+         * @param visitorId id of the logged visitor
+         */
         fun setVisitorId(visitorId: String) {
             this.visitorId = visitorId
             DatabaseManager.getInstance().loadModifications()
         }
 
+        /**
+         * Enable logs of the SDK
+         */
         fun enableLog(mode: LogMode) {
             Logger.logMode = mode
         }
 
-        fun updateContext(key: String, value: Number, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
-            updateContextValue(key, value, syncModifications)
+        /**
+         * This function updates the visitor context value matching the given key.
+         * A new context value associated with this key will be created if there is no matching.
+         *
+         * @param key key to associate with the following value
+         * @param value new context value
+         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
+         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually : syncCampaignModifications()
+         */
+        fun updateContext(key: String, value: Number, sync: (() -> (Unit))? = null) {
+            updateContextValue(key, value, sync)
         }
 
-        fun updateContext(key: String, value: String, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
-            updateContextValue(key, value, syncModifications)
+        /**
+         * This function updates the visitor context value matching the given key.
+         * A new context value associated with this key will be created if there is no matching.
+         *
+         * @param key key to associate with the following value
+         * @param value new context value
+         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
+         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually : syncCampaignModifications()
+         */
+        fun updateContext(key: String, value: String, sync: (() -> (Unit))? = null) {
+            updateContextValue(key, value, sync)
         }
 
-        fun updateContext(key: String, value: Boolean, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
-            updateContextValue(key, value, syncModifications)
+        /**
+         * This function updates the visitor context value matching the given key.
+         * A new context value associated with this key will be created if there is no matching.
+         *
+         * @param key key to associate with the following value
+         * @param value new context value
+         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
+         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually : syncCampaignModifications()
+         */
+        fun updateContext(key: String, value: Boolean, sync: (() -> (Unit))? = null) {
+            updateContextValue(key, value, sync)
         }
 
-        fun updateContext(values: HashMap<String, Any>, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
+        /**
+         * This function updates the visitor context value matching the given key.
+         * A new context value associated with this key will be created if there is no matching.
+         *
+         * @param key key to associate with the following value
+         * @param value new context value
+         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
+         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually : syncCampaignModifications()
+         */
+        fun updateContext(values: HashMap<String, Any>, sync: (() -> (Unit))? = null) {
             for (p in values) {
                 updateContextValue(p.key, p.value)
             }
-            syncModifications?.let {
-                updateCampaignModifications("", it)
+            sync?.let {
+                syncCampaignModifications("", it)
             }
         }
 
-        private fun updateContextValue(key: String, value: Any, syncModifications : ((HashMap<String, Any>?) -> (Unit))? = null) {
+        private fun updateContextValue(
+            key: String,
+            value: Any,
+            syncModifications: (() -> (Unit))? = null
+        ) {
             if (value is Number || value is Boolean || value is String) {
                 context[key] = value
             } else {
-                Logger.e(Logger.TAG.CONTEXT,
+                Logger.e(
+                    Logger.TAG.CONTEXT,
                     "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                 )
             }
             syncModifications?.let {
-                updateCampaignModifications("", it)
+                syncCampaignModifications("", it)
             }
         }
 
-        fun getModification(key: String, default: Int, publish : Boolean = false): Int {
-            return getFlagshipModification(key, default, publish)
+        /**
+         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * in order to update all the modifications from the server.
+         *
+         * @param key key associated with the modification
+         * @param default default value returned when the key doesn't match any modification value.
+         * @param report (false by default) Set this param to true to automatically report on our server :
+         * the current visitor has seen this modification. You also have the possibility to do it afterward
+         * by calling reportModification().
+         * @see syncCampaignModifications
+         * @see reportModification
+         */
+        fun getModification(key: String, default: Int, report: Boolean = false): Int {
+            return getFlagshipModification(key, default, report)
         }
 
-        fun getModification(key: String, default: Float, publish : Boolean = false): Float {
-            return getFlagshipModification(key, default, publish)
+        /**
+         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * in order to update all the modifications from the server.
+         *
+         * @param key key associated with the modification
+         * @param default default value returned when the key doesn't match any modification value.
+         * @param report (false by default) Set this param to true to automatically report on our server :
+         * the current visitor has seen this modification. You also have the possibility to do it afterward
+         * by calling reportModification().
+         * @see syncCampaignModifications
+         * @see reportModification
+         */
+        fun getModification(key: String, default: Float, report: Boolean = false): Float {
+            return getFlagshipModification(key, default, report)
         }
 
-        fun getModification(key: String, default: String, publish : Boolean = false): String {
-            return getFlagshipModification(key, default, publish)
+        /**
+         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * in order to update all the modifications from the server.
+         *
+         * @param key key associated with the modification
+         * @param default default value returned when the key doesn't match any modification value.
+         * @param report (false by default) Set this param to true to automatically report on our server :
+         * the current visitor has seen this modification. You also have the possibility to do it afterward
+         * by calling reportModification().
+         * @see syncCampaignModifications
+         * @see reportModification
+         */
+        fun getModification(key: String, default: String, report: Boolean = false): String {
+            return getFlagshipModification(key, default, report)
         }
 
-        fun getModification(key: String, default: Boolean, publish : Boolean = false): Boolean {
-            return getFlagshipModification(key, default, publish)
+        /**
+         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * in order to update all the modifications from the server.
+         *
+         * @param key key associated with the modification
+         * @param default default value returned when the key doesn't match any modification value.
+         * @param report (false by default) Set this param to true to automatically report on our server :
+         * the current visitor has seen this modification. You also have the possibility to do it afterward
+         * by calling reportModification().
+         * @see syncCampaignModifications
+         * @see reportModification
+         */
+        fun getModification(key: String, default: Boolean, report: Boolean = false): Boolean {
+            return getFlagshipModification(key, default, report)
         }
 
-        fun getModification(key: String, default: Double, publish : Boolean = false): Double {
-            return getFlagshipModification(key, default, publish)
+        /**
+         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * in order to update all the modifications from the server.
+         *
+         * @param key key associated with the modification
+         * @param default default value returned when the key doesn't match any modification value.
+         * @param report (false by default) Set this param to true to automatically report on our server :
+         * the current visitor has seen this modification. You also have the possibility to do it afterward
+         * by calling reportModification().
+         * @see syncCampaignModifications
+         * @see reportModification
+         */
+        fun getModification(key: String, default: Double, report: Boolean = false): Double {
+            return getFlagshipModification(key, default, report)
         }
 
-        fun getModification(key: String, default: Long, publish : Boolean = false): Long {
-            return getFlagshipModification(key, default, publish)
+        /**
+         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * in order to update all the modifications from the server.
+         *
+         * @param key key associated with the modification
+         * @param default default value returned when the key doesn't match any modification value.
+         * @param report (false by default) Set this param to true to automatically report on our server :
+         * the current visitor has seen this modification. You also have the possibility to do it afterward
+         * by calling reportModification().
+         * @see syncCampaignModifications
+         * @see reportModification
+         */
+        fun getModification(key: String, default: Long, report: Boolean = false): Long {
+            return getFlagshipModification(key, default, report)
         }
 
 
-        private inline fun <reified T> getFlagshipModification(key: String, default: T, publish : Boolean = false): T {
+        private inline fun <reified T> getFlagshipModification(
+            key: String,
+            default: T,
+            report: Boolean = false
+        ): T {
             return try {
-                System.out.println("#Val modif = " + modifications.toString())
-                System.out.println("#Val = " + modifications[key]?.value + " : groupId = " + modifications[key]?.variationGroupId)
-//                (modifications[key]?.value ?: default) as T
+
                 val modification = modifications[key]
                 modification?.let {
                     val variationGroupId = modification.variationGroupId
                     val variationId = modification.variationId
                     val value = modification.value
                     (value as? T)?.let {
-                        if (publish)
-                            ApiManager.getInstance().sendActivationRequest(variationGroupId, variationId)
+                        if (report)
+                            ApiManager.getInstance().sendActivationRequest(
+                                variationGroupId,
+                                variationId
+                            )
                         it
                     } ?: default
                 } ?: default
 
             } catch (e: Exception) {
-                Logger.e(Logger.TAG.PARSING, "Flagship.getValue \"$key\" is missing or types are different")
+                Logger.e(
+                    Logger.TAG.PARSING,
+                    "Flagship.getValue \"$key\" is missing or types are different"
+                )
                 default
             }
 
         }
 
-        fun updateCampaignModifications(
+        /**
+         * This function updates all the campaigns modification from the server.
+         *
+         * @param campaignCustomId (optional) Specify a campaignId to get its modifications. All campaigns by default.
+         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
+         *
+         */
+        fun syncCampaignModifications(
             campaignCustomId: String = "",
-            lambda: (HashMap<String, Any>?) -> (Unit) = {}
+            lambda: () -> (Unit) = {}
         ): Deferred<Unit> {
             return GlobalScope.async {
                 ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-                val results = HashMap(modifications.mapValues { it.value.value })
-                lambda(results)
+                lambda()
             }
         }
 
@@ -155,28 +304,10 @@ class Flagship {
             modifications.putAll(values)
         }
 
-//        fun updateCampaignModifications(
-//            campaignCustomId: String = "",
-//            lambda: (HashMap<String, Any>?) -> (Unit) = {}
-//        ): Deferred<Unit> {
-//            return GlobalScope.async {
-//                ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-//                lambda(modifications)
-//            }
-//        }
 
-//        internal fun updateModifications(values: HashMap<String, Any>) {
-//            for (p in values) {
-//                if (p.value is Boolean || p.value is Number || p.value is String) {
-//                    modifications[p.key] = p.value
-//                } else {
-//                    Log.e(
-//                        "[Flagship][error]",
-//                        "Context update : Your data \"${p.key}\" is not a type of NUMBER, BOOLEAN or STRING"
-//                    )
-//                }
-//            }
-//        }
+        fun reportModification(key: String) {
+            getFlagshipModification(key, Any(), true)
+        }
 
         fun <T> sendHitTracking(hit: HitBuilder<T>) {
             ApiManager.getInstance().sendHitTracking(hit)
