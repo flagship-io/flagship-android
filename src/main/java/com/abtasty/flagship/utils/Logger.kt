@@ -11,7 +11,8 @@ internal class Logger {
         POST("[POST]"),
         DB("[DB]"),
         PARSING("[PARSING]"),
-        CONTEXT("CONTEXT")
+        CONTEXT("[CONTEXT]"),
+        INFO("[INFO]")
     }
 
     internal enum class LogType {

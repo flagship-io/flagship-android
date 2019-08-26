@@ -43,6 +43,8 @@ class Flagship {
 
         internal var sessionStart: Long = -1
 
+        internal var panicMode = false
+
         /**
          * Initialize the flagship SDK
          *
@@ -59,14 +61,17 @@ class Flagship {
         }
 
         /**
-         * Set the current visitorId
+         * Set an id for the current visitor
          *
          * @param visitorId id of the logged visitor
          */
         fun setVisitorId(visitorId: String) {
-            this.visitorId = visitorId
-            DatabaseManager.getInstance().loadModifications()
+            if (!panicMode) {
+                this.visitorId = visitorId
+                DatabaseManager.getInstance().loadModifications()
+            }
         }
+
 
         /**
          * Enable logs of the SDK
@@ -141,16 +146,18 @@ class Flagship {
             value: Any,
             syncModifications: (() -> (Unit))? = null
         ) {
-            if (value is Number || value is Boolean || value is String) {
-                context[key] = value
-            } else {
-                Logger.e(
-                    Logger.TAG.CONTEXT,
-                    "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
-                )
-            }
-            syncModifications?.let {
-                syncCampaignModifications("", it)
+            if (!panicMode) {
+                if (value is Number || value is Boolean || value is String) {
+                    context[key] = value
+                } else {
+                    Logger.e(
+                        Logger.TAG.CONTEXT,
+                        "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
+                    )
+                }
+                syncModifications?.let {
+                    syncCampaignModifications("", it)
+                }
             }
         }
 
@@ -163,8 +170,8 @@ class Flagship {
          * @param report (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
-         * @see syncCampaignModifications
-         * @see reportModification
+         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.reportModification
          */
         fun getModification(key: String, default: Int, report: Boolean = false): Int {
             return getFlagshipModification(key, default, report)
@@ -179,8 +186,8 @@ class Flagship {
          * @param report (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
-         * @see syncCampaignModifications
-         * @see reportModification
+         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.reportModification
          */
         fun getModification(key: String, default: Float, report: Boolean = false): Float {
             return getFlagshipModification(key, default, report)
@@ -195,8 +202,8 @@ class Flagship {
          * @param report (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
-         * @see syncCampaignModifications
-         * @see reportModification
+         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.reportModification
          */
         fun getModification(key: String, default: String, report: Boolean = false): String {
             return getFlagshipModification(key, default, report)
@@ -211,8 +218,8 @@ class Flagship {
          * @param report (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
-         * @see syncCampaignModifications
-         * @see reportModification
+         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.reportModification
          */
         fun getModification(key: String, default: Boolean, report: Boolean = false): Boolean {
             return getFlagshipModification(key, default, report)
@@ -227,8 +234,8 @@ class Flagship {
          * @param report (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
-         * @see syncCampaignModifications
-         * @see reportModification
+         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.reportModification
          */
         fun getModification(key: String, default: Double, report: Boolean = false): Double {
             return getFlagshipModification(key, default, report)
@@ -243,8 +250,8 @@ class Flagship {
          * @param report (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
-         * @see syncCampaignModifications
-         * @see reportModification
+         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.reportModification
          */
         fun getModification(key: String, default: Long, report: Boolean = false): Long {
             return getFlagshipModification(key, default, report)
@@ -256,31 +263,31 @@ class Flagship {
             default: T,
             report: Boolean = false
         ): T {
-            return try {
-
-                val modification = modifications[key]
-                modification?.let {
-                    val variationGroupId = modification.variationGroupId
-                    val variationId = modification.variationId
-                    val value = modification.value
-                    (value as? T)?.let {
-                        if (report)
-                            ApiManager.getInstance().sendActivationRequest(
-                                variationGroupId,
-                                variationId
-                            )
-                        it
+            if (!panicMode) {
+                return try {
+                    val modification = modifications[key]
+                    modification?.let {
+                        val variationGroupId = modification.variationGroupId
+                        val variationId = modification.variationId
+                        val value = modification.value
+                        (value as? T)?.let {
+                            if (report)
+                                ApiManager.getInstance().sendActivationRequest(
+                                    variationGroupId,
+                                    variationId
+                                )
+                            it
+                        } ?: default
                     } ?: default
-                } ?: default
 
-            } catch (e: Exception) {
-                Logger.e(
-                    Logger.TAG.PARSING,
-                    "Flagship.getValue \"$key\" is missing or types are different"
-                )
-                default
-            }
-
+                } catch (e: Exception) {
+                    Logger.e(
+                        Logger.TAG.PARSING,
+                        "Flagship.getValue \"$key\" is missing or types are different"
+                    )
+                    default
+                }
+            } else return default
         }
 
         /**
@@ -295,8 +302,10 @@ class Flagship {
             lambda: () -> (Unit) = {}
         ): Deferred<Unit> {
             return GlobalScope.async {
-                ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-                lambda()
+                if (!panicMode) {
+                    ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
+                    lambda()
+                }
             }
         }
 
@@ -305,12 +314,29 @@ class Flagship {
         }
 
 
+        /**
+         * This function allows you to report that a visitor has seen a modification to our servers
+         *
+         * @param key key which identifies the modification
+         */
         fun reportModification(key: String) {
-            getFlagshipModification(key, Any(), true)
+            if (!panicMode)
+                getFlagshipModification(key, Any(), true)
         }
 
+        /**
+         * This function allows you to send tracking events on our servers such as Transactions, page views, clicks ...
+         *
+         * @param hit Hit to send
+         * @see com.abtasty.flagship.api.Hit.PageView
+         * @see com.abtasty.flagship.api.Hit.Event
+         * @see com.abtasty.flagship.api.Hit.Transaction
+         * @see com.abtasty.flagship.api.Hit.Item
+         *
+         */
         fun <T> sendHitTracking(hit: HitBuilder<T>) {
-            ApiManager.getInstance().sendHitTracking(hit)
+            if (!panicMode)
+                ApiManager.getInstance().sendHitTracking(hit)
         }
     }
 }
