@@ -19,7 +19,7 @@ class Hit {
      * EVENT : Can be anything : from a click to a newsletter subscription.
      * ITEM : Represents a product and must be associated with a transaction
      */
-    enum class Type { PAGE, TRANSACTION, ITEM, EVENT }
+    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT }
 
     enum class EventCategory(var key: String) {
         ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT(
@@ -134,7 +134,7 @@ class Hit {
     class Page(origin: String) : HitBuilder<Page>() {
 
         init {
-            withHitParam(KeyMap.TYPE, Type.PAGE)
+            withHitParam(KeyMap.TYPE, Type.PAGEVIEW)
             withHitParam(KeyMap.ORIGIN, origin)
         }
     }
