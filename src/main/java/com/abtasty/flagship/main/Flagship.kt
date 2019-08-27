@@ -49,11 +49,12 @@ class Flagship {
          * Initialize the flagship SDK
          *
          * @param appContext application context
-         * @param clientId key provided by ABTasty
+         * @param envId key provided by ABTasty
          */
-        fun init(appContext: Context, clientId: String) {
+        fun start(appContext: Context, envId: String, visitorId: String = "") {
 
-            this.clientId = clientId
+            this.clientId = envId
+            this.visitorId = visitorId
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
@@ -167,14 +168,14 @@ class Flagship {
          *
          * @param key key associated with the modification
          * @param default default value returned when the key doesn't match any modification value.
-         * @param report (false by default) Set this param to true to automatically report on our server :
+         * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.reportModification
          */
-        fun getModification(key: String, default: Int, report: Boolean = false): Int {
-            return getFlagshipModification(key, default, report)
+        fun getModification(key: String, default: Int, activate: Boolean = false): Int {
+            return getFlagshipModification(key, default, activate)
         }
 
         /**
@@ -183,14 +184,14 @@ class Flagship {
          *
          * @param key key associated with the modification
          * @param default default value returned when the key doesn't match any modification value.
-         * @param report (false by default) Set this param to true to automatically report on our server :
+         * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.reportModification
          */
-        fun getModification(key: String, default: Float, report: Boolean = false): Float {
-            return getFlagshipModification(key, default, report)
+        fun getModification(key: String, default: Float, activate: Boolean = false): Float {
+            return getFlagshipModification(key, default, activate)
         }
 
         /**
@@ -199,14 +200,14 @@ class Flagship {
          *
          * @param key key associated with the modification
          * @param default default value returned when the key doesn't match any modification value.
-         * @param report (false by default) Set this param to true to automatically report on our server :
+         * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.reportModification
          */
-        fun getModification(key: String, default: String, report: Boolean = false): String {
-            return getFlagshipModification(key, default, report)
+        fun getModification(key: String, default: String, activate: Boolean = false): String {
+            return getFlagshipModification(key, default, activate)
         }
 
         /**
@@ -215,14 +216,14 @@ class Flagship {
          *
          * @param key key associated with the modification
          * @param default default value returned when the key doesn't match any modification value.
-         * @param report (false by default) Set this param to true to automatically report on our server :
+         * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.reportModification
          */
-        fun getModification(key: String, default: Boolean, report: Boolean = false): Boolean {
-            return getFlagshipModification(key, default, report)
+        fun getModification(key: String, default: Boolean, activate: Boolean = false): Boolean {
+            return getFlagshipModification(key, default, activate)
         }
 
         /**
@@ -231,14 +232,14 @@ class Flagship {
          *
          * @param key key associated with the modification
          * @param default default value returned when the key doesn't match any modification value.
-         * @param report (false by default) Set this param to true to automatically report on our server :
+         * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.reportModification
          */
-        fun getModification(key: String, default: Double, report: Boolean = false): Double {
-            return getFlagshipModification(key, default, report)
+        fun getModification(key: String, default: Double, activate: Boolean = false): Double {
+            return getFlagshipModification(key, default, activate)
         }
 
         /**
@@ -247,14 +248,14 @@ class Flagship {
          *
          * @param key key associated with the modification
          * @param default default value returned when the key doesn't match any modification value.
-         * @param report (false by default) Set this param to true to automatically report on our server :
+         * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling reportModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.reportModification
          */
-        fun getModification(key: String, default: Long, report: Boolean = false): Long {
-            return getFlagshipModification(key, default, report)
+        fun getModification(key: String, default: Long, activate: Boolean = false): Long {
+            return getFlagshipModification(key, default, activate)
         }
 
 
@@ -319,7 +320,7 @@ class Flagship {
          *
          * @param key key which identifies the modification
          */
-        fun reportModification(key: String) {
+        fun activateModification(key: String) {
             if (!panicMode)
                 getFlagshipModification(key, Any(), true)
         }
@@ -328,13 +329,13 @@ class Flagship {
          * This function allows you to send tracking events on our servers such as Transactions, page views, clicks ...
          *
          * @param hit Hit to send
-         * @see com.abtasty.flagship.api.Hit.PageView
+         * @see com.abtasty.flagship.api.Hit.Page
          * @see com.abtasty.flagship.api.Hit.Event
          * @see com.abtasty.flagship.api.Hit.Transaction
          * @see com.abtasty.flagship.api.Hit.Item
          *
          */
-        fun <T> sendHitTracking(hit: HitBuilder<T>) {
+        fun <T> sendTracking(hit: HitBuilder<T>) {
             if (!panicMode)
                 ApiManager.getInstance().sendHitTracking(hit)
         }

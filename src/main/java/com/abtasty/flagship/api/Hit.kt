@@ -19,7 +19,7 @@ class Hit {
      * EVENT : Can be anything : from a click to a newsletter subscription.
      * ITEM : Represents a product and must be associated with a transaction
      */
-    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT }
+    enum class Type { PAGE, TRANSACTION, ITEM, EVENT }
 
     enum class EventCategory(var key: String) {
         ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT(
@@ -104,7 +104,7 @@ class Hit {
             withBodyParam(KeyMap.CLIENT_ID.key, Flagship.clientId ?: "")
             withBodyParam(KeyMap.VISITOR_ID.key, Flagship.visitorId ?: "")
             if (includeDeviceContext) {
-                withBodyParam(Hit.KeyMap.TIMESTAMP.key, System.currentTimeMillis())
+                withBodyParam(KeyMap.TIMESTAMP.key, System.currentTimeMillis())
                 withBodyParam(KeyMap.DATA_SOURCE.key, KeyMap.APP)
                 withBodyParams(Flagship.deviceContext)
             }
@@ -125,16 +125,16 @@ class Hit {
 
 
     /**
-     * PageView Hit Builder
+     * Page Hit Builder
      *
      * Hit to send when a user sees an interface
      *
      * @param origin interface name
      */
-    class PageView(origin: String) : HitBuilder<PageView>() {
+    class Page(origin: String) : HitBuilder<Page>() {
 
         init {
-            withHitParam(KeyMap.TYPE, Type.PAGEVIEW)
+            withHitParam(KeyMap.TYPE, Type.PAGE)
             withHitParam(KeyMap.ORIGIN, origin)
         }
     }

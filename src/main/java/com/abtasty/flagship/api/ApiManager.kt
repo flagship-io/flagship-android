@@ -182,6 +182,7 @@ internal class ApiManager {
             try {
                 val jsonResponse = JSONObject(response?.body()?.string())
                 if (campaignId.isEmpty()) {
+                    Flagship.panicMode = jsonResponse.optBoolean("panic", false)
                     Flagship.modifications.clear()
                     val array = jsonResponse.getJSONArray("campaigns")
                     for (i in 0 until array.length()) {

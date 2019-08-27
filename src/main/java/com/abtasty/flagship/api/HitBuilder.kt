@@ -49,29 +49,29 @@ abstract class HitBuilder<B> {
         return withHitParam(Hit.KeyMap.SESSION_NUMBER, sessionNumber)
     }
 
-    /**
-     * Specifies a custom dimension. Each custom dimension has an associated index.
-     * There is a maximum of 20 custom dimensions.
-     * The dimension index must be a positive integer between 1 and 20, inclusive.
-     *
-     * @param index index from 1 to 20
-     * @param value name of the dimension
-     */
-    fun withCustomDimension(@IntRange(from = 1, to = 20) index: Int, value: String): B {
-        return withParam("cd[$index]", value)
-    }
-
-    /**
-     * Specifies a custom metric. Each custom metric has an associated index.
-     * There is a maximum of 20 custom metrics.
-     * The metric index must be a positive integer between 1 and 20, inclusive.
-     *
-     * @param index index from 1 to 20
-     * @param value name of the metric
-     */
-    fun withCustomMetric(@IntRange(from = 1, to = 20) index: Int, value: String): B {
-        return withParam("cd[$index]", value)
-    }
+//    /**
+//     * Specifies a custom dimension. Each custom dimension has an associated index.
+//     * There is a maximum of 20 custom dimensions.
+//     * The dimension index must be a positive integer between 1 and 20, inclusive.
+//     *
+//     * @param index index from 1 to 20
+//     * @param value name of the dimension
+//     */
+//    fun withCustomDimension(@IntRange(from = 1, to = 20) index: Int, value: String): B {
+//        return withParam("cd[$index]", value)
+//    }
+//
+//    /**
+//     * Specifies a custom metric. Each custom metric has an associated index.
+//     * There is a maximum of 20 custom metrics.
+//     * The metric index must be a positive integer between 1 and 20, inclusive.
+//     *
+//     * @param index index from 1 to 20
+//     * @param value name of the metric
+//     */
+//    fun withCustomMetric(@IntRange(from = 1, to = 20) index: Int, value: String): B {
+//        return withParam("cd[$index]", value)
+//    }
 
     /**
      * Specifies the user ip
