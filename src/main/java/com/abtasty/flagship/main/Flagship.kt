@@ -50,6 +50,7 @@ class Flagship {
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
+         * @param visitorId (optional) set an id for identifying the current visitor
          */
         fun start(appContext: Context, envId: String, visitorId: String = "") {
 
@@ -62,9 +63,9 @@ class Flagship {
         }
 
         /**
-         * Set an id for the current visitor
+         * Set an id for identifying the current visitor
          *
-         * @param visitorId id of the logged visitor
+         * @param visitorId id of the current visitor
          */
         fun setVisitorId(visitorId: String) {
             if (!panicMode) {
