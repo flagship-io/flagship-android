@@ -55,7 +55,7 @@ class Flagship {
         fun start(appContext: Context, envId: String, visitorId: String = "") {
 
             this.clientId = envId
-            this.visitorId = visitorId
+            this.visitorId = if (visitorId.isNotEmpty()) visitorId else Utils.genVisitorId(appContext)
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
@@ -171,9 +171,9 @@ class Flagship {
          * @param default default value returned when the key doesn't match any modification value.
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
-         * by calling reportModification().
+         * by calling activateModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
-         * @see com.abtasty.flagship.main.Flagship.reportModification
+         * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         fun getModification(key: String, default: Int, activate: Boolean = false): Int {
             return getFlagshipModification(key, default, activate)
@@ -187,9 +187,9 @@ class Flagship {
          * @param default default value returned when the key doesn't match any modification value.
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
-         * by calling reportModification().
+         * by calling activateModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
-         * @see com.abtasty.flagship.main.Flagship.reportModification
+         * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         fun getModification(key: String, default: Float, activate: Boolean = false): Float {
             return getFlagshipModification(key, default, activate)
@@ -203,9 +203,9 @@ class Flagship {
          * @param default default value returned when the key doesn't match any modification value.
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
-         * by calling reportModification().
+         * by calling activateModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
-         * @see com.abtasty.flagship.main.Flagship.reportModification
+         * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         fun getModification(key: String, default: String, activate: Boolean = false): String {
             return getFlagshipModification(key, default, activate)
@@ -219,9 +219,9 @@ class Flagship {
          * @param default default value returned when the key doesn't match any modification value.
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
-         * by calling reportModification().
+         * by calling activateModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
-         * @see com.abtasty.flagship.main.Flagship.reportModification
+         * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         fun getModification(key: String, default: Boolean, activate: Boolean = false): Boolean {
             return getFlagshipModification(key, default, activate)
@@ -235,9 +235,9 @@ class Flagship {
          * @param default default value returned when the key doesn't match any modification value.
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
-         * by calling reportModification().
+         * by calling activateModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
-         * @see com.abtasty.flagship.main.Flagship.reportModification
+         * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         fun getModification(key: String, default: Double, activate: Boolean = false): Double {
             return getFlagshipModification(key, default, activate)
@@ -251,9 +251,9 @@ class Flagship {
          * @param default default value returned when the key doesn't match any modification value.
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
-         * by calling reportModification().
+         * by calling activateModification().
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
-         * @see com.abtasty.flagship.main.Flagship.reportModification
+         * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         fun getModification(key: String, default: Long, activate: Boolean = false): Long {
             return getFlagshipModification(key, default, activate)
@@ -293,7 +293,7 @@ class Flagship {
         }
 
         /**
-         * This function updates all the campaigns modification from the server.
+         * This function calls the decision api and updates all the campaigns modification from the server according to the user context.
          *
          * @param campaignCustomId (optional) Specify a campaignId to get its modifications. All campaigns by default.
          * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.

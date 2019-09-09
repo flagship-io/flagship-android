@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.os.ConfigurationCompat
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
+import java.util.*
 
 class Utils {
 
@@ -26,6 +27,30 @@ class Utils {
 
         internal fun logFailorSuccess(boolean: Boolean) : String {
             return if (boolean) "Success" else "Fail"
+        }
+
+        fun genVisitorId(context: Context): String? {
+
+            val sharedPref = context.getSharedPreferences("_Flagship", Context.MODE_PRIVATE)
+            var visitorId = sharedPref.getString("visitorId", "")
+            if (visitorId.isEmpty()) {
+
+                val cal = Calendar.getInstance()
+                val min = 10000
+                val max = 99999
+                val random = Random().nextInt(max - min + 1) + min
+                visitorId = "${cal.get(Calendar.YEAR)}" +
+                        "${cal.get(Calendar.MONTH)}" +
+                        "${cal.get(Calendar.DAY_OF_MONTH)}" +
+                        "${cal.get(Calendar.HOUR_OF_DAY)}" +
+                        "${cal.get(Calendar.MINUTE)}" +
+                        "${cal.get(Calendar.SECOND)}" +
+                        "$random"
+                val edit = sharedPref.edit()
+                edit.putString("visitorId", visitorId)
+                edit.apply()
+            }
+            return visitorId
         }
     }
 }
