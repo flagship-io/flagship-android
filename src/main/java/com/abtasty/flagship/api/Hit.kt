@@ -1,13 +1,11 @@
 package com.abtasty.flagship.api
 
-import android.graphics.drawable.Icon
-import androidx.annotation.IntRange
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.database.HitData
 import com.abtasty.flagship.main.Flagship
-import com.abtasty.flagship.utils.Logger
 import okhttp3.Call
 import okhttp3.Response
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
@@ -19,7 +17,7 @@ class Hit {
      * EVENT : Can be anything : from a click to a newsletter subscription.
      * ITEM : Represents a product and must be associated with a transaction
      */
-    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT }
+    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT, BATCH }
 
     enum class EventCategory(var key: String) {
         ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT(
@@ -66,14 +64,16 @@ class Hit {
         TIMESTAMP("cst"),
         SESSION_NUMBER("sn"),
         IP("uip"),
-        QUEUE_TIME("qt")
+        QUEUE_TIME("qt"),
+
+        HIT_BATCH("h")
     }
 
     internal class HitRequest : ApiManager.PostRequest() {
 
         override fun fire(async: Boolean) {
-            if (requestId == -1L)
-                requestId = DatabaseManager.getInstance().insertHit(this)
+            if (requestIds.isEmpty())
+                requestIds.add(DatabaseManager.getInstance().insertHit(this))
             super.fire(async)
         }
 
@@ -112,8 +112,8 @@ class Hit {
 
         fun withHit(hit: HitBuilder<*>): HitRequestBuilder {
             withBodyParams(hit.data)
-            if (hit.requestId > -1L)
-                withRequestId(hit.requestId)
+            if (hit.requestIds.isNotEmpty())
+                withRequestIds(hit.requestIds)
             return this
         }
 
@@ -360,5 +360,40 @@ class Hit {
                 e.printStackTrace()
             }
         }
+    }
+
+    internal class  Batch(visitorId : String, hits : List<HitData> = ArrayList()) : HitBuilder<GenericHitFromData>()  {
+
+        init {
+           try {
+               System.out.println("####################################### ${hits.map { it.id!! }}")
+               withHitParam(KeyMap.TYPE, Type.BATCH)
+               withRequestIds(hits.map { it.id!! })
+               withHitParam(KeyMap.CLIENT_ID, Flagship.clientId!!)
+               withHitParam(KeyMap.VISITOR_ID, visitorId)
+               withChild(hits)
+           } catch (e : Exception) {
+               e.printStackTrace()
+           }
+        }
+
+        fun withChild(hits : List<HitData> = ArrayList()) : Batch {
+
+            val batch = if (data.has(KeyMap.HIT_BATCH.key)) data.getJSONArray(KeyMap.HIT_BATCH.key) else JSONArray()
+            for (h in hits) {
+                val child = JSONObject(h.content)
+                child.put(KeyMap.QUEUE_TIME.key, System.currentTimeMillis() - child.getLong(KeyMap.TIMESTAMP.key))
+                System.out.println("#Q qt child tmp =  ${child.getLong(KeyMap.TIMESTAMP.key)}")
+                System.out.println("#Q qt result =  ${System.currentTimeMillis() - child.getLong(KeyMap.TIMESTAMP.key)}")
+                batch.put(child)
+            }
+            withHitParam(KeyMap.HIT_BATCH, batch)
+            return this
+        }
+
+        fun withChild(hit : HitData) : Batch {
+            return withChild(arrayListOf(hit))
+        }
+
     }
 }

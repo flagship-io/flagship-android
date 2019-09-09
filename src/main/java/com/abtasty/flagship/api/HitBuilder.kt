@@ -1,12 +1,11 @@
 package com.abtasty.flagship.api
 
-import androidx.annotation.IntRange
 import org.json.JSONObject
 
 abstract class HitBuilder<B> {
 
     var data = JSONObject()
-    var requestId = -1L
+    var requestIds = mutableListOf<Long>()
 
     internal fun withParams(jsonObject: JSONObject): B {
         for (k in jsonObject.keys()) {
@@ -26,7 +25,12 @@ abstract class HitBuilder<B> {
     }
 
     internal fun withRequestId(id: Long): B {
-        requestId = id
+        requestIds.add(id)
+        return this as B
+    }
+
+    internal fun withRequestIds(ids : List<Long>) : B {
+        requestIds.addAll(ids)
         return this as B
     }
 

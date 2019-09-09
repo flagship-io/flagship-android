@@ -13,6 +13,9 @@ interface HitDao {
     @Query("Update hits SET status = :status WHERE id = :id")
     fun updateHitStatus(id : Long, status : Int) : Int
 
+    @Query("Update hits SET status = :status WHERE id IN (:ids)")
+    fun updateHitStatus(ids : List<Long>, status : Int) : Int
+
     @Query("Delete FROM hits WHERE id = :hitId")
     fun removeHit(hitId : Long) : Int
 
@@ -24,4 +27,7 @@ interface HitDao {
 
     @Query("Select * FROM hits WHERE status = 0 AND timestamp < :sessionStart ORDER BY timestamp ASC LIMIT :limit")
     fun getNonSentHits(sessionStart : Long, limit : Int = 0) : List<HitData>
+
+    @Query("Select * FROM hits WHERE status = 0 AND timestamp < :sessionStart ORDER BY timestamp ASC")
+    fun getNonSentHits(sessionStart : Long) : List<HitData>
 }

@@ -44,6 +44,7 @@ internal class ApiManager {
         fun withBodyParams(jsonObject: JSONObject): B
         fun withBodyParam(key: String, value: Any): B
         fun withBodyParams(params: HashMap<String, Any>): B
+        fun withRequestIds(requestId: List<Long>): B
     }
 
     open class PostRequest : Callback {
@@ -53,7 +54,7 @@ internal class ApiManager {
         internal var request: Request? = null
         internal var response: Response? = null
 
-        internal var requestId = -1L
+        internal var requestIds = mutableListOf<Long>()
 
         open fun build() {
 
@@ -109,7 +110,7 @@ internal class ApiManager {
         }
 
         protected fun getIdToString(): String {
-            return if (requestId > -1) ":$requestId" else ""
+            return if (requestIds.size > 0) ":$requestIds" else ""
         }
 
         protected open fun logRequest(async: Boolean) {
@@ -166,7 +167,12 @@ internal class ApiManager {
         }
 
         override fun withRequestId(requestId: Long): B {
-            instance.requestId = requestId
+            instance.requestIds.add(requestId)
+            return this as B
+        }
+
+        override fun withRequestIds(requestId: List<Long>): B {
+            instance.requestIds.addAll(requestId)
             return this as B
         }
 
