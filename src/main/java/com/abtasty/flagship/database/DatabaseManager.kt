@@ -43,7 +43,7 @@ internal class DatabaseManager {
                 val id = it.hitDao().insertHit(
                     HitData(
                         null, Flagship.clientId ?: "", Flagship.visitorId ?: "",
-                        System.currentTimeMillis(), hit.jsonBody.optString("t", ""), hit.jsonBody.toString(), 1
+                        System.currentTimeMillis(), hit.jsonBody.optString(Hit.KeyMap.TYPE.key, ""), hit.jsonBody.toString(), 1
                     )
                 )
                 Logger.v(Logger.TAG.DB, "[Insert hit:$id][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}")
