@@ -59,7 +59,7 @@ class Flagship {
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
-            DatabaseManager.getInstance().fireOfflineHits()
+            ApiManager.getInstance().fireOfflineHits()
         }
 
         /**

@@ -25,9 +25,9 @@ interface HitDao {
     @Query("Select * FROM hits WHERE id = :hitId AND visitorId = :visitorId")
     fun getHitById(hitId : Long, visitorId : String) : HitData
 
-    @Query("Select * FROM hits WHERE status = 0 AND timestamp < :sessionStart ORDER BY timestamp ASC LIMIT :limit")
+    @Query("Select * FROM hits WHERE status = 0 AND timestamp < :sessionStart AND type != 'ACTIVATION' ORDER BY timestamp ASC LIMIT :limit")
     fun getNonSentHits(sessionStart : Long, limit : Int = 0) : List<HitData>
 
-    @Query("Select * FROM hits WHERE status = 0 AND timestamp < :sessionStart ORDER BY timestamp ASC")
-    fun getNonSentHits(sessionStart : Long) : List<HitData>
+    @Query("Select * FROM hits WHERE status = 0 AND timestamp < :sessionStart AND type = 'ACTIVATION' ORDER BY timestamp ASC LIMIT :limit")
+    fun getNonSentActivations(sessionStart : Long, limit : Int = 0) : List<HitData>
 }

@@ -5,6 +5,7 @@ import org.json.JSONObject
 abstract class HitBuilder<B> {
 
     var data = JSONObject()
+    var type : Hit.Type? = null
     var requestIds = mutableListOf<Long>()
 
     internal fun withParams(jsonObject: JSONObject): B {
@@ -31,6 +32,11 @@ abstract class HitBuilder<B> {
 
     internal fun withRequestIds(ids : List<Long>) : B {
         requestIds.addAll(ids)
+        return this as B
+    }
+
+    internal fun withHitRequestType(type : Hit.Type) : B {
+        this.type = type
         return this as B
     }
 

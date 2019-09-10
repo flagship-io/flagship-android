@@ -242,9 +242,9 @@ internal class ApiManager {
 
     internal fun sendActivationRequest(variationGroupId: String, variationId: String) {
 
-        val publish = Hit.Publish(variationGroupId, variationId)
+        val activation = Hit.Activation(variationGroupId, variationId)
         Hit.HitRequestBuilder(false)
-            .withHit(publish)
+            .withHit(activation)
             .withUrl(DOMAIN + ACTIVATION)
             .build()
             .fire(true)
@@ -257,4 +257,34 @@ internal class ApiManager {
             .fire(true)
     }
 
+
+    internal fun fireOfflineHits() {
+        DatabaseManager.getInstance().getNonSentHits().let { hits ->
+            if (hits.isNotEmpty()) {
+                try {
+                    DatabaseManager.getInstance().updateHitStatus(hits.map { h -> h.id!! })
+                    sendHitTracking(Hit.Batch(Flagship.visitorId!!, hits))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        DatabaseManager.getInstance().getNonSentActivations().let { hits ->
+            if (hits.isNotEmpty()) {
+                for (h in hits) {
+                    try {
+                        Hit.HitRequestBuilder(false)
+                            .withBodyParams(JSONObject(h.content))
+                            .withRequestId(h.id!!)
+                            .withUrl(DOMAIN + ACTIVATION)
+                            .build()
+                            .fire(true)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+    }
 }

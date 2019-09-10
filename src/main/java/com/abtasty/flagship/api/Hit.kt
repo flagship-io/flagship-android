@@ -17,7 +17,7 @@ class Hit {
      * EVENT : Can be anything : from a click to a newsletter subscription.
      * ITEM : Represents a product and must be associated with a transaction
      */
-    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT, BATCH }
+    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT, ACTIVATION}
 
     enum class EventCategory(var key: String) {
         ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT(
@@ -74,6 +74,8 @@ class Hit {
         override fun fire(async: Boolean) {
             if (requestIds.isEmpty())
                 requestIds.add(DatabaseManager.getInstance().insertHit(this))
+            if (jsonBody.optString(KeyMap.TYPE.key, "") == "${Type.ACTIVATION}")
+                jsonBody.remove(KeyMap.TYPE.key)
             super.fire(async)
         }
 
@@ -336,10 +338,11 @@ class Hit {
         }
     }
 
-    internal class Publish(variationGroupId: String, variationId: String) :
-        HitBuilder<Publish>() {
+    internal class Activation(variationGroupId: String, variationId: String) :
+        HitBuilder<Activation>() {
 
         init {
+            withHitParam(KeyMap.TYPE, Type.ACTIVATION)
             withHitParam(KeyMap.VARIATION_GROUP_ID, variationGroupId)
             withHitParam(KeyMap.VARIATION_ID, variationId)
         }
@@ -366,8 +369,6 @@ class Hit {
 
         init {
            try {
-               System.out.println("####################################### ${hits.map { it.id!! }}")
-               withHitParam(KeyMap.TYPE, Type.BATCH)
                withRequestIds(hits.map { it.id!! })
                withHitParam(KeyMap.CLIENT_ID, Flagship.clientId!!)
                withHitParam(KeyMap.VISITOR_ID, visitorId)
@@ -382,9 +383,13 @@ class Hit {
             val batch = if (data.has(KeyMap.HIT_BATCH.key)) data.getJSONArray(KeyMap.HIT_BATCH.key) else JSONArray()
             for (h in hits) {
                 val child = JSONObject(h.content)
-                child.put(KeyMap.QUEUE_TIME.key, System.currentTimeMillis() - child.getLong(KeyMap.TIMESTAMP.key))
-                System.out.println("#Q qt child tmp =  ${child.getLong(KeyMap.TIMESTAMP.key)}")
-                System.out.println("#Q qt result =  ${System.currentTimeMillis() - child.getLong(KeyMap.TIMESTAMP.key)}")
+                child.remove(KeyMap.CLIENT_ID.key)
+                child.remove(KeyMap.VISITOR_ID.key)
+                child.remove(KeyMap.DATA_SOURCE.key)
+                child.remove(KeyMap.DEVICE_LOCALE.key)
+                child.remove(KeyMap.DEVICE_RESOLUTION.key)
+                if (child.has(KeyMap.TIMESTAMP.key))
+                    child.put(KeyMap.QUEUE_TIME.key, System.currentTimeMillis() - child.getLong(KeyMap.TIMESTAMP.key))
                 batch.put(child)
             }
             withHitParam(KeyMap.HIT_BATCH, batch)

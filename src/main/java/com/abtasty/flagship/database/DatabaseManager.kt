@@ -43,7 +43,7 @@ internal class DatabaseManager {
                 val id = it.hitDao().insertHit(
                     HitData(
                         null, Flagship.clientId ?: "", Flagship.visitorId ?: "",
-                        System.currentTimeMillis(), hit.jsonBody.toString(), 1
+                        System.currentTimeMillis(), hit.jsonBody.optString("t", ""), hit.jsonBody.toString(), 1
                     )
                 )
                 Logger.v(Logger.TAG.DB, "[Insert hit:$id][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}")
@@ -55,13 +55,6 @@ internal class DatabaseManager {
 
     fun removeHit(hit: Hit.HitRequest) {
         db?.let {
-//            if (hit.requestId != -1L) {
-//                val nb = it.hitDao().removeHit(hit.requestId)
-//                Logger.v(
-//                    Logger.TAG.DB,
-//                    "[Remove hit:${hit.requestId}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
-//                )
-//            }
             if (hit.requestIds.isNotEmpty()) {
                 for (i in hit.requestIds) {
                     val nb = it.hitDao().removeHit(i)
@@ -74,16 +67,14 @@ internal class DatabaseManager {
         }
     }
 
+    fun updateHitStatus(ids : List<Long>) {
+        db?.let {
+            it.hitDao().updateHitStatus(ids ,1)
+        }
+    }
+
     fun updateHitStatus(hit: Hit.HitRequest) {
         db?.let {
-//            if (hit.requestId != -1L) {
-//                val nb = it.hitDao().updateHitStatus(hit.requestId, 0)
-//                Logger.v(
-//                    Logger.TAG.DB,
-//                    "[Update status:${hit.requestId}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
-//                )
-//
-//            }
             if (hit.requestIds.isNotEmpty()) {
                 for (i in hit.requestIds) {
                     val nb = it.hitDao().updateHitStatus(i, 0)
@@ -98,32 +89,14 @@ internal class DatabaseManager {
     }
 
 
-    fun fireOfflineHits(@IntRange(from = 0, to = 100) limit: Int = 50) {
-        GlobalScope.async {
-            try {
-//                db?.let {
-//                    val hits = it.hitDao().getNonSentHits(Flagship.sessionStart, limit)
-//                    for (h in hits) {
-//                        it.hitDao().updateHitStatus(h.id!!, 1)
-//                        ApiManager.getInstance().sendHitTracking(
-//                            Hit.GenericHitFromData(h))
-//                    }
-//                }
-                db?.let {
-                    val hits = it.hitDao().getNonSentHits(Flagship.sessionStart, limit)
-//                    val batch = Hit.Batch(Flagship.visitorId!!)
-//                    for (h in hits) {
-//                        batch.withChild(h)
-//                        it.hitDao().updateHitStatus(h.id!!, 1)
-//                    }
-//                    ApiManager.getInstance().sendHitTracking(batch)
-                    it.hitDao().updateHitStatus(hits.map { h -> h.id!!},1)
-                    ApiManager.getInstance().sendHitTracking(Hit.Batch(Flagship.visitorId!!, hits))
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+    fun getNonSentHits(@IntRange(from = 0, to = 50) limit: Int = 50) : List<HitData> {
+        db?.let { return it.hitDao().getNonSentHits(Flagship.sessionStart, limit) }
+        return listOf()
+    }
+
+    fun getNonSentActivations(@IntRange(from = 0, to = 50) limit: Int = 50) : List<HitData> {
+        db?.let { return it.hitDao().getNonSentActivations(Flagship.sessionStart, limit) }
+        return listOf()
     }
 
     fun displayAllHits() {
