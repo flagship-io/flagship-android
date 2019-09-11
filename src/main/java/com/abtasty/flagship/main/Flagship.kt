@@ -52,6 +52,7 @@ class Flagship {
          * @param envId key provided by ABTasty
          * @param visitorId (optional) set an id for identifying the current visitor
          */
+        @JvmOverloads
         fun start(appContext: Context, envId: String, visitorId: String = "") {
 
             this.clientId = envId
@@ -92,6 +93,7 @@ class Flagship {
          * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
          * You also have the possibility to update it manually : syncCampaignModifications()
          */
+        @JvmOverloads
         fun updateContext(key: String, value: Number, sync: (() -> (Unit))? = null) {
             updateContextValue(key, value, sync)
         }
@@ -106,6 +108,7 @@ class Flagship {
          * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
          * You also have the possibility to update it manually : syncCampaignModifications()
          */
+        @JvmOverloads
         fun updateContext(key: String, value: String, sync: (() -> (Unit))? = null) {
             updateContextValue(key, value, sync)
         }
@@ -120,6 +123,7 @@ class Flagship {
          * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
          * You also have the possibility to update it manually : syncCampaignModifications()
          */
+        @JvmOverloads
         fun updateContext(key: String, value: Boolean, sync: (() -> (Unit))? = null) {
             updateContextValue(key, value, sync)
         }
@@ -134,6 +138,7 @@ class Flagship {
          * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
          * You also have the possibility to update it manually : syncCampaignModifications()
          */
+        @JvmOverloads
         fun updateContext(values: HashMap<String, Any>, sync: (() -> (Unit))? = null) {
             for (p in values) {
                 updateContextValue(p.key, p.value)
@@ -143,6 +148,7 @@ class Flagship {
             }
         }
 
+        @JvmOverloads
         private fun updateContextValue(
             key: String,
             value: Any,
@@ -175,6 +181,7 @@ class Flagship {
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
+        @JvmOverloads
         fun getModification(key: String, default: Int, activate: Boolean = false): Int {
             return getFlagshipModification(key, default, activate)
         }
@@ -191,6 +198,7 @@ class Flagship {
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
+        @JvmOverloads
         fun getModification(key: String, default: Float, activate: Boolean = false): Float {
             return getFlagshipModification(key, default, activate)
         }
@@ -207,6 +215,7 @@ class Flagship {
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
+        @JvmOverloads
         fun getModification(key: String, default: String, activate: Boolean = false): String {
             return getFlagshipModification(key, default, activate)
         }
@@ -223,6 +232,7 @@ class Flagship {
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
+        @JvmOverloads
         fun getModification(key: String, default: Boolean, activate: Boolean = false): Boolean {
             return getFlagshipModification(key, default, activate)
         }
@@ -239,6 +249,7 @@ class Flagship {
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
+        @JvmOverloads
         fun getModification(key: String, default: Double, activate: Boolean = false): Double {
             return getFlagshipModification(key, default, activate)
         }
@@ -255,6 +266,7 @@ class Flagship {
          * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
+        @JvmOverloads
         fun getModification(key: String, default: Long, activate: Boolean = false): Long {
             return getFlagshipModification(key, default, activate)
         }
@@ -299,6 +311,7 @@ class Flagship {
          * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
          *
          */
+        @JvmOverloads
         fun syncCampaignModifications(
             campaignCustomId: String = "",
             lambda: () -> (Unit) = {}
@@ -309,6 +322,17 @@ class Flagship {
                     lambda()
                 }
             }
+        }
+
+        /**
+         * This function calls the decision api and updates all the campaigns modification from the server according to the user context.
+         *
+         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
+         *
+         */
+        @JvmOverloads
+        fun syncCampaignModifications(lambda: () -> (Unit) = {}) {
+            syncCampaignModifications(lambda)
         }
 
         internal fun updateModifications(values: HashMap<String, Modification>) {

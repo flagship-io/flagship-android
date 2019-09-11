@@ -3,14 +3,11 @@ package com.abtasty.flagship.database
 import android.content.Context
 import androidx.annotation.IntRange
 import androidx.room.Room
-import com.abtasty.flagship.api.ApiManager
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 
 internal class DatabaseManager {
 
