@@ -332,7 +332,7 @@ class Flagship {
          */
         @JvmOverloads
         fun syncCampaignModifications(lambda: () -> (Unit) = {}) {
-            syncCampaignModifications(lambda)
+            syncCampaignModifications("", lambda)
         }
 
         internal fun updateModifications(values: HashMap<String, Modification>) {
