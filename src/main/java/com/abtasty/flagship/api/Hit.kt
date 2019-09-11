@@ -17,7 +17,7 @@ class Hit {
      * EVENT : Can be anything : from a click to a newsletter subscription.
      * ITEM : Represents a product and must be associated with a transaction
      */
-    enum class Type { PAGEVIEW, TRANSACTION, ITEM, EVENT, ACTIVATION}
+    enum class Type { SCREENVIEW, TRANSACTION, ITEM, EVENT, ACTIVATION}
 
     enum class EventCategory(var key: String) {
         ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT(
@@ -36,6 +36,8 @@ class Hit {
         VARIATION_ID("vaid"),
 
         ORIGIN("dl"),
+        TITLE("pt"),
+        DOCUMENT("dr"),
 
         TRANSACTION_ID("tid"),
         TRANSACTION_AFFILIATION("ta"),
@@ -136,7 +138,7 @@ class Hit {
     class Page(origin: String) : HitBuilder<Page>() {
 
         init {
-            withHitParam(KeyMap.TYPE, Type.PAGEVIEW)
+            withHitParam(KeyMap.TYPE, Type.SCREENVIEW)
             withHitParam(KeyMap.ORIGIN, origin)
         }
     }
