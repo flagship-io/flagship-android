@@ -3,6 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+def ABTastySDKVersion = '1.0.0' ///DEFINE HERE THE ABTASTY SDK VERSION
+def ABTastySDKVersionCode = 1 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
 
 android {
     compileSdkVersion 28
@@ -19,8 +21,13 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        all {
+            resValue("integer", "ABTastyVersionCode", "${ABTastySDKVersionCode}")
+            resValue("string", "ABTastyVersion", "\"${ABTastySDKVersion}\"")
+
         }
     }
 
@@ -34,18 +41,18 @@ androidExtensions {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation "androidx.core:core-ktx:1.0.2"
+    implementation "androidx.core:core-ktx:1.1.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
 //    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
-    implementation "androidx.room:room-runtime:2.2.0-beta01"
-    kapt "androidx.room:room-compiler:2.2.0-beta01"
+    implementation "androidx.room:room-runtime:2.2.0-rc01"
+    kapt "androidx.room:room-compiler:2.2.0-rc01"
 }
 repositories {
     mavenCentral()
