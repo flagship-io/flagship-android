@@ -27,7 +27,6 @@ android {
         all {
             resValue("integer", "ABTastyVersionCode", "${ABTastySDKVersionCode}")
             resValue("string", "ABTastyVersion", "\"${ABTastySDKVersion}\"")
-
         }
     }
 
