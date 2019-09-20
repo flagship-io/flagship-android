@@ -12,8 +12,7 @@ import java.util.concurrent.TimeUnit
 
 internal class ApiManager {
 
-
-    val DOMAIN = "https://decision-api.canarybay.io/v1/"
+    val DOMAIN = "https://decision-api.flagship.io/v1/"
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
