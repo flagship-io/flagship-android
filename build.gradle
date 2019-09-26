@@ -2,16 +2,10 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'maven-publish'
-apply plugin: 'org.jetbrains.dokka-android'
+apply from: 'flagship-publishing.gradle'
 
 def ABTastySDKVersion = '1.0.1' ///DEFINE HERE THE ABTASTY SDK VERSION
 def ABTastySDKVersionCode = 1 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
-
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
     compileSdkVersion 28
@@ -71,86 +65,5 @@ dependencies {
 
 repositories {
     mavenCentral()
-}
-
-
-bintray {
-    user = keystoreProperties.getProperty("bintray_user")
-    key = keystoreProperties.getProperty("bintray_key")
-
-
-    pkg {
-        repo = 'flagship-android'
-        name = 'flagship-android'
-//        userOrg = user
-        userOrg = 'abtasty'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://doc-flagship-staging.netlify.com/android/'
-        version {
-            name = ABTastySDKVersion
-        }
-    }
-    publications = ['toBintray']
-}
-
-
-publishing {
-    publications {
-
-        maven(MavenPublication) {
-
-            groupId 'com.abtasty' //You can either define these here or get them from project conf elsewhere
-            artifactId 'flagship-android'
-            version ABTastySDKVersion
-            artifact "$buildDir/outputs/aar/flagship-android-"+ABTastySDKVersion+".aar" //aar artifact you want to publish
-
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.implementation.allDependencies.each { dependency ->
-                    if (dependency.name != "unspecified") {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', dependency.group)
-                        dependencyNode.appendNode('artifactId', dependency.name)
-                        dependencyNode.appendNode('version', dependency.version)
-                    }
-                }
-            }
-        }
-
-        toBintray(MavenPublication) {
-            groupId 'com.abtasty'
-            //You can either define these here or get them from project conf elsewhere
-            artifactId 'flagship-android'
-            version ABTastySDKVersion
-            artifact "$buildDir/outputs/aar/flagship-android-" + ABTastySDKVersion + ".aar"
-            //aar artifact you want to publish
-
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.implementation.allDependencies.each { dependency ->
-                    if (dependency.name != "unspecified") {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', dependency.group)
-                        dependencyNode.appendNode('artifactId', dependency.name)
-                        dependencyNode.appendNode('version', dependency.version)
-                    }
-                }
-            }
-        }
-    }
-}
-
-repositories{
-    maven {
-        url = "$buildDir/publishing/"
-    }
-}
-
-dokka {
-    moduleName = 'reference'
-    outputFormat = 'html'
-    outputDirectory = "$buildDir/javadoc"
-//    outputDirectory = "/home/raph/Workspace/ABTasty/LibraryByApi-Documentation/ref"
-    sourceDirs = files('src/main/java')
 }
 
