@@ -17,6 +17,7 @@ internal class ApiManager {
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
+    val BUCKETING_URL = ""
 
     companion object {
         private var instance: ApiManager = ApiManager()
@@ -227,7 +228,6 @@ internal class ApiManager {
         }
     }
 
-
     internal fun sendCampaignRequest(
         campaignId: String = "",
         hashMap: HashMap<String, Any> = HashMap()
@@ -255,6 +255,54 @@ internal class ApiManager {
             e.printStackTrace()
         }
     }
+
+    internal class BucketingRequest() : PostRequest() {
+
+        override fun onSuccess() {
+            Logger.v(Logger.TAG.POST,
+                "[Response${getIdToString()}][${response?.code()}][${responseBody}}]"
+                        + request?.url() + " " + jsonBody
+            )
+            parseResponse()
+        }
+
+        override fun parseResponse(): Boolean {
+            try {
+                val jsonResponse = JSONObject(responseBody)
+                //todo manage panic mode
+                Flagship.panicMode = jsonResponse.optBoolean("panic", false)
+                Flagship.modifications.clear()
+                val array = jsonResponse.getJSONArray("campaigns")
+                for (i in 0 until array.length()) {
+                    Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))?.variation?.modifications?.values!!)
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return false
+            }
+            return true
+        }
+    }
+
+    internal class BucketingRequestBuilder :
+        PostRequestBuilder<BucketingRequestBuilder, BucketingRequest>() {
+        override var instance = BucketingRequest()
+    }
+
+    internal fun sendBucketingRequest() {
+
+        try {
+            BucketingRequestBuilder()
+//                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
+                .withUrl("https://adsgfi.free.beeceptor.com/"+Flagship.customVisitorId)
+                .build()
+                .fire(false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
 
     internal fun sendActivationRequest(variationGroupId: String, variationId: String) {
 

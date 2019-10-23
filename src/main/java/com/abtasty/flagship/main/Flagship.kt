@@ -2,6 +2,7 @@ package com.abtasty.flagship.main
 
 import android.content.Context
 import com.abtasty.flagship.api.ApiManager
+import com.abtasty.flagship.api.BucketingManager
 import com.abtasty.flagship.api.HitBuilder
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.model.Modification
@@ -33,6 +34,9 @@ class Flagship {
 
         internal var customVisitorId : String? = null
 
+        internal var bucketingEnabled = false
+        internal var useVisitorConsolidation = false
+
         @PublishedApi
         internal var context = HashMap<String, Any>()
 
@@ -53,18 +57,25 @@ class Flagship {
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
+         * @param code (optional) to execute when the SDK is ready
          * @param customVisitorId (optional) set an id for identifying the current visitor
+         * @param useBucketing (optional) enable the bucketing mode
          */
         @JvmOverloads
-        fun start(appContext: Context, envId: String, customVisitorId: String = "") {
+        fun start(appContext: Context, envId: String, ready: () -> (Unit) = {}, customVisitorId: String = "", useBucketing : Boolean = false) {
 
             this.clientId = envId
             this.visitorId = Utils.genVisitorId(appContext)
             this.customVisitorId = customVisitorId
+            this.bucketingEnabled = useBucketing
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
+            if (!useBucketing)
+                syncCampaignModifications(ready)
+            else
+                BucketingManager.syncBucketModifications(ready)
         }
 
         /**
