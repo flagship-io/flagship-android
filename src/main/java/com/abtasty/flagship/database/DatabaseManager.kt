@@ -40,8 +40,9 @@ internal class DatabaseManager {
                 val id = it.hitDao().insertHit(
                     HitData(
                         null, Flagship.clientId ?: "", Flagship.visitorId ?: "",
-                        System.currentTimeMillis(), hit.jsonBody.optString(Hit.KeyMap.TYPE.key, ""), hit.jsonBody.toString(), 1
-                    )
+                        Flagship.customVisitorId ?: "", System.currentTimeMillis(),
+                        hit.jsonBody.optString(Hit.KeyMap.TYPE.key, ""), hit.jsonBody.toString(),
+                        1)
                 )
                 Logger.v(Logger.TAG.DB, "[Insert hit:$id][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}")
                 return id
@@ -52,37 +53,25 @@ internal class DatabaseManager {
 
     fun removeHit(hit: Hit.HitRequest) {
         db?.let {
-            if (hit.requestIds.isNotEmpty()) {
-                for (i in hit.requestIds) {
-                    val nb = it.hitDao().removeHit(i)
-                    Logger.v(
-                        Logger.TAG.DB,
-                        "[Remove hit:${i}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
-                    )
-                }
-            }
+            val nb = it.hitDao().removeHits(hit.requestIds)
+            Logger.v(
+                Logger.TAG.DB,
+                "[Remove hit:${hit.requestIds}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
+            )
         }
     }
 
-    fun updateHitStatus(ids : List<Long>) {
-        db?.let {
-            it.hitDao().updateHitStatus(ids ,1)
-        }
+    fun updateHitStatus(ids : List<Long>, status : Int) : Int? {
+        return db?.hitDao()?.updateHitStatus(ids ,status)
     }
 
     fun updateHitStatus(hit: Hit.HitRequest) {
-        db?.let {
-            if (hit.requestIds.isNotEmpty()) {
-                for (i in hit.requestIds) {
-                    val nb = it.hitDao().updateHitStatus(i, 0)
-                    Logger.v(
-                        Logger.TAG.DB,
-                        "[Update status:${i}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
-                    )
-                }
 
-            }
-        }
+        val nb = updateHitStatus(hit.requestIds, 0)
+        Logger.v(
+            Logger.TAG.DB,
+            "[Update status:${hit.requestIds}][${Utils.logFailorSuccess((nb ?: 0 ) > 0)}] ${hit.jsonBody}"
+        )
     }
 
 
@@ -96,11 +85,20 @@ internal class DatabaseManager {
         return listOf()
     }
 
-    fun displayAllHits() {
+    fun displayNonSentHits() {
         db?.let {
-            val list = it.hitDao().getNonSentHits(Flagship.sessionStart, 3)
+            val list = it.hitDao().getNonSentHits(Flagship.sessionStart, 50)
             for (h in list) {
                 Logger.v(Logger.TAG.DB, "[----][${h.id}] ${h.content}")
+            }
+        }
+    }
+
+    fun displayNonSentActivations() {
+        db?.let {
+            val list = it.hitDao().getNonSentActivations( 50)
+            for (h in list) {
+                Logger.v(Logger.TAG.DB, "[----][${h}]")
             }
         }
     }
@@ -108,7 +106,8 @@ internal class DatabaseManager {
     fun loadModifications() {
         db?.let {
             try {
-                val modifications = it.modificationDao().getAllModifications(Flagship.visitorId ?: "")
+                val modifications = it.modificationDao().getAllModifications(
+                    Flagship.visitorId ?: "", Flagship.customVisitorId ?: "")
                 for (m in modifications) {
                     Flagship.modifications[m.key] = Modification.fromModificationData(m)
                 }
@@ -120,7 +119,7 @@ internal class DatabaseManager {
 
     fun updateModifications() {
         db?.let {
-            it.modificationDao().deleteAllModifications()
+            it.modificationDao().deleteAllModifications(Flagship.visitorId ?: "", Flagship.customVisitorId ?: "")
             for (m in Flagship.modifications) {
                 it.modificationDao().insertModification(m.value.toModificationData())
             }

@@ -93,7 +93,8 @@ data class Modification(
 
     fun toModificationData() : ModificationData {
         val json = JSONObject().put(key, value)
-        return ModificationData(key, Flagship.visitorId ?: "", variationGroupId, variationId, json)
+        return ModificationData(key, Flagship.visitorId ?: "", Flagship.customVisitorId ?: "",
+            variationGroupId, variationId, json)
     }
 
     companion object {

@@ -2,6 +2,7 @@ package com.abtasty.flagship.api
 
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.main.Flagship.Companion.CUSTOM_VISITOR_ID
 import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.utils.Logger
@@ -46,12 +47,13 @@ internal class ApiManager {
         fun withRequestIds(requestId: List<Long>): B
     }
 
-    open class PostRequest : Callback {
+    open class PostRequest {
 
         internal open var url: String = ""
         internal open var jsonBody = JSONObject()
         internal var request: Request? = null
         internal var response: Response? = null
+        internal var responseBody : String? = null
 
         internal var requestIds = mutableListOf<Long>()
 
@@ -74,16 +76,20 @@ internal class ApiManager {
                 request?.let {
                     logRequest(async)
                     if (!async) {
-                        response = ApiManager.instance.client.newCall(it).execute()
-                        parseResponse()
+                        try {
+                            val response = instance.client.newCall(it).execute()
+                            onResponse(response)
+                        } catch (e : Exception) {
+                            onFailure(null, e.message ?: "")
+                        }
                     } else
-                        ApiManager.instance.client.newCall(it).enqueue(object : Callback {
+                        instance.client.newCall(it).enqueue(object : Callback {
                             override fun onFailure(call: Call, e: IOException) {
-                                this@PostRequest.onFailure(call, e)
+                                onFailure(null, e.message ?: "")
                             }
 
                             override fun onResponse(call: Call, response: Response) {
-                                this@PostRequest.onResponse(call, response)
+                                onResponse(response)
                             }
                         })
                 }
@@ -92,16 +98,33 @@ internal class ApiManager {
             }
         }
 
-        override fun onFailure(call: Call, e: IOException) {
-            logFailure(e.stackTrace.toString())
+        open fun onFailure(response: Response?, message: String = "") {
+            Logger.e(
+                Logger.TAG.POST, "[Response${getIdToString()}][FAIL]" +
+                        when (true) {
+                            response != null -> "[${response.code()}][${response.body()?.string()}]"
+                            message.isNotEmpty() -> "[$message]"
+                            else -> ""
+                        }
+            )
         }
 
-        override fun onResponse(call: Call, response: Response) {
+        open fun onSuccess() {
+            Logger.v(Logger.TAG.POST,
+                "[Response${getIdToString()}][${response?.code()}]"
+                        + request?.url() + " " + jsonBody
+            )
+            parseResponse()
+        }
+
+        private fun onResponse(response: Response) {
             this.response = response
-            logResponse(response.code())
             if (response.isSuccessful) {
-                parseResponse()
+                this.responseBody = response.body()?.string()
+                onSuccess()
             }
+            else
+                onFailure(response)
         }
 
         open fun parseResponse(): Boolean {
@@ -117,23 +140,6 @@ internal class ApiManager {
                 Logger.TAG.POST,
                 "[Request${getIdToString()}][async=$async] " + request?.url() + " " + jsonBody
             )
-        }
-
-        protected open fun logResponse(code: Int) {
-            if (code in 200..299)
-                Logger.v(
-                    Logger.TAG.POST,
-                    "[Response${getIdToString()}][$code] " + request?.url() + " " + jsonBody
-                )
-            else
-                Logger.e(
-                    Logger.TAG.POST,
-                    "[Response${getIdToString()}][$code] " + request?.url() + " " + jsonBody
-                )
-        }
-
-        protected open fun logFailure(message: String) {
-            Logger.e(Logger.TAG.POST, "[Response${getIdToString()}][FAIL] " + message)
         }
     }
 
@@ -183,9 +189,17 @@ internal class ApiManager {
 
     internal class CampaignRequest(var campaignId: String = "") : PostRequest() {
 
+        override fun onSuccess() {
+            Logger.v(Logger.TAG.POST,
+                "[Response${getIdToString()}][${response?.code()}][${responseBody}}]"
+                        + request?.url() + " " + jsonBody
+            )
+            parseResponse()
+        }
+
         override fun parseResponse(): Boolean {
             try {
-                val jsonResponse = JSONObject(response?.body()?.string())
+                val jsonResponse = JSONObject(responseBody)
                 if (campaignId.isEmpty()) {
                     Flagship.panicMode = jsonResponse.optBoolean("panic", false)
                     Flagship.modifications.clear()
@@ -226,10 +240,13 @@ internal class ApiManager {
                 context.put(p.key, p.value)
             }
             jsonBody.put(VISITOR_ID, Flagship.visitorId)
+            jsonBody.put(CUSTOM_VISITOR_ID, Flagship.customVisitorId)
             jsonBody.put("context", context)
             jsonBody.put("trigger_hit", false)
+            //todo change
             CampaignRequestBuilder()
-                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
+//                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
+                .withUrl("https://adsgfi.free.beeceptor.com/"+Flagship.customVisitorId)
                 .withBodyParams(jsonBody)
                 .withCampaignId(campaignId)
                 .build()
@@ -261,8 +278,8 @@ internal class ApiManager {
         DatabaseManager.getInstance().getNonSentHits().let { hits ->
             if (hits.isNotEmpty()) {
                 try {
-                    DatabaseManager.getInstance().updateHitStatus(hits.map { h -> h.id!! })
-                    sendHitTracking(Hit.Batch(Flagship.visitorId!!, hits))
+                    DatabaseManager.getInstance().updateHitStatus(hits.map { h -> h.id!! }, 1)
+                    sendHitTracking(Hit.Batch(Flagship.visitorId!!, Flagship.customVisitorId!!, hits))
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

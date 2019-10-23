@@ -9,6 +9,7 @@ data class HitData(
     @PrimaryKey(autoGenerate = true) var id: Long? = null,
     @ColumnInfo(name = "clientId") var clientId : String,
     @ColumnInfo(name = "visitorId") var visitorId : String,
+    @ColumnInfo(name = "customVisitorId") var customVisitorId : String,
     @ColumnInfo(name = "timestamp") var timestamp: Long,
     @ColumnInfo(name = "type") var type: String?,
     @ColumnInfo(name = "content") var content: String,

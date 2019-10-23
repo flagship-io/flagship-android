@@ -26,9 +26,12 @@ class Flagship {
     companion object {
 
         internal const val VISITOR_ID = "visitorId"
+        internal const val CUSTOM_VISITOR_ID = "customVisitorId"
 
         internal var clientId: String? = null
         internal var visitorId: String? = null
+
+        internal var customVisitorId : String? = null
 
         @PublishedApi
         internal var context = HashMap<String, Any>()
@@ -50,13 +53,14 @@ class Flagship {
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
-         * @param visitorId (optional) set an id for identifying the current visitor
+         * @param customVisitorId (optional) set an id for identifying the current visitor
          */
         @JvmOverloads
-        fun start(appContext: Context, envId: String, visitorId: String = "") {
+        fun start(appContext: Context, envId: String, customVisitorId: String = "") {
 
             this.clientId = envId
-            this.visitorId = if (visitorId.isNotEmpty()) visitorId else Utils.genVisitorId(appContext)
+            this.visitorId = Utils.genVisitorId(appContext)
+            this.customVisitorId = customVisitorId
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
@@ -66,11 +70,12 @@ class Flagship {
         /**
          * Set an id for identifying the current visitor
          *
-         * @param visitorId id of the current visitor
+         * @param customVisitorId id of the current visitor
          */
-        fun setVisitorId(visitorId: String) {
+        fun setCustomVisitorId(customVisitorId: String) {
             if (!panicMode) {
-                this.visitorId = visitorId
+                this.customVisitorId = customVisitorId
+                modifications.clear()
                 DatabaseManager.getInstance().loadModifications()
             }
         }
