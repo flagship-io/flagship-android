@@ -66,7 +66,8 @@ class Flagship {
 
             this.clientId = envId
             this.visitorId = Utils.genVisitorId(appContext)
-            this.customVisitorId = customVisitorId
+            if (customVisitorId.isNotEmpty())
+                this.customVisitorId = customVisitorId
             this.bucketingEnabled = useBucketing
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
@@ -84,7 +85,7 @@ class Flagship {
          * @param customVisitorId id of the current visitor
          */
         fun setCustomVisitorId(customVisitorId: String) {
-            if (!panicMode) {
+            if (!panicMode && customVisitorId?.isNotEmpty()) {
                 this.customVisitorId = customVisitorId
                 modifications.clear()
                 DatabaseManager.getInstance().loadModifications()

@@ -7,6 +7,7 @@ import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.utils.Logger
 import okhttp3.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -54,7 +55,7 @@ internal class ApiManager {
         internal open var jsonBody = JSONObject()
         internal var request: Request? = null
         internal var response: Response? = null
-        internal var responseBody : String? = null
+        internal var responseBody: String? = null
 
         internal var requestIds = mutableListOf<Long>()
 
@@ -80,7 +81,7 @@ internal class ApiManager {
                         try {
                             val response = instance.client.newCall(it).execute()
                             onResponse(response)
-                        } catch (e : Exception) {
+                        } catch (e: Exception) {
                             onFailure(null, e.message ?: "")
                         }
                     } else
@@ -111,7 +112,8 @@ internal class ApiManager {
         }
 
         open fun onSuccess() {
-            Logger.v(Logger.TAG.POST,
+            Logger.v(
+                Logger.TAG.POST,
                 "[Response${getIdToString()}][${response?.code()}]"
                         + request?.url() + " " + jsonBody
             )
@@ -123,8 +125,7 @@ internal class ApiManager {
             if (response.isSuccessful) {
                 this.responseBody = response.body()?.string()
                 onSuccess()
-            }
-            else
+            } else
                 onFailure(response)
         }
 
@@ -191,7 +192,8 @@ internal class ApiManager {
     internal class CampaignRequest(var campaignId: String = "") : PostRequest() {
 
         override fun onSuccess() {
-            Logger.v(Logger.TAG.POST,
+            Logger.v(
+                Logger.TAG.POST,
                 "[Response${getIdToString()}][${response?.code()}][${responseBody}}]"
                         + request?.url() + " " + jsonBody
             )
@@ -206,9 +208,9 @@ internal class ApiManager {
                     Flagship.modifications.clear()
                     val array = jsonResponse.getJSONArray("campaigns")
                     for (i in 0 until array.length()) {
-                        Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))?.variation?.modifications?.values!!)
+                        Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))!!.getModifications())
                     }
-                } else Flagship.updateModifications(Campaign.parse(jsonResponse)?.variation?.modifications?.values!!)
+                } else Flagship.updateModifications(Campaign.parse(jsonResponse)!!.getModifications())
                 DatabaseManager.getInstance().updateModifications()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -246,7 +248,7 @@ internal class ApiManager {
             //todo change
             CampaignRequestBuilder()
 //                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
-                .withUrl("https://adsgfi.free.beeceptor.com/"+Flagship.customVisitorId)
+                .withUrl("https://adsgfi.free.beeceptor.com/" + Flagship.customVisitorId)
                 .withBodyParams(jsonBody)
                 .withCampaignId(campaignId)
                 .build()
@@ -258,8 +260,11 @@ internal class ApiManager {
 
     internal class BucketingRequest() : PostRequest() {
 
+        var campaignsJson = JSONArray()
+
         override fun onSuccess() {
-            Logger.v(Logger.TAG.POST,
+            Logger.v(
+                Logger.TAG.POST,
                 "[Response${getIdToString()}][${response?.code()}][${responseBody}}]"
                         + request?.url() + " " + jsonBody
             )
@@ -268,15 +273,15 @@ internal class ApiManager {
 
         override fun parseResponse(): Boolean {
             try {
-                val jsonResponse = JSONObject(responseBody)
+                val jsonData = JSONObject(responseBody)
                 //todo manage panic mode
-                Flagship.panicMode = jsonResponse.optBoolean("panic", false)
-                Flagship.modifications.clear()
-                val array = jsonResponse.getJSONArray("campaigns")
-                for (i in 0 until array.length()) {
-                    Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))?.variation?.modifications?.values!!)
-                }
-
+                Flagship.panicMode = jsonData.optBoolean("panic", false)
+                Flagship.useVisitorConsolidation = jsonData.optBoolean("visitorConsolidation")
+//                Flagship.modifications.clear()
+                campaignsJson = jsonData.getJSONArray("campaigns")
+//                for (i in 0 until array.length()) {
+//                    Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))!!.getModifications())
+//                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 return false
@@ -290,16 +295,18 @@ internal class ApiManager {
         override var instance = BucketingRequest()
     }
 
-    internal fun sendBucketingRequest() {
+    internal fun sendBucketingRequest(): JSONArray? {
 
-        try {
-            BucketingRequestBuilder()
+        return try {
+            val request = BucketingRequestBuilder()
 //                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
-                .withUrl("https://adsgfi.free.beeceptor.com/"+Flagship.customVisitorId)
+                .withUrl("https://adsgfi.free.beeceptor.com/cdn1")
                 .build()
-                .fire(false)
+            request.fire(false)
+            request.campaignsJson
         } catch (e: Exception) {
             e.printStackTrace()
+            null
         }
     }
 
@@ -327,7 +334,13 @@ internal class ApiManager {
             if (hits.isNotEmpty()) {
                 try {
                     DatabaseManager.getInstance().updateHitStatus(hits.map { h -> h.id!! }, 1)
-                    sendHitTracking(Hit.Batch(Flagship.visitorId!!, Flagship.customVisitorId!!, hits))
+                    sendHitTracking(
+                        Hit.Batch(
+                            Flagship.visitorId!!,
+                            Flagship.customVisitorId ?: "",
+                            hits
+                        )
+                    )
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

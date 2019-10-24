@@ -14,25 +14,103 @@ import kotlin.Exception
 @Parcelize
 internal data class Campaign(
     var id: String,
+    var variationGroups: HashMap<String, VariationGroup>
+) : Parcelable {
+
+    companion object {
+
+        fun parse(jsonArray: JSONArray): HashMap<String, Campaign>? {
+            return try {
+                val result = HashMap<String, Campaign>()
+                for (i in 0 until jsonArray.length()) {
+                    val campaign = parse(jsonArray.getJSONObject(i))
+                    campaign?.let {
+                        result.put(campaign.id, campaign)
+                    }
+                }
+                return result
+            } catch (e: Exception) {
+                Logger
+                null
+            }
+        }
+
+        fun parse(jsonObject: JSONObject): Campaign? {
+            return try {
+                val id = jsonObject.getString("id")
+                val variationGroupsArr = jsonObject.optJSONArray("variationGroups")
+                val variationGroups = HashMap<String, VariationGroup>()
+                if (variationGroupsArr != null) {
+                    for (i in 0 until variationGroupsArr.length()) {
+                        val variationGroup =
+                            VariationGroup.parse(variationGroupsArr.getJSONObject(i))
+                        variationGroup?.let {
+                            variationGroups.put(it.variationGroupId, it)
+                        }
+                    }
+                } else {
+                    val variationGroup = VariationGroup.parse(jsonObject)
+                    variationGroup?.let {
+                        variationGroups.put(it.variationGroupId, it)
+                    }
+                }
+                Campaign(id, variationGroups)
+            } catch (e: Exception) {
+                Logger.e(Logger.TAG.PARSING, "[Campaign object parsing error]")
+                null
+            }
+
+        }
+    }
+
+    fun getModifications(): HashMap<String, Modification> {
+        val result = HashMap<String, Modification>()
+        for (g in variationGroups) {
+            for (v in g.value.variations) {
+                val mod = v.value.modifications?.values
+                mod?.let {
+                    result.putAll(it)
+                }
+            }
+        }
+        return result
+    }
+}
+
+@Parcelize
+internal data class VariationGroup(
     var variationGroupId: String,
-    var variation: Variation,
+    var variations: HashMap<String, Variation>,
     var targetingGroups: TargetingGroups? = null
 ) : Parcelable {
 
     companion object {
 
-        fun parse(jsonObject: JSONObject): Campaign? {
+        fun parse(jsonObject: JSONObject): VariationGroup? {
             return try {
-                val id = jsonObject.getString("id")
                 val groupId = jsonObject.getString("variationGroupId")
-                val variation = Variation.parse(groupId, jsonObject.getJSONObject("variation"))
+                val variations = HashMap<String, Variation>()
+                val variationObj = jsonObject.optJSONObject("variation")
+                if (variationObj != null) {
+                    val variation = Variation.parse(groupId, variationObj)
+                    variations[variation.id] = variation
+                } else {
+                    val variationArr = jsonObject.optJSONArray("variations")
+                    if (variationArr != null) {
+                        for (i in 0 until variationArr.length()) {
+                            val variation = Variation.parse(groupId, variationArr.getJSONObject(i))
+                            variations[variation.id] = variation
+                        }
+                    }
+                }
                 val targetingGroups =
                     if (jsonObject.has("targetingGroups"))
                         TargetingGroups.parse(jsonObject.getJSONArray("targetingGroups"))
                     else null
-                Campaign(id, groupId, variation, targetingGroups)
+                VariationGroup(groupId, variations, targetingGroups)
             } catch (e: Exception) {
-                Logger.e(Logger.TAG.PARSING, "[Campaign object parsing error]")
+                Logger.e(Logger.TAG.PARSING, "[VariationGroup object parsing error]")
+                e.printStackTrace()
                 null
             }
         }
@@ -46,16 +124,16 @@ internal data class TargetingGroups(val targetingGroups: ArrayList<TargetingList
     companion object {
         fun parse(jsonArray: JSONArray): TargetingGroups? {
             return try {
-                    val targetingList = ArrayList<TargetingList>()
-                    for (i in 0 until jsonArray.length()) {
-                        val targeting = TargetingList.parse(jsonArray.getJSONObject(i))
-                        targeting?.let { targetingList.add(it) }
-                    }
-                    return TargetingGroups(targetingList)
-                } catch (e: Exception) {
-                    Logger.e(Logger.TAG.PARSING, "[TargetingGroups object parsing error]")
-                    null
+                val targetingList = ArrayList<TargetingList>()
+                for (i in 0 until jsonArray.length()) {
+                    val targeting = TargetingList.parse(jsonArray.getJSONObject(i))
+                    targeting?.let { targetingList.add(it) }
                 }
+                return TargetingGroups(targetingList)
+            } catch (e: Exception) {
+                Logger.e(Logger.TAG.PARSING, "[TargetingGroups object parsing error]")
+                null
+            }
         }
     }
 }
@@ -64,7 +142,7 @@ internal data class TargetingGroups(val targetingGroups: ArrayList<TargetingList
 internal data class TargetingList(val targetings: ArrayList<Targeting>? = null) : Parcelable {
 
     companion object {
-        fun parse(jsonObject: JSONObject) : TargetingList? {
+        fun parse(jsonObject: JSONObject): TargetingList? {
             return try {
                 val targetings = ArrayList<Targeting>()
                 val jsonArray = jsonObject.getJSONArray("targetings")
@@ -73,7 +151,7 @@ internal data class TargetingList(val targetings: ArrayList<Targeting>? = null) 
                     targeting?.let { targetings.add(it) }
                 }
                 TargetingList(targetings)
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 Logger.e(Logger.TAG.PARSING, "[Targetings object parsing error]")
                 null
             }
@@ -86,13 +164,13 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
     Parcelable {
 
     companion object {
-        fun parse(jsonObject: JSONObject) : Targeting? {
+        fun parse(jsonObject: JSONObject): Targeting? {
             return try {
                 val key = jsonObject.getString("key")
                 val value = jsonObject.get("value")
                 val operator = jsonObject.getString("operator")
                 Targeting(key, value, operator)
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 Logger.e(Logger.TAG.PARSING, "[Targeting object parsing error]")
                 null
             }
@@ -106,10 +184,11 @@ internal data class Variation(
     val groupId: String,
     val id: String,
     val modifications: Modifications?,
-    val allocation: Int
+    val allocation: Int = 100,
+    var selected: Boolean = false
 ) : Parcelable {
 
-    companion object {
+    companion object variations {
 
         fun parse(groupId: String, jsonObject: JSONObject): Variation {
             val id = jsonObject.getString("id")

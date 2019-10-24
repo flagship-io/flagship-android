@@ -11,6 +11,7 @@ internal class Logger {
         POST("[POST]"),
         DB("[DB]"),
         PARSING("[PARSING]"),
+        BUCKETING("[BUCKETING]"),
         CONTEXT("[CONTEXT]"),
         INFO("[INFO]")
     }

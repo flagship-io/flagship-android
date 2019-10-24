@@ -56,6 +56,15 @@ class Utils {
             return visitorId
         }
 
+        fun getVisitorAllocation() : Int {
+            return if (Flagship.useVisitorConsolidation && Flagship.customVisitorId != null) {
+                val hash = Murmur.murmurhash3_x86_32(Flagship.customVisitorId, 0,
+                    Flagship.customVisitorId!!.length, 1)
+                return (hash % 100).toInt()
+            } else
+                (0..100).random()
+        }
+
         fun murmurHash3() {
             GlobalScope.launch {
                 var list = ArrayList<String>()
