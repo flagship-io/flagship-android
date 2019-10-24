@@ -4,16 +4,16 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply from: 'flagship-publishing.gradle'
 
-def ABTastySDKVersion = '1.0.1' ///DEFINE HERE THE ABTASTY SDK VERSION
-def ABTastySDKVersionCode = 1 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
+def ABTastySDKVersion = '1.0.2' ///DEFINE HERE THE ABTASTY SDK VERSION
+def ABTastySDKVersionCode = 2 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -58,8 +58,8 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
 //    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
-    implementation "androidx.room:room-runtime:2.2.0-rc01"
-    kapt "androidx.room:room-compiler:2.2.0-rc01"
+    implementation "androidx.room:room-runtime:2.2.1"
+    kapt "androidx.room:room-compiler:2.2.1"
 }
 
 
