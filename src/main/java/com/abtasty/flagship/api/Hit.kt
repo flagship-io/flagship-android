@@ -17,7 +17,7 @@ class Hit {
      * EVENT : Can be anything : from a click to a newsletter subscription.
      * ITEM : Represents a product and must be associated with a transaction
      */
-    enum class Type { SCREENVIEW, TRANSACTION, ITEM, EVENT, ACTIVATION}
+    enum class Type { SCREENVIEW, TRANSACTION, ITEM, EVENT, ACTIVATION, BATCH}
 
     enum class EventCategory(var key: String) {
         ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT(
@@ -369,6 +369,7 @@ class Hit {
         init {
            try {
                withRequestIds(hits.map { it.id!! })
+               withHitParam(KeyMap.TYPE, Type.BATCH)
                withHitParam(KeyMap.CLIENT_ID, Flagship.clientId!!)
                withHitParam(KeyMap.VISITOR_ID, visitorId)
                withHitParam(KeyMap.CUSTOM_VISITOR_ID, customVisitorId)
