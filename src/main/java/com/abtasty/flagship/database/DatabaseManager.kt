@@ -6,6 +6,7 @@ import androidx.room.Room
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model.VariationGroup
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 
@@ -42,9 +43,13 @@ internal class DatabaseManager {
                         null, Flagship.clientId ?: "", Flagship.visitorId ?: "",
                         Flagship.customVisitorId ?: "", System.currentTimeMillis(),
                         hit.jsonBody.optString(Hit.KeyMap.TYPE.key, ""), hit.jsonBody.toString(),
-                        1)
+                        1
+                    )
                 )
-                Logger.v(Logger.TAG.DB, "[Insert hit:$id][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}")
+                Logger.v(
+                    Logger.TAG.DB,
+                    "[Insert hit:$id][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}"
+                )
                 return id
             }
         }
@@ -61,8 +66,8 @@ internal class DatabaseManager {
         }
     }
 
-    fun updateHitStatus(ids : List<Long>, status : Int) : Int? {
-        return db?.hitDao()?.updateHitStatus(ids ,status)
+    fun updateHitStatus(ids: List<Long>, status: Int): Int? {
+        return db?.hitDao()?.updateHitStatus(ids, status)
     }
 
     fun updateHitStatus(hit: Hit.HitRequest) {
@@ -70,17 +75,19 @@ internal class DatabaseManager {
         val nb = updateHitStatus(hit.requestIds, 0)
         Logger.v(
             Logger.TAG.DB,
-            "[Update status:${hit.requestIds}][${Utils.logFailorSuccess((nb ?: 0 ) > 0)}] ${hit.jsonBody}"
+            "[Update status:${hit.requestIds}][${Utils.logFailorSuccess(
+                (nb ?: 0) > 0
+            )}] ${hit.jsonBody}"
         )
     }
 
 
-    fun getNonSentHits(@IntRange(from = 0, to = 50) limit: Int = 50) : List<HitData> {
+    fun getNonSentHits(@IntRange(from = 0, to = 50) limit: Int = 50): List<HitData> {
         db?.let { return it.hitDao().getNonSentHits(Flagship.sessionStart, limit) }
         return listOf()
     }
 
-    fun getNonSentActivations(@IntRange(from = 0, to = 50) limit: Int = 50) : List<HitData> {
+    fun getNonSentActivations(@IntRange(from = 0, to = 50) limit: Int = 50): List<HitData> {
         db?.let { return it.hitDao().getNonSentActivations(Flagship.sessionStart, limit) }
         return listOf()
     }
@@ -96,7 +103,7 @@ internal class DatabaseManager {
 
     fun displayNonSentActivations() {
         db?.let {
-            val list = it.hitDao().getNonSentActivations( 50)
+            val list = it.hitDao().getNonSentActivations(50)
             for (h in list) {
                 Logger.v(Logger.TAG.DB, "[----][${h}]")
             }
@@ -107,11 +114,12 @@ internal class DatabaseManager {
         db?.let {
             try {
                 val modifications = it.modificationDao().getAllModifications(
-                    Flagship.visitorId ?: "", Flagship.customVisitorId ?: "")
+                    Flagship.visitorId ?: "", Flagship.customVisitorId ?: ""
+                )
                 for (m in modifications) {
                     Flagship.modifications[m.key] = Modification.fromModificationData(m)
                 }
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
@@ -119,10 +127,34 @@ internal class DatabaseManager {
 
     fun updateModifications() {
         db?.let {
-            it.modificationDao().deleteAllModifications(Flagship.visitorId ?: "", Flagship.customVisitorId ?: "")
+            it.modificationDao()
+                .deleteAllModifications(Flagship.visitorId ?: "", Flagship.customVisitorId ?: "")
             for (m in Flagship.modifications) {
                 it.modificationDao().insertModification(m.value.toModificationData())
             }
+        }
+    }
+
+    fun insertAllocation(
+        visitorId: String, customVisitorId: String, variationGroupId: String,
+        variationId: String
+    ) {
+        db?.let {
+            val allocationData = AllocationData(visitorId, customVisitorId, variationGroupId, variationId)
+            val row = it.allocationDao().insertAllocation(allocationData)
+            if (row > 0) {
+                Logger.v(Logger.TAG.BUCKETING, "[Allocation inserted][$row][$allocationData]")
+            } else {
+                Logger.v(Logger.TAG.BUCKETING, "[Allocation insertion failed][$row][$allocationData]")
+            }
+        }
+    }
+
+    fun getAllocation( visitorId: String, customVisitorId: String, variationGroupId: String) : String? {
+        return db?.let {
+            val id = it.allocationDao().getAllocation(visitorId, customVisitorId, variationGroupId)?.variationId
+            Logger.v(Logger.TAG.BUCKETING, "[Allocation found][$id][]")
+            id
         }
     }
 }

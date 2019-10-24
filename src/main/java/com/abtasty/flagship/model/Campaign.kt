@@ -1,9 +1,11 @@
 package com.abtasty.flagship.model
 
 import android.os.Parcelable
+import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.database.ModificationData
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.utils.Logger
+import com.abtasty.flagship.utils.Utils
 import org.json.JSONObject
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
@@ -81,7 +83,8 @@ internal data class Campaign(
 internal data class VariationGroup(
     var variationGroupId: String,
     var variations: HashMap<String, Variation>,
-    var targetingGroups: TargetingGroups? = null
+    var targetingGroups: TargetingGroups? = null,
+    var selectedVariationId : String? = null
 ) : Parcelable {
 
     companion object {
@@ -89,16 +92,39 @@ internal data class VariationGroup(
         fun parse(jsonObject: JSONObject): VariationGroup? {
             return try {
                 val groupId = jsonObject.getString("variationGroupId")
+                var selectedVariationId = DatabaseManager.getInstance().getAllocation(Flagship.visitorId ?: "",
+                    Flagship.customVisitorId ?: "", groupId)
                 val variations = HashMap<String, Variation>()
                 val variationObj = jsonObject.optJSONObject("variation")
                 if (variationObj != null) {
                     val variation = Variation.parse(groupId, variationObj)
+                    variation.selected = true
+                    selectedVariationId = variation.id
                     variations[variation.id] = variation
                 } else {
                     val variationArr = jsonObject.optJSONArray("variations")
                     if (variationArr != null) {
+                        var p = 0
+                        val random = Utils.getVisitorAllocation()
                         for (i in 0 until variationArr.length()) {
                             val variation = Variation.parse(groupId, variationArr.getJSONObject(i))
+                            if (selectedVariationId == null) {
+                                p += variation.allocation
+                                if (random <= p) {
+                                    selectedVariationId = variation.id
+                                    variation.selected = true
+                                    Logger.v(
+                                        Logger.TAG.BUCKETING,
+                                        "[Variation ${variation.id} selected][Allocation $random]"
+                                    )
+                                    DatabaseManager.getInstance().insertAllocation(
+                                        Flagship.visitorId ?: "",
+                                        Flagship.customVisitorId ?: "",
+                                        variation.groupId,
+                                        variation.id
+                                    )
+                                }
+                            }
                             variations[variation.id] = variation
                         }
                     }
@@ -107,7 +133,7 @@ internal data class VariationGroup(
                     if (jsonObject.has("targetingGroups"))
                         TargetingGroups.parse(jsonObject.getJSONArray("targetingGroups"))
                     else null
-                VariationGroup(groupId, variations, targetingGroups)
+                VariationGroup(groupId, variations, targetingGroups, selectedVariationId)
             } catch (e: Exception) {
                 Logger.e(Logger.TAG.PARSING, "[VariationGroup object parsing error]")
                 e.printStackTrace()

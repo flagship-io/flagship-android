@@ -62,12 +62,11 @@ class Flagship {
          * @param useBucketing (optional) enable the bucketing mode
          */
         @JvmOverloads
-        fun start(appContext: Context, envId: String, ready: () -> (Unit) = {}, customVisitorId: String = "", useBucketing : Boolean = false) {
+        fun start(appContext: Context, envId: String, ready: () -> (Unit) = {}, customVisitorId: String? = null, useBucketing : Boolean = false) {
 
             this.clientId = envId
             this.visitorId = Utils.genVisitorId(appContext)
-            if (customVisitorId.isNotEmpty())
-                this.customVisitorId = customVisitorId
+            this.customVisitorId = customVisitorId
             this.bucketingEnabled = useBucketing
             sessionStart = System.currentTimeMillis()
             Utils.loadDeviceContext(appContext.applicationContext)
@@ -85,7 +84,7 @@ class Flagship {
          * @param customVisitorId id of the current visitor
          */
         fun setCustomVisitorId(customVisitorId: String) {
-            if (!panicMode && customVisitorId?.isNotEmpty()) {
+            if (!panicMode) {
                 this.customVisitorId = customVisitorId
                 modifications.clear()
                 DatabaseManager.getInstance().loadModifications()
