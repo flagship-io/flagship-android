@@ -67,6 +67,7 @@ internal data class Campaign(
     }
 
     fun getModifications(useBucketing: Boolean): HashMap<String, Modification> {
+        Flagship.modifications.clear()
         val result = HashMap<String, Modification>()
         for ((key, variationGroup) in variationGroups) {
             if (!useBucketing) {
@@ -77,6 +78,7 @@ internal data class Campaign(
             } else {
                 val variationId = variationGroup.selectedVariationId
                 if (variationGroup.isTargetingValid()) {
+                    System.out.println("#T1 Targeting valid : true")
                     val variation = variationGroup.variations[variationId]
                     val mod = variation?.modifications?.values
                     mod?.let { result.putAll(it) }
@@ -154,6 +156,7 @@ internal data class VariationGroup(
     }
 
     fun isTargetingValid(): Boolean {
+        System.out.println("#T2 Targeting valid : ${targetingGroups?.isTargetingValid() ?: false}")
         return targetingGroups?.isTargetingValid() ?: false
     }
 }
@@ -181,10 +184,13 @@ internal data class TargetingGroups(val targetingGroups: ArrayList<TargetingList
     fun isTargetingValid(): Boolean {
         targetingGroups?.let {
             for (t in it) {
-                if (t.isTargetingValid())
+                if (t.isTargetingValid()) {
+                    System.out.println("#T3 Targeting valid : true")
                     return true
+                }
             }
         }
+        System.out.println("#T4 Targeting valid : false")
         return false
     }
 }
@@ -212,10 +218,13 @@ internal data class TargetingList(val targetings: ArrayList<Targeting>? = null) 
     fun isTargetingValid(): Boolean {
         targetings?.let {
             for (t in it) {
-                if (!t.isTargetingValid())
+                if (!t.isTargetingValid()) {
+                    System.out.println("#T5 Targeting valid : false")
                     return false
+                }
             }
         }
+        System.out.println("#T4 Targeting valid : true")
         return true
     }
 }
@@ -240,8 +249,14 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
     }
 
     fun isTargetingValid() : Boolean {
-        val value0 = Flagship.modifications[key]
+
+        System.out.println("#T6 Targeting valid key : $key")
+        System.out.println("#T6 Targeting valid context : ${Flagship.context}")
+        val value0 = Flagship.context[key]
         val value1 = value
+        System.out.println("#T6 Targeting valid : ${if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1) ?: false)}")
+        System.out.println("#T6 (value0 == null) : $value0 " + (value0 == null))
+        System.out.println("#T6 ETargetingComp.get(operator)?.compare(value0, value1) $value1 : " + ETargetingComp.get(operator)?.compare(value0 ?: "###", value1))
         return if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1) ?: false)
     }
 }

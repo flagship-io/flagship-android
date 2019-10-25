@@ -145,16 +145,45 @@ internal class DatabaseManager {
             if (row > 0) {
                 Logger.v(Logger.TAG.BUCKETING, "[Allocation inserted][$row][$allocationData]")
             } else {
-                Logger.v(Logger.TAG.BUCKETING, "[Allocation insertion failed][$row][$allocationData]")
+                Logger.e(Logger.TAG.BUCKETING, "[Allocation insertion failed][$row][$allocationData]")
             }
         }
     }
 
-    fun getAllocation( visitorId: String, customVisitorId: String, variationGroupId: String) : String? {
+    fun getAllocation(visitorId: String, customVisitorId: String, variationGroupId: String) : String? {
         return db?.let {
             val id = it.allocationDao().getAllocation(visitorId, customVisitorId, variationGroupId)?.variationId
             Logger.v(Logger.TAG.BUCKETING, "[Allocation found][$id][]")
             id
         }
+    }
+
+    fun insertBucket(bucket : String) {
+        db?.let {
+            val bucketData = BucketData(Flagship.visitorId ?: "", Flagship?.customVisitorId ?: "", bucket
+            )
+            val row = it.bucketDao().insertBucket(bucketData)
+            if (row > 0) {
+                Logger.v(Logger.TAG.BUCKETING, "[Bucket inserted][$row][$bucketData]")
+            } else {
+                Logger.e(
+                    Logger.TAG.BUCKETING,
+                    "[Bucket insertion failed][$row][$bucketData]"
+                )
+            }
+        }
+    }
+
+    fun getBucket() : String? {
+        db?.let {
+            val bucket = it.bucketDao().getBucket(Flagship.visitorId ?: "", Flagship?.customVisitorId ?: "")
+            if (bucket == null)
+                Logger.v(Logger.TAG.BUCKETING, "[No bucket found]")
+            else {
+                Logger.v(Logger.TAG.BUCKETING, "[Bucket found]")
+                return bucket.bucket
+            }
+        }
+        return null
     }
 }

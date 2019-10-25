@@ -179,8 +179,12 @@ class Flagship {
                         "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                     )
                 }
-                syncModifications?.let {
-                    syncCampaignModifications("", it)
+                if (bucketingEnabled) {
+                    BucketingManager.syncBucketModifications(syncModifications, true)
+                } else {
+                    syncModifications?.let {
+                        syncCampaignModifications("", it)
+                    }
                 }
             }
         }

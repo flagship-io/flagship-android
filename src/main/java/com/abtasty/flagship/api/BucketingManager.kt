@@ -12,14 +12,23 @@ class BucketingManager {
 
     companion object {
 
-        fun syncBucketModifications(lambda: () -> (Unit) = {}) {
+        fun syncBucketModifications(lambda: (() -> (Unit))?, contextUpdated : Boolean = false) {
+            System.out.println("#W0 = ")
             GlobalScope.launch {
+
                 val campaignJSon = ApiManager.getInstance().sendBucketingRequest()
+                //todo check if loaded for this session in order to not call everytime
+                System.out.println("#W = " + campaignJSon)
                 campaignJSon?.let {
                     //store json
-                    val campaigns = Campaign.parse(campaignJSon)
+                    Campaign.parse(campaignJSon)?.let {
+                        for ((k, campaign) in it) {
+                            Flagship.updateModifications(campaign.getModifications(true))
+                        }
+                    }
 //                    allocateCampaigns(campaigns)
                 }
+                lambda?.let { it() }
             }
         }
 

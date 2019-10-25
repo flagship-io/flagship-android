@@ -1,5 +1,6 @@
 package com.abtasty.flagship.api
 
+import android.util.JsonReader
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.Companion.CUSTOM_VISITOR_ID
@@ -56,6 +57,7 @@ internal class ApiManager {
         internal var request: Request? = null
         internal var response: Response? = null
         internal var responseBody: String? = null
+        internal var code = 0
 
         internal var requestIds = mutableListOf<Long>()
 
@@ -121,6 +123,7 @@ internal class ApiManager {
         }
 
         private fun onResponse(response: Response) {
+            this.code = response.code()
             this.response = response
             if (response.isSuccessful) {
                 this.responseBody = response.body()?.string()
@@ -258,9 +261,9 @@ internal class ApiManager {
         }
     }
 
-    internal class BucketingRequest() : PostRequest() {
+    internal class BucketingRequest : PostRequest() {
 
-        var campaignsJson = JSONArray()
+        var campaignsJson : JSONArray? = null
 
         override fun onSuccess() {
             Logger.v(
@@ -271,22 +274,29 @@ internal class ApiManager {
             parseResponse()
         }
 
+        override fun onFailure(response: Response?, message: String) {
+            super.onFailure(response, message)
+            DatabaseManager.getInstance().getBucket()?.let { campaignsJson = JSONArray(it) }
+        }
+
         override fun parseResponse(): Boolean {
             try {
                 val jsonData = JSONObject(responseBody)
                 //todo manage panic mode
                 Flagship.panicMode = jsonData.optBoolean("panic", false)
                 Flagship.useVisitorConsolidation = jsonData.optBoolean("visitorConsolidation")
-//                Flagship.modifications.clear()
-                campaignsJson = jsonData.getJSONArray("campaigns")
-//                for (i in 0 until array.length()) {
-//                    Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))!!.getModifications())
-//                }
+
+                if (code in 200..299) {
+                    val campaignsArr = jsonData.getJSONArray("campaigns")
+                    DatabaseManager.getInstance().insertBucket(campaignsArr.toString())
+                    campaignsJson = campaignsArr
+                    return true
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
-                return false
             }
-            return true
+            DatabaseManager.getInstance().getBucket()?.let { campaignsJson = JSONArray(it) }
+            return false
         }
     }
 
@@ -300,7 +310,7 @@ internal class ApiManager {
         return try {
             val request = BucketingRequestBuilder()
 //                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
-                .withUrl("https://adsgfi.free.beeceptor.com/cdn1")
+                .withUrl("https://adsgfi.free.beeceptor.com/cdn2")
                 .build()
             request.fire(false)
             request.campaignsJson
