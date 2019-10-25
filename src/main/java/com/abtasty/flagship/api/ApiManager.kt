@@ -208,9 +208,9 @@ internal class ApiManager {
                     Flagship.modifications.clear()
                     val array = jsonResponse.getJSONArray("campaigns")
                     for (i in 0 until array.length()) {
-                        Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))!!.getModifications())
+                        Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))!!.getModifications(false))
                     }
-                } else Flagship.updateModifications(Campaign.parse(jsonResponse)!!.getModifications())
+                } else Flagship.updateModifications(Campaign.parse(jsonResponse)!!.getModifications(false))
                 DatabaseManager.getInstance().updateModifications()
             } catch (e: Exception) {
                 e.printStackTrace()

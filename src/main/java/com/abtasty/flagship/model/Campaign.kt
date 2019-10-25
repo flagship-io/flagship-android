@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.database.ModificationData
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.utils.ETargetingComp
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 import org.json.JSONObject
@@ -65,13 +66,21 @@ internal data class Campaign(
         }
     }
 
-    fun getModifications(): HashMap<String, Modification> {
+    fun getModifications(useBucketing: Boolean): HashMap<String, Modification> {
         val result = HashMap<String, Modification>()
-        for (g in variationGroups) {
-            for (v in g.value.variations) {
-                val mod = v.value.modifications?.values
-                mod?.let {
-                    result.putAll(it)
+        for ((key, variationGroup) in variationGroups) {
+            if (!useBucketing) {
+                for (v in variationGroup.variations) {
+                    val mod = v.value.modifications?.values
+                    mod?.let { result.putAll(it) }
+                }
+            } else {
+                val variationId = variationGroup.selectedVariationId
+                if (variationGroup.isTargetingValid()) {
+                    val variation = variationGroup.variations[variationId]
+                    val mod = variation?.modifications?.values
+                    mod?.let { result.putAll(it) }
+                    break
                 }
             }
         }
@@ -84,7 +93,7 @@ internal data class VariationGroup(
     var variationGroupId: String,
     var variations: HashMap<String, Variation>,
     var targetingGroups: TargetingGroups? = null,
-    var selectedVariationId : String? = null
+    var selectedVariationId: String? = null
 ) : Parcelable {
 
     companion object {
@@ -92,8 +101,10 @@ internal data class VariationGroup(
         fun parse(jsonObject: JSONObject): VariationGroup? {
             return try {
                 val groupId = jsonObject.getString("variationGroupId")
-                var selectedVariationId = DatabaseManager.getInstance().getAllocation(Flagship.visitorId ?: "",
-                    Flagship.customVisitorId ?: "", groupId)
+                var selectedVariationId = DatabaseManager.getInstance().getAllocation(
+                    Flagship.visitorId ?: "",
+                    Flagship.customVisitorId ?: "", groupId
+                )
                 val variations = HashMap<String, Variation>()
                 val variationObj = jsonObject.optJSONObject("variation")
                 if (variationObj != null) {
@@ -141,6 +152,10 @@ internal data class VariationGroup(
             }
         }
     }
+
+    fun isTargetingValid(): Boolean {
+        return targetingGroups?.isTargetingValid() ?: false
+    }
 }
 
 @Parcelize
@@ -161,6 +176,16 @@ internal data class TargetingGroups(val targetingGroups: ArrayList<TargetingList
                 null
             }
         }
+    }
+
+    fun isTargetingValid(): Boolean {
+        targetingGroups?.let {
+            for (t in it) {
+                if (t.isTargetingValid())
+                    return true
+            }
+        }
+        return false
     }
 }
 
@@ -183,6 +208,16 @@ internal data class TargetingList(val targetings: ArrayList<Targeting>? = null) 
             }
         }
     }
+
+    fun isTargetingValid(): Boolean {
+        targetings?.let {
+            for (t in it) {
+                if (!t.isTargetingValid())
+                    return false
+            }
+        }
+        return true
+    }
 }
 
 @Parcelize
@@ -202,6 +237,12 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
             }
 
         }
+    }
+
+    fun isTargetingValid() : Boolean {
+        val value0 = Flagship.modifications[key]
+        val value1 = value
+        return if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1) ?: false)
     }
 }
 
