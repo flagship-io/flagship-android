@@ -19,7 +19,6 @@ internal class ApiManager {
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
-    val BUCKETING_URL = ""
 
     companion object {
         private var instance: ApiManager = ApiManager()
@@ -251,7 +250,7 @@ internal class ApiManager {
             //todo change
             CampaignRequestBuilder()
 //                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
-                .withUrl("https://adsgfi.free.beeceptor.com/" + Flagship.customVisitorId)
+                .withUrl("https://adsgfi2.free.beeceptor.com/" + Flagship.customVisitorId)
                 .withBodyParams(jsonBody)
                 .withCampaignId(campaignId)
                 .build()
@@ -310,7 +309,7 @@ internal class ApiManager {
         return try {
             val request = BucketingRequestBuilder()
 //                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
-                .withUrl("https://adsgfi.free.beeceptor.com/cdn2")
+                .withUrl("https://adsgfi2.free.beeceptor.com/cdn2")
                 .build()
             request.fire(false)
             request.campaignsJson

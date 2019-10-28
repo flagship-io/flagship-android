@@ -10,7 +10,7 @@ import kotlinx.android.parcel.RawValue
 import org.json.JSONObject
 import java.util.*
 
-@Entity(tableName = "allocations", primaryKeys = ["visitorId", "customVisitorId", "variationGroupId", "variationId"])
+@Entity(tableName = "allocations", primaryKeys = ["visitorId", "customVisitorId", "variationGroupId"])
 @Parcelize
 data class AllocationData(
 

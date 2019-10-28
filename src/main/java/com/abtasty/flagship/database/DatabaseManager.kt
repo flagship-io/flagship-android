@@ -153,7 +153,7 @@ internal class DatabaseManager {
     fun getAllocation(visitorId: String, customVisitorId: String, variationGroupId: String) : String? {
         return db?.let {
             val id = it.allocationDao().getAllocation(visitorId, customVisitorId, variationGroupId)?.variationId
-            Logger.v(Logger.TAG.BUCKETING, "[Allocation found][$id][]")
+            Logger.v(Logger.TAG.BUCKETING, "[Allocation found][$variationGroupId][$id]")
             id
         }
     }

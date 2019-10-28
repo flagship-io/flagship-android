@@ -52,6 +52,8 @@ class Flagship {
 
         internal var panicMode = false
 
+        internal var ready = false
+
         /**
          * Initialize the flagship SDK
          *
@@ -72,10 +74,14 @@ class Flagship {
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
-            if (!useBucketing)
+            if (!useBucketing) {
                 syncCampaignModifications(ready)
-            else
-                BucketingManager.syncBucketModifications(ready)
+            }
+            else {
+                BucketingManager.startBucketing(ready)
+                // todo sync
+//                BucketingManager.syncBucketModifications(ready, false)
+            }
         }
 
         /**
@@ -159,8 +165,11 @@ class Flagship {
             for (p in values) {
                 updateContextValue(p.key, p.value)
             }
-            sync?.let {
-                syncCampaignModifications("", it)
+            if (ready) {
+                if (!bucketingEnabled)
+                    syncCampaignModifications("", sync)
+                else
+                    BucketingManager.syncBucketModifications(sync)
             }
         }
 
@@ -179,12 +188,11 @@ class Flagship {
                         "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                     )
                 }
-                if (bucketingEnabled) {
-                    BucketingManager.syncBucketModifications(syncModifications, true)
-                } else {
-                    syncModifications?.let {
-                        syncCampaignModifications("", it)
-                    }
+                if (ready) {
+                    if (!bucketingEnabled)
+                        syncCampaignModifications("", syncModifications)
+                    else
+                        BucketingManager.syncBucketModifications(syncModifications)
                 }
             }
         }
@@ -334,12 +342,13 @@ class Flagship {
         @JvmOverloads
         fun syncCampaignModifications(
             campaignCustomId: String = "",
-            lambda: () -> (Unit) = {}
+            lambda: (() -> (Unit))? = null
         ): Deferred<Unit> {
             return GlobalScope.async {
                 if (!panicMode) {
                     ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-                    lambda()
+                    ready = true
+                    lambda?.let { it() }
                 }
             }
         }
@@ -384,5 +393,6 @@ class Flagship {
             if (!panicMode)
                 ApiManager.getInstance().sendHitTracking(hit)
         }
+
     }
 }
