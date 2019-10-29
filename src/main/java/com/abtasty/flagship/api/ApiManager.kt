@@ -210,9 +210,13 @@ internal class ApiManager {
                     Flagship.modifications.clear()
                     val array = jsonResponse.getJSONArray("campaigns")
                     for (i in 0 until array.length()) {
-                        Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))!!.getModifications(false))
+                        val mods = Campaign.parse(array.getJSONObject(i))!!.getModifications(false)
+                        System.out.println("#M mods 1 = $mods")
+                        Flagship.updateModifications(mods)
+                        System.out.println("#M modifications 1 = " + Flagship.modifications)
                     }
                 } else Flagship.updateModifications(Campaign.parse(jsonResponse)!!.getModifications(false))
+                System.out.println("#M modifications = " + Flagship.modifications)
                 DatabaseManager.getInstance().updateModifications()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -250,7 +254,7 @@ internal class ApiManager {
             //todo change
             CampaignRequestBuilder()
 //                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
-                .withUrl("https://adsgfi2.free.beeceptor.com/" + Flagship.customVisitorId)
+                .withUrl("https://adsgfi.free.beeceptor.com/" + Flagship.customVisitorId)
                 .withBodyParams(jsonBody)
                 .withCampaignId(campaignId)
                 .build()

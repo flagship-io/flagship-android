@@ -165,10 +165,16 @@ class Flagship {
             for (p in values) {
                 updateContextValue(p.key, p.value)
             }
+//            if (ready) {
+//                if (!bucketingEnabled)
+//                    syncCampaignModifications("", sync)
+//                else
+//                    BucketingManager.syncBucketModifications(sync)
+//            }
             if (ready) {
-                if (!bucketingEnabled)
+                if (!bucketingEnabled && sync != null)
                     syncCampaignModifications("", sync)
-                else
+                else if (bucketingEnabled)
                     BucketingManager.syncBucketModifications(sync)
             }
         }
@@ -189,9 +195,9 @@ class Flagship {
                     )
                 }
                 if (ready) {
-                    if (!bucketingEnabled)
+                    if (!bucketingEnabled && syncModifications != null)
                         syncCampaignModifications("", syncModifications)
-                    else
+                    else if (bucketingEnabled)
                         BucketingManager.syncBucketModifications(syncModifications)
                 }
             }

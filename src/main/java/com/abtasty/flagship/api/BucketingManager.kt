@@ -2,7 +2,6 @@ package com.abtasty.flagship.api
 
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Campaign
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.json.JSONArray
@@ -37,7 +36,6 @@ class BucketingManager {
                             val mods = campaign.getModifications(true)
                             Flagship.updateModifications(mods)
                         }
-//                    allocateCampaigns(campaigns)
                     }
                 }
             } catch (e : Exception) {

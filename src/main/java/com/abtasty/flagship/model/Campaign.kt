@@ -52,6 +52,7 @@ internal data class Campaign(
                         }
                     }
                 } else {
+                    System.out.println("#M no varGroupe parse : " + jsonObject)
                     val variationGroup = VariationGroup.parse(jsonObject)
                     variationGroup?.let {
                         variationGroups.put(it.variationGroupId, it)
@@ -67,7 +68,8 @@ internal data class Campaign(
     }
 
     fun getModifications(useBucketing: Boolean): HashMap<String, Modification> {
-        Flagship.modifications.clear()
+        if (useBucketing)
+            Flagship.modifications.clear() // Bucketing
         val result = HashMap<String, Modification>()
         for ((key, variationGroup) in variationGroups) {
             if (!useBucketing) {
@@ -113,6 +115,7 @@ internal data class VariationGroup(
                     variation.selected = true
                     selectedVariationId = variation.id
                     variations[variation.id] = variation
+                    System.out.println("#M select variation = " + selectedVariationId)
                 } else {
                     val variationArr = jsonObject.optJSONArray("variations")
                     if (variationArr != null) {
