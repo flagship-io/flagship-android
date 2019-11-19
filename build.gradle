@@ -26,6 +26,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         all {
+            buildConfigField "String", "FLAGSHIP_VERSION_NAME" , "\"${ABTastySDKVersion}\""
+            buildConfigField "int", "FLAGSHIP_VERSION_CODE", "${ABTastySDKVersionCode}"
             resValue("integer", "ABTastyVersionCode", "${ABTastySDKVersionCode}")
             resValue("string", "ABTastyVersion", "\"${ABTastySDKVersion}\"")
         }
