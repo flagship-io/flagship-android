@@ -7,6 +7,7 @@ import android.content.res.Configuration.SCREENLAYOUT_SIZE_MASK
 import android.os.Build
 import android.os.Build.MANUFACTURER
 import android.telephony.TelephonyManager
+import android.util.Patterns
 import com.abtasty.flagship.BuildConfig
 import com.abtasty.flagship.main.Flagship
 import java.util.*
@@ -156,7 +157,8 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
         }
 
         override fun checkValue(value: Any): Boolean {
-            return (value is String)
+            val ipv6 = Regex("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))")
+            return (value is String) && (Patterns.IP_ADDRESS.matcher(value).matches() || value.toString().matches(ipv6))
         }
     },
 
@@ -260,19 +262,19 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
         }
     },
 
-    /**
-     * Set if the curresnt visitor is returning in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a Boolean)
-     */
-    RETURNING_USER("sdk_returningUser") {
-        override fun value(context: Context): Any? {
-            return Flagship.isNewVisitor == false
-        }
-
-        override fun checkValue(value: Any): Boolean {
-            return (value is Boolean)
-        }
-    },
+//    /**
+//     * Set if the curresnt visitor is returning in the visitor context.
+//     * This value is automatically set by the SDK but can be overridden (must me a Boolean)
+//     */
+//    RETURNING_USER("sdk_returningUser") {
+//        override fun value(context: Context): Any? {
+//            return Flagship.isNewVisitor == false
+//        }
+//
+//        override fun checkValue(value: Any): Boolean {
+//            return (value is Boolean)
+//        }
+//    },
 
 //    LOGGED_IN_USER("sdk_loggedInUser") {
 //        override fun value(context: Context): Any? {
