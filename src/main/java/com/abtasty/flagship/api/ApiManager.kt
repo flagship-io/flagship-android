@@ -1,6 +1,5 @@
 package com.abtasty.flagship.api
 
-import android.util.JsonReader
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.Companion.CUSTOM_VISITOR_ID
@@ -19,6 +18,7 @@ internal class ApiManager {
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
+    val BUCKETING = "https://cdn.flagship.io/{id}/bucketing.json"
 
     companion object {
         private var instance: ApiManager = ApiManager()
@@ -49,7 +49,9 @@ internal class ApiManager {
         fun withRequestIds(requestId: List<Long>): B
     }
 
-    open class PostRequest {
+    enum class METHOD { POST, GET}
+
+    open class ApiRequest(var method : METHOD = METHOD.POST) {
 
         internal open var url: String = ""
         internal open var jsonBody = JSONObject()
@@ -62,15 +64,17 @@ internal class ApiManager {
 
         open fun build() {
 
-            val body = RequestBody.create(
-                MediaType.parse("application/json; charset=utf-8"),
-                jsonBody.toString()
-            )
-            request = Request.Builder()
+            val builder = Request.Builder()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
-                .post(body)
-                .build()
+            if (method == METHOD.POST) {
+                val body = RequestBody.create(
+                    MediaType.parse("application/json; charset=utf-8"),
+                    jsonBody.toString()
+                )
+                builder.post(body)
+            }
+            request = builder.build()
         }
 
         open fun fire(async: Boolean) {
@@ -141,15 +145,15 @@ internal class ApiManager {
 
         protected open fun logRequest(async: Boolean) {
             Logger.v(
-                Logger.TAG.POST,
+                if (method == METHOD.POST) Logger.TAG.POST else Logger.TAG.GET,
                 "[Request${getIdToString()}][async=$async] " + request?.url() + " " + jsonBody
             )
         }
     }
 
-    open class PostRequestBuilder<B, I : PostRequest> : PostRequestInterface<B, I> {
+    open class PostRequestBuilder<B, I : ApiRequest> : PostRequestInterface<B, I> {
 
-        override var instance = PostRequest() as I
+        override var instance = ApiRequest() as I
 
         override fun withUrl(url: String): B {
             instance.url = url
@@ -191,7 +195,7 @@ internal class ApiManager {
 
     }
 
-    internal class CampaignRequest(var campaignId: String = "") : PostRequest() {
+    internal class CampaignRequest(var campaignId: String = "") : ApiRequest() {
 
         override fun onSuccess() {
             Logger.v(
@@ -264,13 +268,13 @@ internal class ApiManager {
         }
     }
 
-    internal class BucketingRequest : PostRequest() {
+    internal class BucketingRequest : ApiRequest(METHOD.GET) {
 
         var campaignsJson : JSONArray? = null
 
         override fun onSuccess() {
             Logger.v(
-                Logger.TAG.POST,
+                Logger.TAG.GET,
                 "[Response${getIdToString()}][${response?.code()}][${responseBody}}]"
                         + request?.url() + " " + jsonBody
             )
@@ -312,8 +316,8 @@ internal class ApiManager {
 
         return try {
             val request = BucketingRequestBuilder()
-//                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
-                .withUrl("https://adsgfi2.free.beeceptor.com/cdn2")
+                .withUrl(BUCKETING.replace("{id}", Flagship.clientId!!))
+//                .withUrl("https://adsgfi2.free.beeceptor.com/cdn2")
                 .build()
             request.fire(false)
             request.campaignsJson

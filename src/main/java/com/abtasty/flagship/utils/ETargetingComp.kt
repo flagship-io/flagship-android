@@ -9,7 +9,7 @@ interface ITargetingComp {
 enum class ETargetingComp(name: String) : ITargetingComp {
 
 
-    IS("IS") {
+    EQUALS("EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
            return  try {
                 value0 == value1
@@ -17,7 +17,7 @@ enum class ETargetingComp(name: String) : ITargetingComp {
         }
     },
 
-    IS_NOT("IS_NOT") {
+    NOT_EQUALS("NOT_EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
                 value0 != value1
@@ -58,7 +58,7 @@ enum class ETargetingComp(name: String) : ITargetingComp {
         }
     },
 
-    EQUALS_OR_GREATER_THAN("EQUALS_OR_GREATER_THAN") {
+    GREATER_THAN_OR_EQUALS("GREATER_THAN_OR_EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
                 value0.toString() >= value1.toString()
@@ -67,13 +67,31 @@ enum class ETargetingComp(name: String) : ITargetingComp {
 
     },
 
-    EQUALS_OR_LOWER_THAN("EQUALS_OR_LOWER_THAN") {
+    LOWER_THAN_OR_EQUALS("LOWER_THAN_OR_EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
                 value0.toString() <= value1.toString()
             } catch (e : Exception) { false }
         }
+    },
+
+    STARTS_WITH("STARTS_WITH") {
+        override fun compare(value0: Any, value1: Any): Boolean {
+            return  try {
+                value0.toString().startsWith(value1.toString())
+            } catch (e : Exception) { false }
+        }
+    },
+
+    ENDS_WITH("ENDS_WITH") {
+        override fun compare(value0: Any, value1: Any): Boolean {
+            return  try {
+                value0.toString().endsWith(value1.toString())
+            } catch (e : Exception) { false }
+        }
     };
+
+
 
     companion object {
         private val map = values().associateBy(ETargetingComp::name)

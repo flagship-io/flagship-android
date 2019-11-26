@@ -254,6 +254,10 @@ class Flagship {
             return getFlagshipModification(key, default, activate)
         }
 
+        fun getAllModifications(): HashMap<String, Modification> {
+            return Flagship.modifications
+        }
+
         /**
          * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
          * in order to update all the modifications from the server.
@@ -370,6 +374,7 @@ class Flagship {
             syncCampaignModifications("", lambda)
         }
 
+        @Synchronized
         internal fun updateModifications(values: HashMap<String, Modification>) {
             modifications.putAll(values)
         }

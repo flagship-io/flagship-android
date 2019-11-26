@@ -68,7 +68,7 @@ internal data class Campaign(
     }
 
     fun getModifications(useBucketing: Boolean): HashMap<String, Modification> {
-        if (useBucketing)
+        if (!useBucketing)
             Flagship.modifications.clear() // Bucketing
         val result = HashMap<String, Modification>()
         for ((key, variationGroup) in variationGroups) {
@@ -82,7 +82,10 @@ internal data class Campaign(
                 if (variationGroup.isTargetingValid()) {
                     val variation = variationGroup.variations[variationId]
                     val mod = variation?.modifications?.values
-                    mod?.let { result.putAll(it) }
+                    mod?.let {
+                        System.out.println("#M getModifications = $it")
+                        result.putAll(it)
+                    }
                     break
                 }
             }
@@ -103,7 +106,7 @@ internal data class VariationGroup(
 
         fun parse(jsonObject: JSONObject): VariationGroup? {
             return try {
-                val groupId = jsonObject.getString("variationGroupId")
+                val groupId = jsonObject.getString("id")
                 var selectedVariationId = DatabaseManager.getInstance().getAllocation(
                     Flagship.visitorId ?: "",
                     Flagship.customVisitorId ?: "", groupId
@@ -145,9 +148,12 @@ internal data class VariationGroup(
                         }
                     }
                 }
+
+
+                val targeting = jsonObject.optJSONObject("targeting")
                 val targetingGroups =
-                    if (jsonObject.has("targetingGroups"))
-                        TargetingGroups.parse(jsonObject.getJSONArray("targetingGroups"))
+                    if (targeting != null && targeting.has("targetingGroups"))
+                        TargetingGroups.parse(targeting.getJSONArray("targetingGroups"))
                     else null
                 VariationGroup(groupId, variations, targetingGroups, selectedVariationId)
             } catch (e: Exception) {
@@ -300,7 +306,7 @@ internal data class Modifications(
                     } else {
                         Logger.e(
                             Logger.TAG.PARSING,
-                            "Context update : Your data \"$k\" is not a type of NUMBER, BOOLEAN or STRING"
+                            "Modification parsing : variationGroupId = $variationGroupId, variationId = $variationId\" : Your data \"$k\" is not a type of NUMBER, BOOLEAN or STRING"
                         )
                     }
 
@@ -308,6 +314,7 @@ internal data class Modifications(
                 Modifications(variationGroupId, variationId, type, values)
             } catch (e: Exception) {
                 e.printStackTrace()
+                Logger.e(Logger.TAG.PARSING, "variationGroupId = $variationGroupId, variationId = $variationId")
                 Modifications("", "", "", HashMap())
             }
         }

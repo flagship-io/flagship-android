@@ -3,11 +3,9 @@ package com.abtasty.flagship.api
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.database.HitData
 import com.abtasty.flagship.main.Flagship
-import okhttp3.Call
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
 
 class Hit {
 
@@ -72,7 +70,7 @@ class Hit {
         HIT_BATCH("h")
     }
 
-    internal class HitRequest : ApiManager.PostRequest() {
+    internal class HitRequest : ApiManager.ApiRequest() {
 
         override fun fire(async: Boolean) {
             if (requestIds.isEmpty())
