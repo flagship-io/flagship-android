@@ -275,7 +275,7 @@ internal class ApiManager {
         override fun onSuccess() {
             Logger.v(
                 Logger.TAG.GET,
-                "[Response${getIdToString()}][${response?.code()}][${responseBody}}]"
+                "[Response${getIdToString()}][${response?.code()}][${responseBody}] "
                         + request?.url() + " " + jsonBody
             )
             parseResponse()
@@ -317,7 +317,6 @@ internal class ApiManager {
         return try {
             val request = BucketingRequestBuilder()
                 .withUrl(BUCKETING.replace("{id}", Flagship.clientId!!))
-//                .withUrl("https://adsgfi2.free.beeceptor.com/cdn2")
                 .build()
             request.fire(false)
             request.campaignsJson

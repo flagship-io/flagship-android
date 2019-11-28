@@ -303,6 +303,13 @@ internal data class Modifications(
                     val value = valueObj.get(k)
                     if (value is Boolean || value is Number || value is String) {
                         values[k] = Modification(k, variationGroupId, variationId, value)
+                    } else if (value is JSONObject || value is JSONArray) {
+                        System.out.println("#RV try recursive on $value")
+                       val recursiveValues = Utils.getJsonRecursiveValues(value)
+                        System.out.println("#RV recursive values = $recursiveValues")
+                        for (v in recursiveValues) {
+                            values[v.key] = Modification(v.key, variationGroupId, variationId, v.value)
+                        }
                     } else {
                         Logger.e(
                             Logger.TAG.PARSING,

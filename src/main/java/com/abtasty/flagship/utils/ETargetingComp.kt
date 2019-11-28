@@ -8,7 +8,6 @@ interface ITargetingComp {
 
 enum class ETargetingComp(name: String) : ITargetingComp {
 
-
     EQUALS("EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
            return  try {

@@ -160,8 +160,7 @@ internal class DatabaseManager {
 
     fun insertBucket(bucket : String) {
         db?.let {
-            val bucketData = BucketData(Flagship.visitorId ?: "", Flagship?.customVisitorId ?: "", bucket
-            )
+            val bucketData = BucketData(Flagship.visitorId ?: "", Flagship?.customVisitorId ?: "", bucket)
             val row = it.bucketDao().insertBucket(bucketData)
             if (row > 0) {
                 Logger.v(Logger.TAG.BUCKETING, "[Bucket inserted][$row][$bucketData]")
