@@ -71,6 +71,7 @@ class Flagship {
             this.customVisitorId = customVisitorId
             this.bucketingEnabled = useBucketing
             sessionStart = System.currentTimeMillis()
+            ApiManager.cacheDir = appContext.cacheDir
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()

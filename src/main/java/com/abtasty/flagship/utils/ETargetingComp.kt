@@ -11,7 +11,7 @@ enum class ETargetingComp(name: String) : ITargetingComp {
     EQUALS("EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
            return  try {
-                value0 == value1
+               value0 == value1
             } catch (e : Exception) { false }
         }
     },
@@ -24,7 +24,7 @@ enum class ETargetingComp(name: String) : ITargetingComp {
         }
     },
 
-    CONSTAINS("CONTAINS") {
+    CONTAINS("CONTAINS") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
                 value0.toString().contains(value1.toString())
@@ -32,7 +32,7 @@ enum class ETargetingComp(name: String) : ITargetingComp {
         }
     },
 
-    NOT_CONSTAINS("NOT_CONTAINS") {
+    NOT_CONTAINS("NOT_CONTAINS") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
                 !value0.toString().contains(value1.toString())
@@ -52,7 +52,7 @@ enum class ETargetingComp(name: String) : ITargetingComp {
     LOWER_THAN("LOWER_THAN") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
-                value0.toString() > value1.toString()
+                value0.toString() < value1.toString()
             } catch (e : Exception) { false }
         }
     },

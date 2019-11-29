@@ -9,6 +9,7 @@ import com.abtasty.flagship.utils.Logger
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -21,6 +22,7 @@ internal class ApiManager {
     val BUCKETING = "https://cdn.flagship.io/{id}/bucketing.json"
 
     companion object {
+        var cacheDir : File? = null
         private var instance: ApiManager = ApiManager()
 
         @Synchronized
@@ -30,9 +32,12 @@ internal class ApiManager {
     }
 
     private val client: OkHttpClient by lazy {
+        val cacheSize = 4 * 1024 * 1024 // 4MB
+
         OkHttpClient().newBuilder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(1, TimeUnit.MINUTES)
+            .cache(Cache(cacheDir, cacheSize.toLong()))
             .build()
     }
 
