@@ -37,7 +37,7 @@ internal class ApiManager {
         OkHttpClient().newBuilder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(1, TimeUnit.MINUTES)
-            .cache(Cache(cacheDir, cacheSize.toLong()))
+//            .cache(Cache(cacheDir, cacheSize.toLong()))
             .build()
     }
 
