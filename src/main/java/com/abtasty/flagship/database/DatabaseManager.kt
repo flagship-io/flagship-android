@@ -143,9 +143,9 @@ internal class DatabaseManager {
             val allocationData = AllocationData(visitorId, customVisitorId, variationGroupId, variationId)
             val row = it.allocationDao().insertAllocation(allocationData)
             if (row > 0) {
-                Logger.v(Logger.TAG.BUCKETING, "[Allocation inserted][$row][$allocationData]")
+                Logger.v(Logger.TAG.ALLOCATION, "[Allocation inserted][$row][$allocationData]")
             } else {
-                Logger.e(Logger.TAG.BUCKETING, "[Allocation insertion failed][$row][$allocationData]")
+                Logger.e(Logger.TAG.ALLOCATION, "[Allocation insertion failed][$row][$allocationData]")
             }
         }
     }
@@ -153,7 +153,7 @@ internal class DatabaseManager {
     fun getAllocation(visitorId: String, customVisitorId: String, variationGroupId: String) : String? {
         return db?.let {
             val id = it.allocationDao().getAllocation(visitorId, customVisitorId, variationGroupId)?.variationId
-            Logger.v(Logger.TAG.BUCKETING, "[Allocation found][$variationGroupId][$id]")
+            Logger.v(Logger.TAG.ALLOCATION, "[Allocation found][$variationGroupId][$id]")
             id
         }
     }

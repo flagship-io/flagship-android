@@ -17,7 +17,7 @@ import kotlin.Exception
 @Parcelize
 internal data class Campaign(
     var id: String,
-    var variationGroups: HashMap<String, VariationGroup>
+    var variationGroups: LinkedHashMap<String, VariationGroup>
 ) : Parcelable {
 
     companion object {
@@ -42,7 +42,7 @@ internal data class Campaign(
             return try {
                 val id = jsonObject.getString("id")
                 val variationGroupsArr = jsonObject.optJSONArray("variationGroups")
-                val variationGroups = HashMap<String, VariationGroup>()
+                val variationGroups = LinkedHashMap<String, VariationGroup>()
                 if (variationGroupsArr != null) {
                     for (i in 0 until variationGroupsArr.length()) {
                         val variationGroup =
@@ -52,7 +52,6 @@ internal data class Campaign(
                         }
                     }
                 } else {
-                    System.out.println("#M no varGroupe parse : " + jsonObject)
                     val variationGroup = VariationGroup.parse(jsonObject)
                     variationGroup?.let {
                         variationGroups.put(it.variationGroupId, it)
@@ -83,7 +82,6 @@ internal data class Campaign(
                     val variation = variationGroup.variations[variationId]
                     val mod = variation?.modifications?.values
                     mod?.let {
-                        System.out.println("#M getModifications = $it")
                         result.putAll(it)
                     }
                     break
@@ -118,7 +116,6 @@ internal data class VariationGroup(
                     variation.selected = true
                     selectedVariationId = variation.id
                     variations[variation.id] = variation
-                    System.out.println("#M select variation = " + selectedVariationId)
                 } else {
                     val variationArr = jsonObject.optJSONArray("variations")
                     if (variationArr != null) {
@@ -155,6 +152,7 @@ internal data class VariationGroup(
                     if (targeting != null && targeting.has("targetingGroups"))
                         TargetingGroups.parse(targeting.getJSONArray("targetingGroups"))
                     else null
+                var vg = VariationGroup(groupId, variations, targetingGroups, selectedVariationId)
                 VariationGroup(groupId, variations, targetingGroups, selectedVariationId)
             } catch (e: Exception) {
                 Logger.e(Logger.TAG.PARSING, "[VariationGroup object parsing error]")
@@ -245,18 +243,19 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
                 val operator = jsonObject.getString("operator")
                 Targeting(key, value, operator)
             } catch (e: Exception) {
-                Logger.e(Logger.TAG.PARSING, "[Targeting object parsing error]")
+                Logger.e(Logger.TAG.PARSING, "[Targeting object parsing error][$jsonObject]")
                 null
             }
 
         }
     }
 
-    fun isTargetingValid() : Boolean {
+    fun isTargetingValid(): Boolean {
 
         val value0 = Flagship.context[key]
         val value1 = value
-        return if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1) ?: false)
+        return if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1)
+            ?: false)
     }
 }
 
@@ -304,11 +303,10 @@ internal data class Modifications(
                     if (value is Boolean || value is Number || value is String) {
                         values[k] = Modification(k, variationGroupId, variationId, value)
                     } else if (value is JSONObject || value is JSONArray) {
-                        System.out.println("#RV try recursive on $value")
-                       val recursiveValues = Utils.getJsonRecursiveValues(value)
-                        System.out.println("#RV recursive values = $recursiveValues")
+                        val recursiveValues = Utils.getJsonRecursiveValues(value)
                         for (v in recursiveValues) {
-                            values[v.key] = Modification(v.key, variationGroupId, variationId, v.value)
+                            values[v.key] =
+                                Modification(v.key, variationGroupId, variationId, v.value)
                         }
                     } else {
                         Logger.e(
@@ -321,7 +319,10 @@ internal data class Modifications(
                 Modifications(variationGroupId, variationId, type, values)
             } catch (e: Exception) {
                 e.printStackTrace()
-                Logger.e(Logger.TAG.PARSING, "variationGroupId = $variationGroupId, variationId = $variationId")
+                Logger.e(
+                    Logger.TAG.PARSING,
+                    "variationGroupId = $variationGroupId, variationId = $variationId"
+                )
                 Modifications("", "", "", HashMap())
             }
         }

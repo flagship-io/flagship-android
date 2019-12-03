@@ -11,7 +11,6 @@ enum class ETargetingComp(name: String) : ITargetingComp {
     EQUALS("EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
            return  try {
-               System.out.println("#VV EQUALS $value0, $value1")
                when (true) {
                    value0 is Number && value1 is Number -> value0.toDouble() == value1.toDouble()
                    else -> value0 == value1
@@ -23,7 +22,6 @@ enum class ETargetingComp(name: String) : ITargetingComp {
     NOT_EQUALS("NOT_EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
-                System.out.println("#VV NO EQUALS $value0, $value1")
                 when (true) {
                     value0 is Number && value1 is Number -> value0.toDouble() != value1.toDouble()
                     else -> value0 != value1
@@ -75,7 +73,6 @@ enum class ETargetingComp(name: String) : ITargetingComp {
 
     GREATER_THAN_OR_EQUALS("GREATER_THAN_OR_EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
-            System.out.println("#VV GREATER_THAN_OR_EQUALS $value0, $value1")
             return  try {
                 when (true) {
                     value0 is String && value1 is String -> value0 >= value1
@@ -90,7 +87,6 @@ enum class ETargetingComp(name: String) : ITargetingComp {
     LOWER_THAN_OR_EQUALS("LOWER_THAN_OR_EQUALS") {
         override fun compare(value0: Any, value1: Any): Boolean {
             return  try {
-                System.out.println("#VV LOWER_THAN_OR_EQUALS $value0, $value1")
                 when (true) {
                     value0 is String && value1 is String -> value0 <= value1
                     value0 is Number && value1 is Number -> value0.toDouble() <= value1.toDouble()

@@ -24,6 +24,32 @@ class Flagship {
         NONE, ALL, ERRORS, VERBOSE
     }
 
+    enum class Mode { DECISION_API, BUCKETING}
+
+    class FlagshipBuilder(private var appContext: Context, private var envId: String) {
+
+        fun withFlagshipMode(mode : Mode) : FlagshipBuilder {
+            Companion.mode = mode
+            return this
+        }
+
+        private var ready : (() -> Unit)? = null
+
+        fun withReadyCallback(lambda: (() -> Unit)) : FlagshipBuilder {
+            ready = lambda
+            return this
+        }
+
+        fun withCustomerVisitorId(customVisitorId: String? = null) : FlagshipBuilder {
+            Companion.customVisitorId = customVisitorId
+            return this
+        }
+
+        fun start() {
+            start(appContext, envId, ready)
+        }
+    }
+
     companion object {
 
         internal const val VISITOR_ID = "visitorId"
@@ -34,7 +60,7 @@ class Flagship {
 
         internal var customVisitorId : String? = null
 
-        internal var bucketingEnabled = false
+        internal var mode = Mode.DECISION_API
         internal var useVisitorConsolidation = false
 
         @PublishedApi
@@ -52,7 +78,11 @@ class Flagship {
 
         internal var panicMode = false
 
-        internal var ready = false
+//        internal var ready = false
+
+        fun init(appContext: Context, envId: String) : FlagshipBuilder {
+            return FlagshipBuilder(appContext, envId)
+        }
 
         /**
          * Initialize the flagship SDK
@@ -64,24 +94,18 @@ class Flagship {
          * @param useBucketing (optional) enable the bucketing mode
          */
         @JvmOverloads
-        fun start(appContext: Context, envId: String, ready: () -> (Unit) = {}, customVisitorId: String? = null, useBucketing : Boolean = false) {
+        internal fun start(appContext: Context, envId: String, ready: (() -> Unit)? = null) {
 
             this.clientId = envId
             this.visitorId = Utils.genVisitorId(appContext)
-            this.customVisitorId = customVisitorId
-            this.bucketingEnabled = useBucketing
             sessionStart = System.currentTimeMillis()
             ApiManager.cacheDir = appContext.cacheDir
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
-            if (!useBucketing) {
-                syncCampaignModifications(ready)
-            }
-            else {
-                BucketingManager.startBucketing(ready)
-                // todo sync
-//                BucketingManager.syncBucketModifications(ready, false)
+            when (mode) {
+                Mode.DECISION_API -> syncCampaignModifications(ready)
+                Mode.BUCKETING -> BucketingManager.startBucketing(ready)
             }
         }
 
@@ -163,20 +187,23 @@ class Flagship {
          */
         @JvmOverloads
         fun updateContext(values: HashMap<String, Any>, sync: (() -> (Unit))? = null) {
-            for (p in values) {
-                updateContextValue(p.key, p.value)
-            }
+            if (!panicMode) {
+                for (p in values) {
+                    updateContextValue(p.key, p.value)
+                }
 //            if (ready) {
 //                if (!bucketingEnabled)
 //                    syncCampaignModifications("", sync)
 //                else
 //                    BucketingManager.syncBucketModifications(sync)
 //            }
-            if (ready) {
-                if (!bucketingEnabled && sync != null)
+
+//            if (ready) {
+                if (mode == Mode.DECISION_API && sync != null)
                     syncCampaignModifications("", sync)
-                else if (bucketingEnabled)
+                else if (mode == Mode.BUCKETING)
                     BucketingManager.syncBucketModifications(sync)
+//            }
             }
         }
 
@@ -195,12 +222,12 @@ class Flagship {
                         "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                     )
                 }
-                if (ready) {
-                    if (!bucketingEnabled && syncModifications != null)
+//                if (ready) {
+                    if (mode == Mode.DECISION_API && syncModifications != null)
                         syncCampaignModifications("", syncModifications)
-                    else if (bucketingEnabled)
+                    else if (mode == Mode.BUCKETING)
                         BucketingManager.syncBucketModifications(syncModifications)
-                }
+//                }
             }
         }
 
@@ -358,7 +385,7 @@ class Flagship {
             return GlobalScope.async {
                 if (!panicMode) {
                     ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-                    ready = true
+//                    ready = true
                     lambda?.let { it() }
                 }
             }
@@ -371,7 +398,7 @@ class Flagship {
          *
          */
         @JvmOverloads
-        fun syncCampaignModifications(lambda: () -> (Unit) = {}) {
+        fun syncCampaignModifications(lambda: (() -> Unit)? = null) {
             syncCampaignModifications("", lambda)
         }
 

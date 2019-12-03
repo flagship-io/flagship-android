@@ -16,15 +16,9 @@ class BucketingManager {
 
             GlobalScope.async {
                 campaignJson = ApiManager.getInstance().sendBucketingRequest()
-//                campaignJson = JSONArray("[{\"id\":\"bldqu62r008g02f8j390\",\"variationGroups\":[{\"variationGroupId\":\"bldqu62r008g02f8j3a0\",\"targetingGroups\":[{\"targetings\":[{\"key\":\"visitorId\",\"value\":\"toto\",\"operator\":\"IS\"}]}],\"variations\":[{\"id\":\"bldqu62r008g02f8j3ac\",\"allocation\":100,\"modifications\":{\"type\":\"JSON\",\"value\":{\"title\":\"Hi\",\"visitorIdColor\":\"#00C2AD\"}}}]},{\"variationGroupId\":\"bldqu62r008g02f8j3a1\",\"targetingGroups\":[{\"targetings\":[{\"key\":\"visitorId\",\"value\":\"tata\",\"operator\":\"IS\"}]}],\"variations\":[{\"id\":\"bldqu62r008g02f8j3ap\",\"allocation\":100,\"modifications\":{\"type\":\"JSON\",\"value\":{\"title\":\"Ahoy\",\"visitorIdColor\":\"#028C9A\"}}}]},{\"variationGroupId\":\"bldqu62r008g02f8j3a2\",\"targetingGroups\":[{\"targetings\":[{\"key\":\"visitorId\",\"value\":\"titi\",\"operator\":\"IS\"}]}],\"variations\":[{\"id\":\"bldqu62r008g02f8j3ag\",\"allocation\":100,\"modifications\":{\"type\":\"JSON\",\"value\":{\"title\":\"Hello\",\"visitorIdColor\":\"#E5B21D\"}}}]}]}]")
-                System.out.println("#BF0 bucketing ready 0")
-                System.out.println("#M1.1 all = " + Flagship.getAllModifications())
                 syncBucketModifications()
-                System.out.println("#M1.2 all = " + Flagship.getAllModifications())
                 lambda?.let {
-                    System.out.println("#M1.3 all = " + Flagship.getAllModifications())
-                    System.out.println("#BF1 bucketing ready 1")
-                    Flagship.ready = true
+//                    Flagship.ready = true
                     it()
                 }
             }
@@ -37,9 +31,7 @@ class BucketingManager {
                     Campaign.parse(it)?.let { campaigns ->
                         for ((k, campaign) in campaigns) {
                             val mods = campaign.getModifications(true)
-                            System.out.println("#M**  = " + mods)
                             Flagship.updateModifications(mods)
-                            System.out.println("#M1.2.1 all = " + Flagship.getAllModifications())
                         }
                     }
                 }
