@@ -24,27 +24,64 @@ class Flagship {
         NONE, ALL, ERRORS, VERBOSE
     }
 
-    enum class Mode { DECISION_API, BUCKETING}
+    /**
+     * Set the SDK Mode in client side or server Side
+     */
+    enum class Mode {
 
+        /**
+         * Server-side mode - The server will apply targeting and allocate campaigns. (Default)
+         */
+        DECISION_API,
+        /**
+         * Client-side mode - The mobile will apply targeting and allocate campaigns.
+         */
+        BUCKETING
+    }
+
+    /**
+     * FlagshipBuilder is a builder class to initialize the Flaghip SDK.
+     *
+     * @param appContext applicationContext
+     * @param envId key provided by ABTasty
+     */
     class FlagshipBuilder(private var appContext: Context, private var envId: String) {
 
-        fun withFlagshipMode(mode : Mode) : FlagshipBuilder {
+        /**
+         * Start Flagship SDK in BUCKETING mode (client-side) or in DECISION_API mode (server-side). Default is DECISION_API
+         *
+         * @param mode
+         * @return FlagshipBuilder
+         */
+        fun withFlagshipMode(mode: Mode): FlagshipBuilder {
             Companion.mode = mode
             return this
         }
 
-        private var ready : (() -> Unit)? = null
+        private var ready: (() -> Unit)? = null
 
-        fun withReadyCallback(lambda: (() -> Unit)) : FlagshipBuilder {
+        /**
+         * Set a code to apply when the SDK has finished to initialize
+         * @param lambda code to apply
+         * @return FlagshipBuilder
+         */
+        fun withReadyCallback(lambda: (() -> Unit)): FlagshipBuilder {
             ready = lambda
             return this
         }
 
-        fun withCustomerVisitorId(customVisitorId: String? = null) : FlagshipBuilder {
+        /**
+         * Set an id for identifying the current visitor
+         * @return FlagshipBuilder
+         */
+        fun withCustomerVisitorId(customVisitorId: String? = null): FlagshipBuilder {
             Companion.customVisitorId = customVisitorId
             return this
         }
 
+        /**
+         * Start the Flagship SDK
+         */
         fun start() {
             start(appContext, envId, ready)
         }
@@ -58,7 +95,7 @@ class Flagship {
         internal var clientId: String? = null
         internal var visitorId: String? = null
 
-        internal var customVisitorId : String? = null
+        internal var customVisitorId: String? = null
 
         internal var mode = Mode.DECISION_API
         internal var useVisitorConsolidation = false
@@ -78,9 +115,16 @@ class Flagship {
 
         internal var panicMode = false
 
-//        internal var ready = false
+        internal var ready = false
 
-        fun init(appContext: Context, envId: String) : FlagshipBuilder {
+        /**
+         * Initialize the flagship SDK
+         *
+         * @param appContext application context
+         * @param envId key provided by ABTasty
+         * @return FlagshipBuilder
+         **/
+        fun init(appContext: Context, envId: String): FlagshipBuilder {
             return FlagshipBuilder(appContext, envId)
         }
 
@@ -89,9 +133,7 @@ class Flagship {
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
-         * @param code (optional) to execute when the SDK is ready
-         * @param customVisitorId (optional) set an id for identifying the current visitor
-         * @param useBucketing (optional) enable the bucketing mode
+         * @param ready (optional) to execute when the SDK is ready
          */
         @JvmOverloads
         internal fun start(appContext: Context, envId: String, ready: (() -> Unit)? = null) {
@@ -136,9 +178,10 @@ class Flagship {
          *
          * @param key key to associate with the following value
          * @param value new context value
-         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
-         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually : syncCampaignModifications()
+         * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
+         * Then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually by calling syncCampaignModifications()
+         * @see syncCampaignModifications()
          */
         @JvmOverloads
         fun updateContext(key: String, value: Number, sync: (() -> (Unit))? = null) {
@@ -151,9 +194,10 @@ class Flagship {
          *
          * @param key key to associate with the following value
          * @param value new context value
-         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
-         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually : syncCampaignModifications()
+         * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
+         * Then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually by calling syncCampaignModifications()
+         * @see syncCampaignModifications()
          */
         @JvmOverloads
         fun updateContext(key: String, value: String, sync: (() -> (Unit))? = null) {
@@ -166,9 +210,10 @@ class Flagship {
          *
          * @param key key to associate with the following value
          * @param value new context value
-         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
-         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually : syncCampaignModifications()
+         * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
+         * Then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually by calling syncCampaignModifications()
+         * @see syncCampaignModifications()
          */
         @JvmOverloads
         fun updateContext(key: String, value: Boolean, sync: (() -> (Unit))? = null) {
@@ -181,9 +226,10 @@ class Flagship {
          *
          * @param key key to associate with the following value
          * @param value new context value
-         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
-         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually : syncCampaignModifications()
+         * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
+         * Then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually by calling syncCampaignModifications()
+         * @see syncCampaignModifications()
          */
         @JvmOverloads
         fun updateContext(values: HashMap<String, Any>, sync: (() -> (Unit))? = null) {
@@ -198,12 +244,12 @@ class Flagship {
 //                    BucketingManager.syncBucketModifications(sync)
 //            }
 
-//            if (ready) {
-                if (mode == Mode.DECISION_API && sync != null)
-                    syncCampaignModifications("", sync)
-                else if (mode == Mode.BUCKETING)
-                    BucketingManager.syncBucketModifications(sync)
-//            }
+                if (ready) {
+                    if (mode == Mode.DECISION_API && sync != null)
+                        syncCampaignModifications("", sync)
+                    else if (mode == Mode.BUCKETING)
+                        BucketingManager.syncBucketModifications(sync)
+                }
             }
         }
 
@@ -222,12 +268,12 @@ class Flagship {
                         "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                     )
                 }
-//                if (ready) {
+                if (ready) {
                     if (mode == Mode.DECISION_API && syncModifications != null)
                         syncCampaignModifications("", syncModifications)
                     else if (mode == Mode.BUCKETING)
                         BucketingManager.syncBucketModifications(syncModifications)
-//                }
+                }
             }
         }
 
@@ -359,7 +405,6 @@ class Flagship {
                             it
                         } ?: default
                     } ?: default
-
                 } catch (e: Exception) {
                     Logger.e(
                         Logger.TAG.PARSING,
@@ -371,7 +416,10 @@ class Flagship {
         }
 
         /**
-         * This function calls the decision api and updates all the campaigns modification from the server according to the user context.
+         * When the SDK is set with DECISION_API mode :
+         * This function will call the decision api and update all the campaigns modifications from the server according to the user context.
+         *If the SDK is set with BUCKETING mode :
+         * This function will re-apply targeting and update all the campaigns modifications from the server according to the user context.
          *
          * @param campaignCustomId (optional) Specify a campaignId to get its modifications. All campaigns by default.
          * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
@@ -385,7 +433,7 @@ class Flagship {
             return GlobalScope.async {
                 if (!panicMode) {
                     ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-//                    ready = true
+                    ready = true
                     lambda?.let { it() }
                 }
             }

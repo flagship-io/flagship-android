@@ -140,28 +140,41 @@ internal class DatabaseManager {
         variationId: String
     ) {
         db?.let {
-            val allocationData = AllocationData(visitorId, customVisitorId, variationGroupId, variationId)
+            val allocationData =
+                AllocationData(visitorId, customVisitorId, variationGroupId, variationId)
             val row = it.allocationDao().insertAllocation(allocationData)
             if (row > 0) {
                 Logger.v(Logger.TAG.ALLOCATION, "[Allocation inserted][$row][$allocationData]")
             } else {
-                Logger.e(Logger.TAG.ALLOCATION, "[Allocation insertion failed][$row][$allocationData]")
+                Logger.e(
+                    Logger.TAG.ALLOCATION,
+                    "[Allocation insertion failed][$row][$allocationData]"
+                )
             }
         }
     }
 
-    fun getAllocation(visitorId: String, customVisitorId: String, variationGroupId: String) : String? {
+    fun getAllocation(
+        visitorId: String,
+        customVisitorId: String,
+        variationGroupId: String
+    ): String? {
         return db?.let {
-            val id = it.allocationDao().getAllocation(visitorId, customVisitorId, variationGroupId)?.variationId
+            val id = it.allocationDao().getAllocation(visitorId, customVisitorId, variationGroupId)
+                ?.variationId
             Logger.v(Logger.TAG.ALLOCATION, "[Allocation found][$variationGroupId][$id]")
             id
         }
     }
 
-    fun insertBucket(bucket : String) {
+    fun insertBucket(bucket: String) {
         db?.let {
-            val bucketData = BucketData(Flagship.visitorId ?: "", Flagship?.customVisitorId ?: "", bucket)
-            val row = it.bucketDao().insertBucket(bucketData)
+            val bucketData = BucketData("0", bucket, System.currentTimeMillis())
+            val row = if (it.bucketDao().countBucket() == 0) {
+                it.bucketDao().insertBucket(bucketData).toInt()
+            } else {
+                it.bucketDao().updateBucket(bucket)
+            }
             if (row > 0) {
                 Logger.v(Logger.TAG.BUCKETING, "[Bucket inserted][$row][$bucketData]")
             } else {
@@ -173,9 +186,9 @@ internal class DatabaseManager {
         }
     }
 
-    fun getBucket() : String? {
+    fun getBucket(): String? {
         db?.let {
-            val bucket = it.bucketDao().getBucket(Flagship.visitorId ?: "", Flagship?.customVisitorId ?: "")
+            val bucket = it.bucketDao().getBucket()
             if (bucket == null)
                 Logger.v(Logger.TAG.BUCKETING, "[No bucket found]")
             else {

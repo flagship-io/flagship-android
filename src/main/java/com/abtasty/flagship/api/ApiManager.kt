@@ -294,9 +294,9 @@ internal class ApiManager {
                 Flagship.useVisitorConsolidation = jsonData.optBoolean("visitorConsolidation")
 
                 if (code in 200..299) {
-                    val campaignsArr = jsonData.getJSONArray("campaigns")
-                    DatabaseManager.getInstance().insertBucket(campaignsArr.toString())
-                    campaignsJson = campaignsArr
+                    val campaignsArr = jsonData.optJSONArray("campaigns")
+                    campaignsJson = campaignsArr ?: JSONArray()
+                    DatabaseManager.getInstance().insertBucket(campaignsJson.toString())
                     return true
                 }
             } catch (e: Exception) {

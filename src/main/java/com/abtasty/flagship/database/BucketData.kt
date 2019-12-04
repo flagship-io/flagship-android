@@ -5,11 +5,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import kotlinx.android.parcel.Parcelize
 
-@Entity(tableName = "bucket", primaryKeys = ["visitorId", "customVisitorId"])
+@Entity(tableName = "bucket", primaryKeys = ["bid"])
 @Parcelize
 data class BucketData(
 
-    @ColumnInfo(name = "visitorId") val visitorId : String,
-    @ColumnInfo(name = "customVisitorId") val customVisitorId : String,
-    @ColumnInfo(name = "bucket") val bucket:String
+    @ColumnInfo(name = "bid") val bid : String,
+    @ColumnInfo(name = "bucket") val bucket:String,
+    @ColumnInfo(name = "timestamp") val timestamp: Long
 ) : Parcelable

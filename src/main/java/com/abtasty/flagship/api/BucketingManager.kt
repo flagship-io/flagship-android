@@ -18,7 +18,7 @@ class BucketingManager {
                 campaignJson = ApiManager.getInstance().sendBucketingRequest()
                 syncBucketModifications()
                 lambda?.let {
-//                    Flagship.ready = true
+                    Flagship.ready = true
                     it()
                 }
             }
