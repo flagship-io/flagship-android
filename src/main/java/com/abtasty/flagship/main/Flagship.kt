@@ -79,6 +79,16 @@ class Flagship {
             return this
         }
 
+
+        /**
+         * Enable logs of the SDK
+         */
+        fun withLogEnabled(mode: LogMode) : FlagshipBuilder {
+            Logger.logMode = mode
+            return this
+        }
+
+
         /**
          * Start the Flagship SDK
          */
@@ -162,14 +172,6 @@ class Flagship {
                 modifications.clear()
                 DatabaseManager.getInstance().loadModifications()
             }
-        }
-
-
-        /**
-         * Enable logs of the SDK
-         */
-        fun enableLog(mode: LogMode) {
-            Logger.logMode = mode
         }
 
         /**
