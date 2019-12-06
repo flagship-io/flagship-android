@@ -6,6 +6,7 @@ import com.abtasty.flagship.api.BucketingManager
 import com.abtasty.flagship.api.HitBuilder
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.utils.FlagshipContext
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.Deferred
@@ -103,11 +104,13 @@ class Flagship {
         internal const val CUSTOM_VISITOR_ID = "customVisitorId"
 
         internal var clientId: String? = null
+
         internal var visitorId: String? = null
 
         internal var customVisitorId: String? = null
 
         internal var mode = Mode.DECISION_API
+
         internal var useVisitorConsolidation = false
 
         @PublishedApi
@@ -123,6 +126,8 @@ class Flagship {
         internal var panicMode = false
 
         internal var ready = false
+
+        internal var isNewVisitor : Boolean? = null
 
         /**
          * Initialize the flagship SDK
@@ -149,6 +154,7 @@ class Flagship {
             this.visitorId = Utils.genVisitorId(appContext)
             sessionStart = System.currentTimeMillis()
             ApiManager.cacheDir = appContext.cacheDir
+            isNewVisitor = Utils.isNewVisitor(appContext)
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
@@ -225,6 +231,26 @@ class Flagship {
         fun updateContext(key: String, value: Boolean, sync: (() -> (Unit))? = null) {
             updateContextValue(key, value, sync)
         }
+
+        /**
+         * This function updates the visitor context value matching the given key.
+         * A new context value associated with this key will be created if there is no matching.
+         *
+         * @param key Flagship context key to associate with the following value
+         * @param value new context value
+         * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
+         * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
+         * You also have the possibility to update it manually : syncCampaignModifications()
+         */
+        @JvmOverloads
+        fun updateContext(key : FlagshipContext, value: Any, sync: (() -> (Unit))? = null) {
+            if (key.checkValue(value))
+                updateContextValue(key.key, value, sync)
+            else
+                Logger.e(Logger.TAG.CONTEXT, "updateContext $key doesn't have the expected value type: $value.")
+        }
+
+
 
         /**
          * This function updates the visitor context value matching the given key.

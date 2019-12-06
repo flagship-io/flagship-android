@@ -18,6 +18,14 @@ class Utils {
         internal fun loadDeviceContext(context: Context) {
             loadDeviceResolution(context)
             loadLocale(context)
+            val newContextValues = HashMap<String, Any>()
+            for (fsContext in FlagshipContext.values()) {
+                fsContext.value(context)?.let {
+                    if (fsContext.checkValue(it))
+                        newContextValues[fsContext.key] = it
+                }
+            }
+            Flagship.updateContext(newContextValues)
         }
 
         private fun loadDeviceResolution(context: Context) {
@@ -32,6 +40,17 @@ class Utils {
 
         internal fun logFailorSuccess(boolean: Boolean) : String {
             return if (boolean) "Success" else "Fail"
+        }
+
+        fun isNewVisitor(context: Context) : Boolean {
+            val sharedPref = context.getSharedPreferences("_Flagship", Context.MODE_PRIVATE)
+            val returningVisitor = sharedPref.getInt("returningVisitor", 0)
+            return if (returningVisitor == 0) {
+                sharedPref.edit().putInt("returningVisitor", 1).apply()
+                true
+            }
+            else false
+
         }
 
         fun genVisitorId(context: Context): String? {
