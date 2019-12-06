@@ -173,12 +173,13 @@ class Flagship {
          */
         fun setCustomVisitorId(customVisitorId: String, clearModifications: Boolean = true, clearContextValues : Boolean = true) {
             if (!panicMode) {
+                //todo what if user consolidation
                 this.customVisitorId = customVisitorId
                 if (clearModifications)
                     modifications.clear()
                 if (clearContextValues) {
                     context.clear()
-                    //todo load device again
+                    updateContext(deviceContext)
                 }
                 DatabaseManager.getInstance().loadModifications()
             }

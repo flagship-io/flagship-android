@@ -25,6 +25,7 @@ class Utils {
                         newContextValues[fsContext.key] = it
                 }
             }
+            Flagship.deviceContext.putAll(newContextValues)
             Flagship.updateContext(newContextValues)
         }
 
