@@ -75,7 +75,7 @@ class Flagship {
          * @return FlagshipBuilder
          */
         fun withCustomerVisitorId(customVisitorId: String? = null): FlagshipBuilder {
-            Companion.customVisitorId = customVisitorId
+            customVisitorId?.let { Companion.setCustomVisitorId(customVisitorId) }
             return this
         }
 
@@ -83,7 +83,7 @@ class Flagship {
         /**
          * Enable logs of the SDK
          */
-        fun withLogEnabled(mode: LogMode) : FlagshipBuilder {
+        fun withLogEnabled(mode: LogMode): FlagshipBuilder {
             Logger.logMode = mode
             return this
         }
@@ -115,9 +115,6 @@ class Flagship {
 
         @PublishedApi
         internal var modifications = HashMap<String, Modification>()
-
-//        val modificationMap : HashMap<String, Any>
-//            get() = HashMap(modifications.mapValues { it.value.value })
 
         internal var deviceContext = HashMap<String, Any>()
 
@@ -165,11 +162,18 @@ class Flagship {
          * Set an id for identifying the current visitor
          *
          * @param customVisitorId id of the current visitor
+         * @param clearModifications set to true to clear modifications & visitor context (true by default)
+         * @param clearContextValues set to true to clear all visitor context values (true by default)
          */
-        fun setCustomVisitorId(customVisitorId: String) {
+        fun setCustomVisitorId(customVisitorId: String, clearModifications: Boolean = true, clearContextValues : Boolean = true) {
             if (!panicMode) {
                 this.customVisitorId = customVisitorId
-                modifications.clear()
+                if (clearModifications)
+                    modifications.clear()
+                if (clearContextValues) {
+                    context.clear()
+                    //todo load device again
+                }
                 DatabaseManager.getInstance().loadModifications()
             }
         }
@@ -239,19 +243,8 @@ class Flagship {
                 for (p in values) {
                     updateContextValue(p.key, p.value)
                 }
-//            if (ready) {
-//                if (!bucketingEnabled)
-//                    syncCampaignModifications("", sync)
-//                else
-//                    BucketingManager.syncBucketModifications(sync)
-//            }
-
-                if (ready) {
-                    if (mode == Mode.DECISION_API && sync != null)
-                        syncCampaignModifications("", sync)
-                    else if (mode == Mode.BUCKETING)
-                        BucketingManager.syncBucketModifications(sync)
-                }
+                if (ready && sync != null)
+                    syncCampaignModifications(sync)
             }
         }
 
@@ -259,7 +252,7 @@ class Flagship {
         private fun updateContextValue(
             key: String,
             value: Any,
-            syncModifications: (() -> (Unit))? = null
+            sync: (() -> (Unit))? = null
         ) {
             if (!panicMode) {
                 if (value is Number || value is Boolean || value is String) {
@@ -270,13 +263,17 @@ class Flagship {
                         "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
                     )
                 }
-                if (ready) {
-                    if (mode == Mode.DECISION_API && syncModifications != null)
-                        syncCampaignModifications("", syncModifications)
-                    else if (mode == Mode.BUCKETING)
-                        BucketingManager.syncBucketModifications(syncModifications)
-                }
+                if (ready && sync != null)
+                    syncCampaignModifications(sync)
             }
+        }
+
+        /**
+         * This function clear all the visitor context values
+         */
+        @JvmOverloads
+        fun clearContextValues() {
+            context.clear()
         }
 
         /**
@@ -420,36 +417,28 @@ class Flagship {
         /**
          * When the SDK is set with DECISION_API mode :
          * This function will call the decision api and update all the campaigns modifications from the server according to the user context.
-         *If the SDK is set with BUCKETING mode :
+         * If the SDK is set with BUCKETING mode :
          * This function will re-apply targeting and update all the campaigns modifications from the server according to the user context.
          *
-         * @param campaignCustomId (optional) Specify a campaignId to get its modifications. All campaigns by default.
          * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
+         * @param campaignCustomId (optional) Specify a campaignId to get only its modifications. Set an empty string to get all campaigns modifications (by default).
          *
          */
         @JvmOverloads
         fun syncCampaignModifications(
-            campaignCustomId: String = "",
-            lambda: (() -> (Unit))? = null
-        ): Deferred<Unit> {
-            return GlobalScope.async {
-                if (!panicMode) {
-                    ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-                    ready = true
-                    lambda?.let { it() }
+            lambda: (() -> (Unit))? = null,
+            campaignCustomId: String = ""
+        ) {
+            if (mode == Mode.DECISION_API) {
+                GlobalScope.async {
+                    if (!panicMode) {
+                        ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
+                        ready = true
+                        lambda?.let { it() }
+                    }
                 }
-            }
-        }
-
-        /**
-         * This function calls the decision api and updates all the campaigns modification from the server according to the user context.
-         *
-         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
-         *
-         */
-        @JvmOverloads
-        fun syncCampaignModifications(lambda: (() -> Unit)? = null) {
-            syncCampaignModifications("", lambda)
+            } else
+                BucketingManager.syncBucketModifications(lambda)
         }
 
         @Synchronized
