@@ -4,8 +4,6 @@ import android.content.Context
 import androidx.core.os.ConfigurationCompat
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
@@ -15,19 +13,29 @@ class Utils {
 
     companion object {
 
-        internal fun loadDeviceContext(context: Context) {
-            loadDeviceResolution(context)
-            loadLocale(context)
+        internal fun loadDeviceContext(appContext: Context) {
+            loadDeviceResolution(appContext)
+            loadLocale(appContext)
             val newContextValues = HashMap<String, Any>()
             for (fsContext in FlagshipContext.values()) {
-                fsContext.value(context)?.let {
+                fsContext.value(appContext)?.let {
                     if (fsContext.checkValue(it))
                         newContextValues[fsContext.key] = it
                 }
             }
+
+            for (fsPrivateContext in FlagshipPrivateContext.values()) {
+                fsPrivateContext.value(appContext)?.let {
+                    if (fsPrivateContext.checkValue(it)) {
+                        Flagship.context[fsPrivateContext.key] = it
+                    }
+                }
+            }
+
             Flagship.deviceContext.putAll(newContextValues)
             Flagship.updateContext(newContextValues)
         }
+
 
         private fun loadDeviceResolution(context: Context) {
             val displayMetrics = context.resources.displayMetrics
@@ -39,15 +47,15 @@ class Utils {
             Flagship.deviceContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale.toString().toLowerCase().replace("_", "-")
         }
 
-        internal fun logFailorSuccess(boolean: Boolean) : String {
+        internal fun logFailOrSuccess(boolean: Boolean) : String {
             return if (boolean) "Success" else "Fail"
         }
 
-        fun isNewVisitor(context: Context) : Boolean {
+        fun isFirstInit(context: Context) : Boolean {
             val sharedPref = context.getSharedPreferences("_Flagship", Context.MODE_PRIVATE)
-            val returningVisitor = sharedPref.getInt("returningVisitor", 0)
-            return if (returningVisitor == 0) {
-                sharedPref.edit().putInt("returningVisitor", 1).apply()
+            val firstInit = sharedPref.getInt("firstInit", 0)
+            return if (firstInit == 0) {
+                sharedPref.edit().putInt("firstInit", 1).apply()
                 true
             }
             else false

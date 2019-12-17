@@ -48,7 +48,7 @@ internal class DatabaseManager {
                 )
                 Logger.v(
                     Logger.TAG.DB,
-                    "[Insert hit:$id][${Utils.logFailorSuccess(id > 0)}] ${hit.jsonBody}"
+                    "[Insert hit:$id][${Utils.logFailOrSuccess(id > 0)}] ${hit.jsonBody}"
                 )
                 return id
             }
@@ -61,7 +61,7 @@ internal class DatabaseManager {
             val nb = it.hitDao().removeHits(hit.requestIds)
             Logger.v(
                 Logger.TAG.DB,
-                "[Remove hit:${hit.requestIds}][${Utils.logFailorSuccess(nb > 0)}] ${hit.jsonBody}"
+                "[Remove hit:${hit.requestIds}][${Utils.logFailOrSuccess(nb > 0)}] ${hit.jsonBody}"
             )
         }
     }
@@ -75,7 +75,7 @@ internal class DatabaseManager {
         val nb = updateHitStatus(hit.requestIds, 0)
         Logger.v(
             Logger.TAG.DB,
-            "[Update status:${hit.requestIds}][${Utils.logFailorSuccess(
+            "[Update status:${hit.requestIds}][${Utils.logFailOrSuccess(
                 (nb ?: 0) > 0
             )}] ${hit.jsonBody}"
         )
@@ -116,6 +116,7 @@ internal class DatabaseManager {
                 val modifications = it.modificationDao().getAllModifications(
                     Flagship.visitorId ?: "", Flagship.customVisitorId ?: ""
                 )
+                System.out.println("#LM load modification : (${Flagship.visitorId ?: ""}, ${Flagship.customVisitorId ?: ""})")
                 for (m in modifications) {
                     Flagship.modifications[m.key] = Modification.fromModificationData(m)
                 }

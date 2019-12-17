@@ -100,7 +100,7 @@ class Hit {
             withUrl(ApiManager.getInstance().ARIANE)
             withBodyParam(KeyMap.CLIENT_ID.key, Flagship.clientId ?: "")
             withBodyParam(KeyMap.VISITOR_ID.key, Flagship.visitorId ?: "")
-            withBodyParam(KeyMap.CUSTOM_VISITOR_ID.key, Flagship.customVisitorId ?: "")
+//            withBodyParam(KeyMap.CUSTOM_VISITOR_ID.key, Flagship.customVisitorId ?: "")
             if (includeDeviceContext) {
                 withBodyParam(KeyMap.TIMESTAMP.key, System.currentTimeMillis())
                 withBodyParam(KeyMap.DATA_SOURCE.key, KeyMap.APP)
@@ -341,6 +341,7 @@ class Hit {
             withHitParam(KeyMap.TYPE, Type.ACTIVATION)
             withHitParam(KeyMap.VARIATION_GROUP_ID, variationGroupId)
             withHitParam(KeyMap.VARIATION_ID, variationId)
+            withHitParam(KeyMap.CUSTOM_VISITOR_ID, Flagship.customVisitorId ?: "")
         }
     }
 
@@ -370,7 +371,7 @@ class Hit {
                withHitParam(KeyMap.TYPE, Type.BATCH)
                withHitParam(KeyMap.CLIENT_ID, Flagship.clientId!!)
                withHitParam(KeyMap.VISITOR_ID, visitorId)
-               withHitParam(KeyMap.CUSTOM_VISITOR_ID, customVisitorId)
+//               withHitParam(KeyMap.CUSTOM_VISITOR_ID, customVisitorId)
                withChild(hits)
            } catch (e : Exception) {
                e.printStackTrace()

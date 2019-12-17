@@ -7,6 +7,7 @@ import com.abtasty.flagship.api.HitBuilder
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.utils.FlagshipContext
+import com.abtasty.flagship.utils.FlagshipPrivateContext
 import com.abtasty.flagship.utils.Logger
 import com.abtasty.flagship.utils.Utils
 import kotlinx.coroutines.Deferred
@@ -76,7 +77,13 @@ class Flagship {
          * @return FlagshipBuilder
          */
         fun withCustomerVisitorId(customVisitorId: String? = null): FlagshipBuilder {
-            customVisitorId?.let { Companion.setCustomVisitorId(customVisitorId) }
+            customVisitorId?.let {
+                Companion.setCustomVisitorId(
+                    customVisitorId,
+                    clearModifications = false,
+                    clearContextValues = false
+                )
+            }
             return this
         }
 
@@ -101,7 +108,7 @@ class Flagship {
     companion object {
 
         internal const val VISITOR_ID = "visitorId"
-        internal const val CUSTOM_VISITOR_ID = "customVisitorId"
+        internal const val CUSTOM_VISITOR_ID = "custom_visitor_id"
 
         internal var clientId: String? = null
 
@@ -127,7 +134,7 @@ class Flagship {
 
         internal var ready = false
 
-        internal var isNewVisitor : Boolean? = null
+        internal var isFirstInit: Boolean? = null
 
         /**
          * Initialize the flagship SDK
@@ -154,7 +161,7 @@ class Flagship {
             this.visitorId = Utils.genVisitorId(appContext)
             sessionStart = System.currentTimeMillis()
             ApiManager.cacheDir = appContext.cacheDir
-            isNewVisitor = Utils.isNewVisitor(appContext)
+            isFirstInit = Utils.isFirstInit(appContext)
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
@@ -171,7 +178,11 @@ class Flagship {
          * @param clearModifications set to true to clear modifications & visitor context (true by default)
          * @param clearContextValues set to true to clear all visitor context values (true by default)
          */
-        fun setCustomVisitorId(customVisitorId: String, clearModifications: Boolean = true, clearContextValues : Boolean = true) {
+        fun setCustomVisitorId(
+            customVisitorId: String,
+            clearModifications: Boolean = true,
+            clearContextValues: Boolean = true
+        ) {
             if (!panicMode) {
                 //todo what if user consolidation
                 this.customVisitorId = customVisitorId
@@ -244,13 +255,15 @@ class Flagship {
          * You also have the possibility to update it manually : syncCampaignModifications()
          */
         @JvmOverloads
-        fun updateContext(key : FlagshipContext, value: Any, sync: (() -> (Unit))? = null) {
+        fun updateContext(key: FlagshipContext, value: Any, sync: (() -> (Unit))? = null) {
             if (key.checkValue(value))
                 updateContextValue(key.key, value, sync)
             else
-                Logger.e(Logger.TAG.CONTEXT, "updateContext $key doesn't have the expected value type: $value.")
+                Logger.e(
+                    Logger.TAG.CONTEXT,
+                    "updateContext $key doesn't have the expected value type: $value."
+                )
         }
-
 
 
         /**
@@ -282,13 +295,28 @@ class Flagship {
             sync: (() -> (Unit))? = null
         ) {
             if (!panicMode) {
-                if (value is Number || value is Boolean || value is String) {
-                    context[key] = value
-                } else {
-                    Logger.e(
-                        Logger.TAG.CONTEXT,
-                        "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
-                    )
+//                if (value is Number || value is Boolean || value is String) {
+//                    context[key] = value
+//                } else {
+//                    Logger.e(
+//                        Logger.TAG.CONTEXT,
+//                        "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
+//                    )
+//                }
+                when (true) {
+                    (FlagshipPrivateContext.keys().contains(key)) -> {
+                        Logger.e(
+                            Logger.TAG.CONTEXT,
+                            "Context Update : Your data \"$key\" is reserved and cannot be modified."
+                        )
+                    }
+                    (value is Number || value is Boolean || value is String) -> context[key] = value
+                    else -> {
+                        Logger.e(
+                            Logger.TAG.CONTEXT,
+                            "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
+                        )
+                    }
                 }
                 if (ready && sync != null)
                     syncCampaignModifications(sync)
@@ -354,9 +382,6 @@ class Flagship {
             return getFlagshipModification(key, default, activate)
         }
 
-        fun getAllModifications(): HashMap<String, Modification> {
-            return Flagship.modifications
-        }
 
         /**
          * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,

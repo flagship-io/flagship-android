@@ -289,10 +289,8 @@ internal class ApiManager {
         override fun parseResponse(): Boolean {
             try {
                 val jsonData = JSONObject(responseBody)
-                //todo manage panic mode
                 Flagship.panicMode = jsonData.optBoolean("panic", false)
-                Flagship.useVisitorConsolidation = jsonData.optBoolean("visitorConsolidation")
-
+//                Flagship.useVisitorConsolidation = jsonData.optBoolean("visitorConsolidation")
                 if (code in 200..299) {
                     val campaignsArr = jsonData.optJSONArray("campaigns")
                     campaignsJson = campaignsArr ?: JSONArray()

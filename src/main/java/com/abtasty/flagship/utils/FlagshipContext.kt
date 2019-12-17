@@ -11,6 +11,7 @@ import android.util.Patterns
 import com.abtasty.flagship.BuildConfig
 import com.abtasty.flagship.main.Flagship
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 interface IFlagshipContext {
@@ -252,12 +253,13 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
     },
 
     /**
-     * Set if the current visitor is new in the visitor context.
+     * Set if the sdk is initialized for the first time
      * This value is automatically set by the SDK but can be overridden (must me a Boolean)
      */
-    FIRST_TIME_USER("sdk_firstTimeUser") {
+
+    FIRST_TIME_INIT("sdk_firstTimeInit") {
         override fun value(context: Context): Any? {
-            return Flagship.isNewVisitor
+            return Flagship.isFirstInit
         }
 
         override fun checkValue(value: Any): Boolean {
@@ -265,19 +267,19 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
         }
     },
 
-    /**
-     * Set if the curresnt visitor is returning in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a Boolean)
-     */
-    RETURNING_USER("sdk_returningUser") {
-        override fun value(context: Context): Any? {
-            return Flagship.isNewVisitor == false
-        }
-
-        override fun checkValue(value: Any): Boolean {
-            return (value is Boolean)
-        }
-    },
+//    /**
+//     * Set if the curresnt visitor is returning in the visitor context.
+//     * This value is automatically set by the SDK but can be overridden (must me a Boolean)
+//     */
+//    RETURNING_USER("sdk_returningUser") {
+//        override fun value(context: Context): Any? {
+//            return Flagship.isNewVisitor == false
+//        }
+//
+//        override fun checkValue(value: Any): Boolean {
+//            return (value is Boolean)
+//        }
+//    },
 
 //    LOGGED_IN_USER("sdk_loggedInUser") {
 //        override fun value(context: Context): Any? {
@@ -385,5 +387,34 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
             return (value is String)
         }
     },
+}
 
+
+enum class FlagshipPrivateContext(var key: String) : IFlagshipContext {
+
+    ALL_USERS("fs_all_users") {
+        override fun value(context: Context): Any? {
+            return ""
+        }
+
+        override fun checkValue(value: Any): Boolean {
+            return true
+        }
+    },
+
+    FS_USERS("fs_users") {
+        override fun value(context: Context): Any? {
+            return Flagship.customVisitorId ?: ""
+        }
+
+        override fun checkValue(value: Any): Boolean {
+            return value is String
+        }
+    };
+
+    companion object  {
+        fun keys() : List<String> {
+            return values().map { it.key }
+        }
+    }
 }

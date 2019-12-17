@@ -67,8 +67,10 @@ internal data class Campaign(
     }
 
     fun getModifications(useBucketing: Boolean): HashMap<String, Modification> {
-        if (!useBucketing)
-            Flagship.modifications.clear() // Bucketing
+//        if (!useBucketing) {
+//            System.out.println("#DA : updateClear 4")
+//            Flagship.modifications.clear() // Bucketing
+//        }
         val result = HashMap<String, Modification>()
         for ((key, variationGroup) in variationGroups) {
             if (!useBucketing) {
@@ -105,10 +107,7 @@ internal data class VariationGroup(
         fun parse(jsonObject: JSONObject): VariationGroup? {
             return try {
                 val groupId = jsonObject.getString("id")
-                var selectedVariationId = DatabaseManager.getInstance().getAllocation(
-                    Flagship.visitorId ?: "",
-                    Flagship.customVisitorId ?: "", groupId
-                )
+                var selectedVariationId :String?
                 val variations = HashMap<String, Variation>()
                 val variationObj = jsonObject.optJSONObject("variation")
                 if (variationObj != null) {
@@ -117,6 +116,10 @@ internal data class VariationGroup(
                     selectedVariationId = variation.id
                     variations[variation.id] = variation
                 } else {
+                    selectedVariationId = DatabaseManager.getInstance().getAllocation(
+                        Flagship.visitorId ?: "",
+                        Flagship.customVisitorId ?: "", groupId
+                    )
                     val variationArr = jsonObject.optJSONArray("variations")
                     if (variationArr != null) {
                         var p = 0
@@ -152,7 +155,6 @@ internal data class VariationGroup(
                     if (targeting != null && targeting.has("targetingGroups"))
                         TargetingGroups.parse(targeting.getJSONArray("targetingGroups"))
                     else null
-                var vg = VariationGroup(groupId, variations, targetingGroups, selectedVariationId)
                 VariationGroup(groupId, variations, targetingGroups, selectedVariationId)
             } catch (e: Exception) {
                 Logger.e(Logger.TAG.PARSING, "[VariationGroup object parsing error]")
