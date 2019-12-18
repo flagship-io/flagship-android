@@ -126,8 +126,6 @@ class Flagship {
         @PublishedApi
         internal var modifications = HashMap<String, Modification>()
 
-        internal var deviceContext = HashMap<String, Any>()
-
         internal var sessionStart: Long = -1
 
         internal var panicMode = false
@@ -190,7 +188,8 @@ class Flagship {
                     modifications.clear()
                 if (clearContextValues) {
                     context.clear()
-                    updateContext(deviceContext)
+                    Utils.loadDeviceContext(null)
+                    System.out.println("#IE context = " + context)
                 }
                 DatabaseManager.getInstance().loadModifications()
             }

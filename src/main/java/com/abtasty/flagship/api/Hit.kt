@@ -104,7 +104,8 @@ class Hit {
             if (includeDeviceContext) {
                 withBodyParam(KeyMap.TIMESTAMP.key, System.currentTimeMillis())
                 withBodyParam(KeyMap.DATA_SOURCE.key, KeyMap.APP)
-                withBodyParams(Flagship.deviceContext)
+                withBodyParam(KeyMap.DEVICE_LOCALE.key, Flagship.context[KeyMap.DEVICE_LOCALE.key].toString())
+                withBodyParam(KeyMap.DEVICE_RESOLUTION.key, Flagship.context[KeyMap.DEVICE_RESOLUTION.key].toString())
             }
         }
 

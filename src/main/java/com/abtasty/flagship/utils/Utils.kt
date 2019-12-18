@@ -13,38 +13,40 @@ class Utils {
 
     companion object {
 
-        internal fun loadDeviceContext(appContext: Context) {
-            loadDeviceResolution(appContext)
-            loadLocale(appContext)
-            val newContextValues = HashMap<String, Any>()
-            for (fsContext in FlagshipContext.values()) {
-                fsContext.value(appContext)?.let {
-                    if (fsContext.checkValue(it))
-                        newContextValues[fsContext.key] = it
+        var tmpContext = HashMap<String, Any>()
+
+        internal fun loadDeviceContext(appContext: Context?) {
+//            val newContextValues = HashMap<String, Any>()
+            appContext?.let {
+                loadDeviceResolution(appContext)
+                loadLocale(appContext)
+                for (fsContext in FlagshipContext.values()) {
+                    fsContext.value(appContext)?.let {
+                        if (fsContext.checkValue(it))
+                            tmpContext[fsContext.key] = it
+                    }
                 }
             }
 
             for (fsPrivateContext in FlagshipPrivateContext.values()) {
-                fsPrivateContext.value(appContext)?.let {
+                fsPrivateContext.value()?.let {
                     if (fsPrivateContext.checkValue(it)) {
                         Flagship.context[fsPrivateContext.key] = it
                     }
                 }
             }
-
-            Flagship.deviceContext.putAll(newContextValues)
-            Flagship.updateContext(newContextValues)
+            Flagship.updateContext(tmpContext)
         }
 
 
         private fun loadDeviceResolution(context: Context) {
             val displayMetrics = context.resources.displayMetrics
-            Flagship.deviceContext[Hit.KeyMap.DEVICE_RESOLUTION.key] = "${displayMetrics.widthPixels}x${displayMetrics.heightPixels}"
+            tmpContext[Hit.KeyMap.DEVICE_RESOLUTION.key] = "${displayMetrics.widthPixels}x${displayMetrics.heightPixels}"
         }
 
         private fun loadLocale(context: Context) {
             val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
-            Flagship.deviceContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale.toString().toLowerCase().replace("_", "-")
+            tmpContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale.toString().toLowerCase().replace("_", "-")
         }
 
         internal fun logFailOrSuccess(boolean: Boolean) : String {

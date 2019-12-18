@@ -390,10 +390,16 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 }
 
 
-enum class FlagshipPrivateContext(var key: String) : IFlagshipContext {
+interface IPrivateFlagshipContext {
+
+    fun value(): Any?
+    fun checkValue(value: Any): Boolean
+}
+
+enum class FlagshipPrivateContext(var key: String) : IPrivateFlagshipContext {
 
     ALL_USERS("fs_all_users") {
-        override fun value(context: Context): Any? {
+        override fun value(): Any? {
             return ""
         }
 
@@ -403,7 +409,7 @@ enum class FlagshipPrivateContext(var key: String) : IFlagshipContext {
     },
 
     FS_USERS("fs_users") {
-        override fun value(context: Context): Any? {
+        override fun value(): Any? {
             return Flagship.customVisitorId ?: ""
         }
 
