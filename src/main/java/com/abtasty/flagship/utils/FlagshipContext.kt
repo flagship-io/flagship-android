@@ -71,7 +71,6 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
         }
 
         override fun checkValue(value: Any): Boolean {
-            System.out.println("DEVICE_MODEL = " + (value is String) + " value = " + value )
             return (value is String)
         }
     },
