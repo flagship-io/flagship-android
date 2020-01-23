@@ -294,11 +294,15 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 //        }
 //    },
 
-//    VISITOR_ID("sdk_visitorId") {
-//        override fun value(context: Context): Any? {
-//            return Flagship.visitorId
-//        }
-//    },
+    VISITOR_ID("sdk_visitorId") {
+        override fun value(context: Context): Any? {
+            return Flagship.visitorId
+        }
+
+        override fun checkValue(value: Any): Boolean {
+            return (value is String)
+        }
+    },
 
 //    TIME_SPENT("sdk_timeSpent") {
 //        override fun value(context: Context): Any? {
