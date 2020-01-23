@@ -116,7 +116,7 @@ internal data class VariationGroup(
                     variation.selected = true
                     selectedVariationId = variation.id
                     variations[variation.id] = variation
-                } else {
+                } else { //Bucketing
                     selectedVariationId = DatabaseManager.getInstance().getAllocation(
                         Flagship.visitorId ?: "",
                         Flagship.customVisitorId ?: "", groupId
