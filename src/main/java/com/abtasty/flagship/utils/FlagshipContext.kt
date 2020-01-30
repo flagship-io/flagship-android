@@ -23,19 +23,19 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current device locale in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a iso3 code String)
      */
     DEVICE_LOCALE("sdk_deviceLanguage") {
 
         @SuppressLint("ConstantLocale")
         override fun value(context: Context): Any? {
-            return Locale.getDefault().displayLanguage
+            return Locale.getDefault().toString()
         }
 
         override fun checkValue(value: Any): Boolean {
             try {
                 val locale = Locale(value.toString())
-                locale.isO3Language
+                locale.displayCountry
                 return true
             } catch (e : Exception) {}
             return false
@@ -44,7 +44,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current device type (mobile/tablet) in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     DEVICE_TYPE("sdk_deviceType") {
         override fun value(context: Context): Any? {
@@ -61,7 +61,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current device model (Google Pixel 3) in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     DEVICE_MODEL("sdk_deviceModel") {
         override fun value(context: Context): Any? {
@@ -77,7 +77,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current city location in the visitor context.
-     * This value is not automatically set by the sdk (must me a String)
+     * This value is not automatically set by the sdk (must be a String)
      */
     LOCATION_CITY("sdk_city") {
         override fun value(context: Context): Any? {
@@ -91,7 +91,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current region location in the visitor context.
-     * This value is not automatically set by the sdk (must me a String)
+     * This value is not automatically set by the sdk (must be a String)
      */
     LOCATION_REGION("sdk_region") {
         override fun value(context: Context): Any? {
@@ -105,7 +105,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current country location in the visitor context.
-     * This value is not automatically set by the sdk (must me a String)
+     * This value is not automatically set by the sdk (must be a String)
      */
     LOCATION_COUNTRY("sdk_country") {
         override fun value(context: Context): Any? {
@@ -119,7 +119,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current latitude location in the visitor context.
-     * This value is not automatically set by the sdk (must me a Double)
+     * This value is not automatically set by the sdk (must be a Double)
      */
     LOCATION_LAT("sdk_lat") {
         override fun value(context: Context): Any? {
@@ -133,7 +133,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current longitude location in the visitor context.
-     * This value is not automatically set bu the sdk (must me a Double)
+     * This value is not automatically set bu the sdk (must be a Double)
      */
     LOCATION_LONG("sdk_long") {
         override fun value(context: Context): Any? {
@@ -148,7 +148,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current device ip in the visitor context.
-     * This value is not automatically set by the sdk (must me a String)
+     * This value is not automatically set by the sdk (must be a String)
      */
     IP("sdk_ip") {
         override fun value(context: Context): Any? {
@@ -163,7 +163,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current os name in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     OS_NAME("sdk_osName") {
         override fun value(context: Context): Any? {
@@ -177,7 +177,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current os version in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     OS_VERSION("sdk_osVersion") {
         override fun value(context: Context): Any? {
@@ -192,7 +192,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current api level in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me an Integer)
+     * This value is automatically set by the SDK but can be overridden (must be an Integer)
      */
     API_LEVEL("sdk_apiLevel") {
         override fun value(context: Context): Any? {
@@ -206,7 +206,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current android version in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     ANDROID_VERSION("sdk_androidVersion") {
         override fun value(context: Context): Any? {
@@ -220,7 +220,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current carrier name in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     CARRIER_NAME("sdk_carrierName") {
         override fun value(context: Context): Any? {
@@ -235,11 +235,11 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set debug mode activated in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a boolean)
+     * This value is automatically set by the SDK but can be overridden (must be a boolean)
      */
     DEV_MODE("sdk_devMode") {
         override fun value(context: Context): Any? {
-            return if (BuildConfig.DEBUG) "TRUE" else "FALSE"
+            return BuildConfig.DEBUG
         }
 
         override fun checkValue(value: Any): Boolean {
@@ -249,7 +249,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set if the current visitor is new in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a Boolean)
+     * This value is automatically set by the SDK but can be overridden (must be a Boolean)
      */
     FIRST_TIME_USER("sdk_firstTimeUser") {
         override fun value(context: Context): Any? {
@@ -263,7 +263,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
 //    /**
 //     * Set if the curresnt visitor is returning in the visitor context.
-//     * This value is automatically set by the SDK but can be overridden (must me a Boolean)
+//     * This value is automatically set by the SDK but can be overridden (must be a Boolean)
 //     */
 //    RETURNING_USER("sdk_returningUser") {
 //        override fun value(context: Context): Any? {
@@ -318,7 +318,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current connection type in the visitor context.
-     * This value is not automatically set by the sdk (must me a String)
+     * This value is not automatically set by the sdk (must be a String)
      */
     INTERNET_CONNECTION("sdk_internetConnection") {
         override fun value(context: Context): Any? {
@@ -332,7 +332,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current app version in the visitor context.
-     * This value is not automatically set by the sdk (must me a String)
+     * This value is not automatically set by the sdk (must be a String)
      */
     APP_VERSION_NAME("sdk_versionName") {
         override fun value(context: Context): Any? {
@@ -346,7 +346,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current app version code in the visitor context.
-     * This value is not automatically set by the sdk (must me an Integer)
+     * This value is not automatically set by the sdk (must be an Integer)
      */
     APP_VERSION_CODE("sdk_versionCode") {
         override fun value(context: Context): Any? {
@@ -360,7 +360,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current Flagship SDK Version in the visitor context.
-     * This value is automatically set by the SDK but can be overridden (must me a String)
+     * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     FS_VERSION("sdk_fsVersion") {
         override fun value(context: Context): Any? {
@@ -374,7 +374,7 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
 
     /**
      * Set the current interface name in the visitor context.
-     * This value is not automatically set by the sdk (must me a String)
+     * This value is not automatically set by the sdk (must be a String)
      */
     INTERFACE_NAME("sdk_interfaceName") {
         override fun value(context: Context): Any? {
