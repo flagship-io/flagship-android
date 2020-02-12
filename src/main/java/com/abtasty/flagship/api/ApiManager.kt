@@ -6,6 +6,8 @@ import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.utils.Logger
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -57,10 +59,12 @@ internal class ApiManager {
 
         open fun build() {
 
-            val body = RequestBody.create(
-                MediaType.parse("application/json; charset=utf-8"),
-                jsonBody.toString()
-            )
+//            val body = RequestBody.create(
+//                MediaType.parse("application/json; charset=utf-8"),
+//                jsonBody.toString()
+//            )
+            val body = jsonBody.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+
             request = Request.Builder()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
@@ -98,7 +102,7 @@ internal class ApiManager {
 
         override fun onResponse(call: Call, response: Response) {
             this.response = response
-            logResponse(response.code())
+            logResponse(response.code)
             if (response.isSuccessful) {
                 parseResponse()
             }
@@ -115,7 +119,7 @@ internal class ApiManager {
         protected open fun logRequest(async: Boolean) {
             Logger.v(
                 Logger.TAG.POST,
-                "[Request${getIdToString()}][async=$async] " + request?.url() + " " + jsonBody
+                "[Request${getIdToString()}][async=$async] " + request?.url + " " + jsonBody
             )
         }
 
@@ -123,12 +127,12 @@ internal class ApiManager {
             if (code in 200..299)
                 Logger.v(
                     Logger.TAG.POST,
-                    "[Response${getIdToString()}][$code] " + request?.url() + " " + jsonBody
+                    "[Response${getIdToString()}][$code] " + request?.url + " " + jsonBody
                 )
             else
                 Logger.e(
                     Logger.TAG.POST,
-                    "[Response${getIdToString()}][$code] " + request?.url() + " " + jsonBody
+                    "[Response${getIdToString()}][$code] " + request?.url + " " + jsonBody
                 )
         }
 
@@ -185,7 +189,7 @@ internal class ApiManager {
 
         override fun parseResponse(): Boolean {
             try {
-                val jsonResponse = JSONObject(response?.body()?.string())
+                val jsonResponse = JSONObject(response?.body?.string())
                 if (campaignId.isEmpty()) {
                     Flagship.panicMode = jsonResponse.optBoolean("panic", false)
                     Flagship.modifications.clear()

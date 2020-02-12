@@ -1,4 +1,4 @@
-package com.abtasty.flagship;
+package com.abtasty.flagship_demo;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;
