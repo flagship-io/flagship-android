@@ -182,6 +182,7 @@ class Flagship {
             clearContextValues: Boolean = true
         ) {
             if (!panicMode) {
+                this.visitorId = visitorId
                 //todo ????
 //                //todo what if user consolidation
 //                this.customVisitorId = customVisitorId
