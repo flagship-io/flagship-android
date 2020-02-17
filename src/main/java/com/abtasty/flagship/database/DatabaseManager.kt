@@ -39,8 +39,8 @@ internal class DatabaseManager {
     val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
 
-            database.execSQL("CREATE TABLE `allocations` (`visitorId` TEXT, `variationGroupId` TEXT, `variationId` TEXT, PRIMARY KEY(`id`, `variationGroupId`))")
-            database.execSQL("CREATE TABLE `bucket` (`bid` TEXT, `bucket` TEXT, `timestamp` INTEGER, PRIMARY KEY(`id`, `variationGroupId`))")
+            database.execSQL("CREATE TABLE `allocations` (`visitorId` TEXT NOT NULL, `variationGroupId` TEXT NOT NULL, `variationId` TEXT NOT NULL, PRIMARY KEY(`visitorId`, `variationGroupId`))")
+            database.execSQL("CREATE TABLE `bucket` (`bid` TEXT NOT NULL, `bucket` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`bid`))")
         }
 
     }
