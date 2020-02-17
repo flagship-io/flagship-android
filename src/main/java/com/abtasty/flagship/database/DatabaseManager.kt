@@ -3,6 +3,8 @@ package com.abtasty.flagship.database
 import android.content.Context
 import androidx.annotation.IntRange
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Modification
@@ -27,9 +29,27 @@ internal class DatabaseManager {
         }
     }
 
+    val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+
+        }
+
+    }
+
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+
+            database.execSQL("CREATE TABLE `allocations` (`visitorId` TEXT, `variationGroupId` TEXT, `variationId` TEXT, PRIMARY KEY(`id`, `variationGroupId`))")
+            database.execSQL("CREATE TABLE `bucket` (`bid` TEXT, `bucket` TEXT, `timestamp` INTEGER, PRIMARY KEY(`id`, `variationGroupId`))")
+        }
+
+    }
+
     fun init(c: Context) {
         db = Room.databaseBuilder(c, Database::class.java, DATABASE)
-            .fallbackToDestructiveMigration()
+//            .fallbackToDestructiveMigration()
+//            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_2_3)
             .enableMultiInstanceInvalidation()
             .allowMainThreadQueries()
             .build()
