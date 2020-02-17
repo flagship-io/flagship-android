@@ -414,7 +414,7 @@ enum class FlagshipPrivateContext(var key: String) : IPrivateFlagshipContext {
 
     FS_USERS("fs_users") {
         override fun value(): Any? {
-            return Flagship.customVisitorId ?: ""
+            return Flagship.visitorId
         }
 
         override fun checkValue(value: Any): Boolean {

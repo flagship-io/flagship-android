@@ -34,7 +34,7 @@ internal class ApiManager {
     }
 
     private val client: OkHttpClient by lazy {
-        val cacheSize = 4 * 1024 * 1024 // 4MB
+//        val cacheSize = 4 * 1024 * 1024 // 4MB
 
         OkHttpClient().newBuilder()
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -58,7 +58,7 @@ internal class ApiManager {
 
     enum class METHOD { POST, GET}
 
-    open class ApiRequest(var method : METHOD = METHOD.POST) {
+    open class ApiRequest(private var method : METHOD = METHOD.POST) {
 
         internal open var url: String = ""
         internal open var jsonBody = JSONObject()
@@ -113,7 +113,7 @@ internal class ApiManager {
             Logger.e(
                 Logger.TAG.POST, "[Response${getIdToString()}][FAIL]" +
                         when (true) {
-                            response != null -> "[${response.code}][${response.body?.string()}]"
+                            response != null -> "[${response.code}][${responseBody}]"
                             message.isNotEmpty() -> "[$message]"
                             else -> ""
                         }
@@ -133,8 +133,8 @@ internal class ApiManager {
             this.code = response.code
             this.response = response
             logResponse(response.code)
+            this.responseBody = response.body?.string() ?: ""
             if (response.isSuccessful) {
-                this.responseBody = response.body?.string()
                 onSuccess()
             } else
                 onFailure(response)
@@ -230,7 +230,7 @@ internal class ApiManager {
 
         override fun parseResponse(): Boolean {
             try {
-                val jsonResponse = JSONObject(response?.body?.string())
+                val jsonResponse = JSONObject(responseBody)
                 if (campaignId.isEmpty()) {
                     Flagship.panicMode = jsonResponse.optBoolean("panic", false)
                     Flagship.modifications.clear()
@@ -271,7 +271,7 @@ internal class ApiManager {
                 context.put(p.key, p.value)
             }
             jsonBody.put(VISITOR_ID, Flagship.visitorId)
-            jsonBody.put(CUSTOM_VISITOR_ID, Flagship.customVisitorId)
+//            jsonBody.put(CUSTOM_VISITOR_ID, Flagship.customVisitorId)
             jsonBody.put("context", context)
             jsonBody.put("trigger_hit", false)
             CampaignRequestBuilder()
@@ -367,8 +367,7 @@ internal class ApiManager {
                     DatabaseManager.getInstance().updateHitStatus(hits.map { h -> h.id!! }, 1)
                     sendHitTracking(
                         Hit.Batch(
-                            Flagship.visitorId!!,
-                            Flagship.customVisitorId ?: "",
+                            Flagship.visitorId,
                             hits
                         )
                     )

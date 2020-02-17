@@ -10,12 +10,11 @@ import kotlinx.android.parcel.RawValue
 import org.json.JSONObject
 import java.util.*
 
-@Entity(tableName = "allocations", primaryKeys = ["visitorId", "customVisitorId", "variationGroupId"])
+@Entity(tableName = "allocations", primaryKeys = ["visitorId", "variationGroupId"])
 @Parcelize
 data class AllocationData(
 
     @ColumnInfo(name = "visitorId") val visitorId : String,
-    @ColumnInfo(name = "customVisitorId") val customVisitorId : String,
     @ColumnInfo(name = "variationGroupId") val variationGroupId:String,
     @ColumnInfo(name = "variationId") val variationId:String
 ) : Parcelable

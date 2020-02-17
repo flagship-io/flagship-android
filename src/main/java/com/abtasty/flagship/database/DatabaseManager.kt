@@ -40,8 +40,7 @@ internal class DatabaseManager {
             if (hit.requestIds.isEmpty()) {
                 val id = it.hitDao().insertHit(
                     HitData(
-                        null, Flagship.clientId ?: "", Flagship.visitorId ?: "",
-                        Flagship.customVisitorId ?: "", System.currentTimeMillis(),
+                        null, Flagship.clientId ?: "", Flagship.visitorId ?: "", System.currentTimeMillis(),
                         hit.jsonBody.optString(Hit.KeyMap.TYPE.key, ""), hit.jsonBody.toString(),
                         1
                     )
@@ -114,9 +113,8 @@ internal class DatabaseManager {
         db?.let {
             try {
                 val modifications = it.modificationDao().getAllModifications(
-                    Flagship.visitorId ?: "", Flagship.customVisitorId ?: ""
-                )
-                System.out.println("#LM load modification : (${Flagship.visitorId ?: ""}, ${Flagship.customVisitorId ?: ""})")
+                    Flagship.visitorId ?: "")
+                System.out.println("#LM load modification : (${Flagship.visitorId})")
                 for (m in modifications) {
                     Flagship.modifications[m.key] = Modification.fromModificationData(m)
                 }
@@ -129,7 +127,7 @@ internal class DatabaseManager {
     fun updateModifications() {
         db?.let {
             it.modificationDao()
-                .deleteAllModifications(Flagship.visitorId ?: "", Flagship.customVisitorId ?: "")
+                .deleteAllModifications(Flagship.visitorId)
             for (m in Flagship.modifications) {
                 it.modificationDao().insertModification(m.value.toModificationData())
             }
@@ -137,12 +135,12 @@ internal class DatabaseManager {
     }
 
     fun insertAllocation(
-        visitorId: String, customVisitorId: String, variationGroupId: String,
+        visitorId: String, variationGroupId: String,
         variationId: String
     ) {
         db?.let {
             val allocationData =
-                AllocationData(visitorId, customVisitorId, variationGroupId, variationId)
+                AllocationData(visitorId, variationGroupId, variationId)
             val row = it.allocationDao().insertAllocation(allocationData)
             if (row > 0) {
                 Logger.v(Logger.TAG.ALLOCATION, "[Allocation inserted][$row][$allocationData]")
@@ -157,11 +155,10 @@ internal class DatabaseManager {
 
     fun getAllocation(
         visitorId: String,
-        customVisitorId: String,
         variationGroupId: String
     ): String? {
         return db?.let {
-            val id = it.allocationDao().getAllocation(visitorId, customVisitorId, variationGroupId)
+            val id = it.allocationDao().getAllocation(visitorId, variationGroupId)
                 ?.variationId
             Logger.v(Logger.TAG.ALLOCATION, "[Allocation found][$variationGroupId][$id]")
             id

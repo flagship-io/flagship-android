@@ -342,7 +342,7 @@ class Hit {
             withHitParam(KeyMap.TYPE, Type.ACTIVATION)
             withHitParam(KeyMap.VARIATION_GROUP_ID, variationGroupId)
             withHitParam(KeyMap.VARIATION_ID, variationId)
-            withHitParam(KeyMap.CUSTOM_VISITOR_ID, Flagship.customVisitorId ?: "")
+//            withHitParam(KeyMap.CUSTOM_VISITOR_ID, Flagship.customVisitorId ?: "")
         }
     }
 
@@ -363,7 +363,7 @@ class Hit {
         }
     }
 
-    internal class  Batch(visitorId : String, customVisitorId : String,
+    internal class  Batch(visitorId : String,
                           hits : List<HitData> = ArrayList()) : HitBuilder<GenericHitFromData>()  {
 
         init {

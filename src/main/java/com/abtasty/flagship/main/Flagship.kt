@@ -49,6 +49,8 @@ class Flagship {
      */
     class FlagshipBuilder(private var appContext: Context, private var envId: String) {
 
+        private var ready: (() -> Unit)? = null
+
         /**
          * Start Flagship SDK in BUCKETING mode (client-side) or in DECISION_API mode (server-side). Default is DECISION_API
          *
@@ -59,8 +61,6 @@ class Flagship {
             Companion.mode = mode
             return this
         }
-
-        private var ready: (() -> Unit)? = null
 
         /**
          * Set a code to apply when the SDK has finished to initialize
@@ -76,14 +76,12 @@ class Flagship {
          * Set an id for identifying the current visitor
          * @return FlagshipBuilder
          */
-        fun withCustomerVisitorId(customVisitorId: String? = null): FlagshipBuilder {
-            customVisitorId?.let {
-                Companion.setCustomVisitorId(
-                    customVisitorId,
-                    clearModifications = false,
-                    clearContextValues = false
-                )
-            }
+        fun withVisitorId(visitorId: String = ""): FlagshipBuilder {
+            Companion.setVisitorId(
+                visitorId,
+                clearModifications = false,
+                clearContextValues = false
+            )
             return this
         }
 
@@ -112,13 +110,9 @@ class Flagship {
 
         internal var clientId: String? = null
 
-        internal var visitorId: String? = null
-
-        internal var customVisitorId: String? = null
+        internal var visitorId: String = ""
 
         internal var mode = Mode.DECISION_API
-
-        internal var useVisitorConsolidation = false
 
         @PublishedApi
         internal var context = HashMap<String, Any>()
@@ -150,13 +144,19 @@ class Flagship {
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
+         * @param visitorId (optional) set an id for identifying the current visitor
          * @param ready (optional) to execute when the SDK is ready
          */
         @JvmOverloads
-        internal fun start(appContext: Context, envId: String, ready: (() -> Unit)? = null) {
+        internal fun start(
+            appContext: Context,
+            envId: String,
+            ready: (() -> Unit)? = null
+        ) {
 
             this.clientId = envId
-            this.visitorId = Utils.genVisitorId(appContext)
+//            this.visitorId = Utils.genVisitorId(appContext)
+            this.visitorId = if (visitorId.isNotEmpty()) visitorId else Utils.genVisitorId(appContext)
             sessionStart = System.currentTimeMillis()
             ApiManager.cacheDir = appContext.cacheDir
             isFirstInit = Utils.isFirstInit(appContext)
@@ -172,24 +172,25 @@ class Flagship {
         /**
          * Set an id for identifying the current visitor
          *
-         * @param customVisitorId id of the current visitor
+         * @param visitorId id of the current visitor
          * @param clearModifications set to true to clear modifications & visitor context (true by default)
          * @param clearContextValues set to true to clear all visitor context values (true by default)
          */
-        fun setCustomVisitorId(
-            customVisitorId: String,
+        fun setVisitorId(
+            visitorId: String,
             clearModifications: Boolean = true,
             clearContextValues: Boolean = true
         ) {
             if (!panicMode) {
-                //todo what if user consolidation
-                this.customVisitorId = customVisitorId
-                if (clearModifications)
-                    modifications.clear()
-                if (clearContextValues) {
-                    context.clear()
-                    Utils.loadDeviceContext(null)
-                }
+                //todo ????
+//                //todo what if user consolidation
+//                this.customVisitorId = customVisitorId
+//                if (clearModifications)
+//                    modifications.clear()
+//                if (clearContextValues) {
+//                    context.clear()
+//                    Utils.loadDeviceContext(null)
+//                }
                 DatabaseManager.getInstance().loadModifications()
             }
         }

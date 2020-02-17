@@ -118,9 +118,7 @@ internal data class VariationGroup(
                     variations[variation.id] = variation
                 } else { //Bucketing
                     selectedVariationId = DatabaseManager.getInstance().getAllocation(
-                        Flagship.visitorId ?: "",
-                        Flagship.customVisitorId ?: "", groupId
-                    )
+                        Flagship.visitorId, groupId)
                     val variationArr = jsonObject.optJSONArray("variations")
                     if (variationArr != null) {
                         var p = 0
@@ -138,8 +136,7 @@ internal data class VariationGroup(
                                         "[Variation ${variation.id} selected][Allocation $random]"
                                     )
                                     DatabaseManager.getInstance().insertAllocation(
-                                        Flagship.visitorId ?: "",
-                                        Flagship.customVisitorId ?: "",
+                                        Flagship.visitorId,
                                         variation.groupId,
                                         variation.id
                                     )
@@ -361,7 +358,7 @@ data class Modification(
     fun toModificationData(): ModificationData {
         val json = JSONObject().put(key, value)
         return ModificationData(
-            key, Flagship.visitorId ?: "", Flagship.customVisitorId ?: "",
+            key, Flagship.visitorId,
             variationGroupId, variationId, json
         )
     }

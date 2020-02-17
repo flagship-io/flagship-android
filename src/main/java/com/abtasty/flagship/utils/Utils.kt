@@ -64,7 +64,7 @@ class Utils {
 
         }
 
-        fun genVisitorId(context: Context): String? {
+        fun genVisitorId(context: Context): String {
 
             val sharedPref = context.getSharedPreferences("_Flagship", Context.MODE_PRIVATE)
             var visitorId = sharedPref.getString("visitorId", "")
@@ -89,8 +89,8 @@ class Utils {
         }
 
         fun getVisitorAllocation() : Int {
-            return if (Flagship.useVisitorConsolidation && Flagship.customVisitorId != null) {
-                val hash = MurmurHash.murmurhash3_x86_32(Flagship.customVisitorId!!)
+            return if (Flagship.visitorId.isNotEmpty()) {
+                val hash = MurmurHash.murmurhash3_x86_32(Flagship.visitorId)
                 return (hash % 100).toInt()
             } else
                 (0..100).random()
