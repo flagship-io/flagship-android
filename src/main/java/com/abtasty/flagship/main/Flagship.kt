@@ -189,7 +189,6 @@ class Flagship {
                 if (clearContextValues) {
                     context.clear()
                     Utils.loadDeviceContext(null)
-                    System.out.println("#IE context = " + context)
                 }
                 DatabaseManager.getInstance().loadModifications()
             }
