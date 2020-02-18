@@ -67,10 +67,6 @@ internal data class Campaign(
     }
 
     fun getModifications(useBucketing: Boolean): HashMap<String, Modification> {
-//        if (!useBucketing) {
-//            System.out.println("#DA : updateClear 4")
-//            Flagship.modifications.clear() // Bucketing
-//        }
         val result = HashMap<String, Modification>()
         for ((key, variationGroup) in variationGroups) {
             if (!useBucketing) {
@@ -84,7 +80,6 @@ internal data class Campaign(
                     val variation = variationGroup.variations[variationId]
                     val mod = variation?.modifications?.values
                     mod?.let {
-                        System.out.println("#IE target valid $variationId : push = $it")
                         result.putAll(it)
                     }
                     break
@@ -254,7 +249,6 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
 
         val value0 = Flagship.context[key]
         val value1 = value
-        System.out.println("#IE $value0 / $value1")
 //        return if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1)
 //            ?: false)
 
@@ -262,17 +256,13 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
             (value0 == null) -> false
             (value1 is JSONArray) -> {
                 for (i in 0 until value1.length()) {
-                    System.out.println("#IE array : $value0 / ${value1.get(i)}")
-                    if (ETargetingComp.get(operator)?.compare(value0, value1.get(i)) == true) {
-                        System.out.println("#IE result true")
+                    if (ETargetingComp.get(operator)?.compare(value0, value1.get(i)) == true)
                         return true
-                    }
                 }
                 false
             }
             else -> (ETargetingComp.get(operator)?.compare(value0, value1)) ?: false
         }
-        System.out.println("#IE result $toto")
         return toto
     }
 }

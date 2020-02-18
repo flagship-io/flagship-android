@@ -31,7 +31,7 @@ internal class DatabaseManager {
 
     val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(database: SupportSQLiteDatabase) {
-
+            database.execSQL("CREATE TABLE IF NOT EXISTS `modifications` (`key` TEXT NOT NULL, `visitorId` TEXT NOT NULL, `variationGroupId` TEXT NOT NULL, `variationId` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`key`, `visitorId`))")
         }
 
     }
@@ -39,16 +39,15 @@ internal class DatabaseManager {
     val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
 
-            database.execSQL("CREATE TABLE `allocations` (`visitorId` TEXT NOT NULL, `variationGroupId` TEXT NOT NULL, `variationId` TEXT NOT NULL, PRIMARY KEY(`visitorId`, `variationGroupId`))")
-            database.execSQL("CREATE TABLE `bucket` (`bid` TEXT NOT NULL, `bucket` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`bid`))")
+            database.execSQL("CREATE TABLE IF NOT EXISTS `allocations` (`visitorId` TEXT NOT NULL, `variationGroupId` TEXT NOT NULL, `variationId` TEXT NOT NULL, PRIMARY KEY(`visitorId`, `variationGroupId`))")
+            database.execSQL("CREATE TABLE IF NOT EXISTS `bucket` (`bid` TEXT NOT NULL, `bucket` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`bid`))")
         }
 
     }
 
     fun init(c: Context) {
         db = Room.databaseBuilder(c, Database::class.java, DATABASE)
-//            .fallbackToDestructiveMigration()
-//            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2)
             .addMigrations(MIGRATION_2_3)
             .enableMultiInstanceInvalidation()
             .allowMainThreadQueries()
@@ -60,7 +59,7 @@ internal class DatabaseManager {
             if (hit.requestIds.isEmpty()) {
                 val id = it.hitDao().insertHit(
                     HitData(
-                        null, Flagship.clientId ?: "", Flagship.visitorId ?: "", System.currentTimeMillis(),
+                        null, Flagship.clientId ?: "", Flagship.visitorId, System.currentTimeMillis(),
                         hit.jsonBody.optString(Hit.KeyMap.TYPE.key, ""), hit.jsonBody.toString(),
                         1
                     )
@@ -133,8 +132,7 @@ internal class DatabaseManager {
         db?.let {
             try {
                 val modifications = it.modificationDao().getAllModifications(
-                    Flagship.visitorId ?: "")
-                System.out.println("#LM load modification : (${Flagship.visitorId})")
+                    Flagship.visitorId)
                 for (m in modifications) {
                     Flagship.modifications[m.key] = Modification.fromModificationData(m)
                 }

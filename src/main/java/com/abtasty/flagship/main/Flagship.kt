@@ -42,12 +42,12 @@ class Flagship {
     }
 
     /**
-     * FlagshipBuilder is a builder class to initialize the Flaghip SDK.
+     * Builder is a builder class to initialize the Flaghip SDK.
      *
      * @param appContext applicationContext
      * @param envId key provided by ABTasty
      */
-    class FlagshipBuilder(private var appContext: Context, private var envId: String) {
+    class Builder(private var appContext: Context, private var envId: String) {
 
         private var ready: (() -> Unit)? = null
 
@@ -55,33 +55,29 @@ class Flagship {
          * Start Flagship SDK in BUCKETING mode (client-side) or in DECISION_API mode (server-side). Default is DECISION_API
          *
          * @param mode
-         * @return FlagshipBuilder
+         * @return Flagship
          */
-        fun withFlagshipMode(mode: Mode): FlagshipBuilder {
+        fun withFlagshipMode(mode: Mode): Builder {
             Companion.mode = mode
             return this
         }
 
         /**
-         * Set a code to apply when the SDK has finished to initialize
+         * Set a code to apply when the SDK has finished to initialize.
          * @param lambda code to apply
-         * @return FlagshipBuilder
+         * @return Flagship
          */
-        fun withReadyCallback(lambda: (() -> Unit)): FlagshipBuilder {
+        fun withReadyCallback(lambda: (() -> Unit)): Builder {
             ready = lambda
             return this
         }
 
         /**
          * Set an id for identifying the current visitor
-         * @return FlagshipBuilder
+         * @return Flagship
          */
-        fun withVisitorId(visitorId: String = ""): FlagshipBuilder {
-            Companion.setVisitorId(
-                visitorId,
-                clearModifications = false,
-                clearContextValues = false
-            )
+        fun withVisitorId(visitorId: String = ""): Builder {
+            Companion.setVisitorId(visitorId)
             return this
         }
 
@@ -89,7 +85,7 @@ class Flagship {
         /**
          * Enable logs of the SDK
          */
-        fun withLogEnabled(mode: LogMode): FlagshipBuilder {
+        fun withLogEnabled(mode: LogMode): Builder {
             Logger.logMode = mode
             return this
         }
@@ -106,7 +102,6 @@ class Flagship {
     companion object {
 
         internal const val VISITOR_ID = "visitorId"
-        internal const val CUSTOM_VISITOR_ID = "custom_visitor_id"
 
         internal var clientId: String? = null
 
@@ -133,10 +128,10 @@ class Flagship {
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
-         * @return FlagshipBuilder
+         * @return Builder
          **/
-        fun init(appContext: Context, envId: String): FlagshipBuilder {
-            return FlagshipBuilder(appContext, envId)
+        fun init(appContext: Context, envId: String): Builder {
+            return Builder(appContext, envId)
         }
 
         /**
@@ -170,28 +165,16 @@ class Flagship {
         }
 
         /**
-         * Set an id for identifying the current visitor
+         * Set an id for identifying the current visitor. This will clear any previous modifications and visitor context.
          *
          * @param visitorId id of the current visitor
-         * @param clearModifications set to true to clear modifications & visitor context (true by default)
-         * @param clearContextValues set to true to clear all visitor context values (true by default)
          */
-        fun setVisitorId(
-            visitorId: String,
-            clearModifications: Boolean = true,
-            clearContextValues: Boolean = true
-        ) {
+        fun setVisitorId(visitorId: String) {
             if (!panicMode) {
                 this.visitorId = visitorId
-                //todo ????
-//                //todo what if user consolidation
-//                this.customVisitorId = customVisitorId
-//                if (clearModifications)
-//                    modifications.clear()
-//                if (clearContextValues) {
-//                    context.clear()
-//                    Utils.loadDeviceContext(null)
-//                }
+                modifications.clear()
+                context.clear()
+                Utils.loadDeviceContext(null)
                 DatabaseManager.getInstance().loadModifications()
             }
         }

@@ -2,7 +2,6 @@ package com.abtasty.flagship.api
 
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
-import com.abtasty.flagship.main.Flagship.Companion.CUSTOM_VISITOR_ID
 import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.utils.Logger
