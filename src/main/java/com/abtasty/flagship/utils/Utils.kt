@@ -16,7 +16,6 @@ class Utils {
         var tmpContext = HashMap<String, Any>()
 
         internal fun loadDeviceContext(appContext: Context?) {
-//            val newContextValues = HashMap<String, Any>()
             appContext?.let {
                 loadDeviceResolution(appContext)
                 loadLocale(appContext)

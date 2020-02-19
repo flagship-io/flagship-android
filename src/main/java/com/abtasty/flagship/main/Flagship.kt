@@ -150,8 +150,8 @@ class Flagship {
         ) {
 
             this.clientId = envId
-//            this.visitorId = Utils.genVisitorId(appContext)
-            this.visitorId = if (visitorId.isNotEmpty()) visitorId else Utils.genVisitorId(appContext)
+            this.visitorId =
+                if (visitorId.isNotEmpty()) visitorId else Utils.genVisitorId(appContext)
             sessionStart = System.currentTimeMillis()
             ApiManager.cacheDir = appContext.cacheDir
             isFirstInit = Utils.isFirstInit(appContext)
@@ -159,7 +159,10 @@ class Flagship {
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
             when (mode) {
-                Mode.DECISION_API -> syncCampaignModifications(ready)
+                Mode.DECISION_API -> {
+                    syncCampaignModifications(ready)
+                    System.out.println("#SC 2 start")
+                }
                 Mode.BUCKETING -> BucketingManager.startBucketing(ready)
             }
         }
@@ -278,14 +281,6 @@ class Flagship {
             sync: (() -> (Unit))? = null
         ) {
             if (!panicMode) {
-//                if (value is Number || value is Boolean || value is String) {
-//                    context[key] = value
-//                } else {
-//                    Logger.e(
-//                        Logger.TAG.CONTEXT,
-//                        "Context update : Your data \"$key\" is not a type of NUMBER, BOOLEAN or STRING"
-//                    )
-//                }
                 when (true) {
                     (FlagshipPrivateContext.keys().contains(key)) -> {
                         Logger.e(
@@ -301,8 +296,10 @@ class Flagship {
                         )
                     }
                 }
-                if (ready && sync != null)
+                if (ready && sync != null) {
+                    System.out.println("#SC 1 $key")
                     syncCampaignModifications(sync)
+                }
             }
         }
 
@@ -464,21 +461,41 @@ class Flagship {
             lambda: (() -> (Unit))? = null,
             campaignCustomId: String = ""
         ) {
-            if (mode == Mode.DECISION_API) {
-                GlobalScope.async {
+//            if (mode == Mode.DECISION_API) {
+//                GlobalScope.async {
+//                    if (!panicMode) {
+//                        ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
+//                        ready = true
+//                        lambda?.let { it() }
+//                    }
+//                }
+//            } else
+//                BucketingManager.syncBucketModifications(lambda)
+            GlobalScope.async {
+                if (mode == Mode.DECISION_API) {
                     if (!panicMode) {
                         ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
                         ready = true
                         lambda?.let { it() }
                     }
-                }
-            } else
-                BucketingManager.syncBucketModifications(lambda)
+                } else
+                    BucketingManager.syncBucketModifications(lambda)
+                Logger.v(Logger.TAG.SYNC, "current context : $context")
+                Logger.v(Logger.TAG.SYNC, "current modifications : $modifications")
+            }
         }
 
         @Synchronized
         internal fun updateModifications(values: HashMap<String, Modification>) {
             modifications.putAll(values)
+        }
+
+        @Synchronized
+        internal fun resetModifications(values: HashMap<String, Modification>) {
+            for (v in values) {
+                System.out.println("#RESET ${v.key}")
+                modifications.remove(v.key)
+            }
         }
 
 
@@ -507,5 +524,65 @@ class Flagship {
                 ApiManager.getInstance().sendHitTracking(hit)
         }
 
+
+        /********************* DEPRECATIONS 1.1.0 - ***********************/
+
+        /**
+         *
+         *
+         * Initialize the flagship SDK @Deprecated
+         *
+         * Use the 'init' method and the returning 'Builder' instead
+         *
+         * @param appContext application context
+         * @param envId key provided by ABTasty
+         * @param visitorId (optional) set an id for identifying the current visitor
+         */
+        @Deprecated(
+            message = "Use the 'init' method and the returning 'Builder' instead",
+            replaceWith = ReplaceWith(
+                "Flagship.init(appContext, envId)" +
+                        "\n.withVisitorId(visitorId)" +
+                        "\n.start()"
+            )
+        )
+        @JvmOverloads
+        fun start(appContext: Context, envId: String, visitorId: String) {
+            init(appContext, envId)
+                .withVisitorId(visitorId)
+                .start()
+        }
+
+        /**
+         * Enable logs of the SDK @Deprecated
+         *
+         * Use the Builder returned by the 'init' method in order to enabled the logs
+         */
+        @Deprecated(message = "Use the builder returned by the 'init method in order to enabled the logs")
+        @JvmOverloads
+        fun enableLog(mode: LogMode) {
+            Logger.logMode = mode
+        }
+
+        /**
+         * This function calls the decision api and updates all the campaigns modification from the server according to the user context. @Deprecated
+         *
+         * @param campaignCustomId (optional) Specify a campaignId to get its modifications. All campaigns by default.
+         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
+         *
+         */
+        @Deprecated(
+            message = "Use `syncCampaignModifications(lambda, campaignCustomId` instead.",
+            replaceWith = ReplaceWith("Flagship.syncCampaignModifications(lambda, campaignCustomId)")
+        )
+        @JvmOverloads
+        fun syncCampaignModifications(
+            campaignCustomId: String = "",
+            lambda: () -> (Unit) = {}
+        ): Deferred<Unit> {
+            return GlobalScope.async {
+                System.out.println("#SC 3 old")
+                syncCampaignModifications(lambda, campaignCustomId) }
+        }
     }
 }

@@ -88,6 +88,24 @@ internal data class Campaign(
         }
         return result
     }
+
+    /**
+     * Reset modifications when targeting is not valid anymore (For bucketing only)
+     */
+    fun getModificationsToReset(): HashMap<String, Modification> {
+        val result = HashMap<String, Modification>()
+        for ((key, variationGroup) in variationGroups) {
+            val variationId = variationGroup.selectedVariationId
+            if (!variationGroup.isTargetingValid()) {
+                val variation = variationGroup.variations[variationId]
+                val mod = variation?.modifications?.values
+                mod?.let {
+                    result.putAll(it)
+                }
+            }
+        }
+        return result
+    }
 }
 
 @Parcelize
@@ -103,7 +121,7 @@ internal data class VariationGroup(
         fun parse(jsonObject: JSONObject): VariationGroup? {
             return try {
                 val groupId = jsonObject.getString("id")
-                var selectedVariationId :String?
+                var selectedVariationId: String?
                 val variations = HashMap<String, Variation>()
                 val variationObj = jsonObject.optJSONObject("variation")
                 if (variationObj != null) {
@@ -113,7 +131,8 @@ internal data class VariationGroup(
                     variations[variation.id] = variation
                 } else { //Bucketing
                     selectedVariationId = DatabaseManager.getInstance().getAllocation(
-                        Flagship.visitorId, groupId)
+                        Flagship.visitorId, groupId
+                    )
                     val variationArr = jsonObject.optJSONArray("variations")
                     if (variationArr != null) {
                         var p = 0
@@ -252,7 +271,7 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
 //        return if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1)
 //            ?: false)
 
-        val toto = when(true) {
+        val toto = when (true) {
             (value0 == null) -> false
             (value1 is JSONArray) -> {
                 for (i in 0 until value1.length()) {

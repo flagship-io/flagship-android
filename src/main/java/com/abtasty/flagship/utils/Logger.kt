@@ -15,6 +15,7 @@ internal class Logger {
         BUCKETING("[BUCKETING]"),
         CONTEXT("[CONTEXT]"),
         ALLOCATION("[ALLOCATION]"),
+        SYNC("[SYNC]"),
         INFO("[INFO]")
     }
 

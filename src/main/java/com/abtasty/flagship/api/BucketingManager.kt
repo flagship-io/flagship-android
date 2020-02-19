@@ -30,6 +30,8 @@ class BucketingManager {
                 campaignJson?.let {
                     Campaign.parse(it)?.let { campaigns ->
                         for ((k, campaign) in campaigns) {
+                            val modsToReset = campaign.getModificationsToReset()
+                            Flagship.resetModifications(modsToReset)
                             val mods = campaign.getModifications(true)
                             Flagship.updateModifications(mods)
                         }
