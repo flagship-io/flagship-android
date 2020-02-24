@@ -155,14 +155,15 @@ class Flagship {
             sessionStart = System.currentTimeMillis()
             ApiManager.cacheDir = appContext.cacheDir
             isFirstInit = Utils.isFirstInit(appContext)
+
+            modifications.clear()
+            context.clear()
+
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
             when (mode) {
-                Mode.DECISION_API -> {
-                    syncCampaignModifications(ready)
-                    System.out.println("#SC 2 start")
-                }
+                Mode.DECISION_API -> syncCampaignModifications(ready)
                 Mode.BUCKETING -> BucketingManager.startBucketing(ready)
             }
         }
@@ -296,10 +297,8 @@ class Flagship {
                         )
                     }
                 }
-                if (ready && sync != null) {
-                    System.out.println("#SC 1 $key")
+                if (ready && sync != null)
                     syncCampaignModifications(sync)
-                }
             }
         }
 
@@ -493,7 +492,6 @@ class Flagship {
         @Synchronized
         internal fun resetModifications(values: HashMap<String, Modification>) {
             for (v in values) {
-                System.out.println("#RESET ${v.key}")
                 modifications.remove(v.key)
             }
         }
@@ -580,9 +578,7 @@ class Flagship {
             campaignCustomId: String = "",
             lambda: () -> (Unit) = {}
         ): Deferred<Unit> {
-            return GlobalScope.async {
-                System.out.println("#SC 3 old")
-                syncCampaignModifications(lambda, campaignCustomId) }
+            return GlobalScope.async { syncCampaignModifications(lambda, campaignCustomId) }
         }
     }
 }

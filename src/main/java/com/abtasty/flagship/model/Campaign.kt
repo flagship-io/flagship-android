@@ -268,10 +268,8 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
 
         val value0 = Flagship.context[key]
         val value1 = value
-//        return if (value0 == null) false else (ETargetingComp.get(operator)?.compare(value0, value1)
-//            ?: false)
 
-        val toto = when (true) {
+        return when (true) {
             (value0 == null) -> false
             (value1 is JSONArray) -> {
                 for (i in 0 until value1.length()) {
@@ -282,7 +280,6 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
             }
             else -> (ETargetingComp.get(operator)?.compare(value0, value1)) ?: false
         }
-        return toto
     }
 }
 
