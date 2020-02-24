@@ -4,8 +4,8 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply from: 'flagship-publishing.gradle'
 
-def ABTastySDKVersion = '1.1.0' ///DEFINE HERE THE ABTASTY SDK VERSION
-def ABTastySDKVersionCode = 3 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
+def ABTastySDKVersion = '1.2.0' ///DEFINE HERE THE ABTASTY SDK VERSION
+def ABTastySDKVersionCode = 4 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
 
 android {
     compileSdkVersion 29
