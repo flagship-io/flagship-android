@@ -258,10 +258,7 @@ internal class ApiManager {
         }
     }
 
-    internal fun sendCampaignRequest(
-        campaignId: String = "",
-        hashMap: HashMap<String, Any> = HashMap()
-    ) {
+    internal fun sendCampaignRequest(hashMap: HashMap<String, Any> = HashMap()) {
 
         try {
             val jsonBody = JSONObject()
@@ -274,9 +271,8 @@ internal class ApiManager {
             jsonBody.put("context", context)
             jsonBody.put("trigger_hit", false)
             CampaignRequestBuilder()
-                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
+                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/")
                 .withBodyParams(jsonBody)
-                .withCampaignId(campaignId)
                 .build()
                 .fire(false)
         } catch (e: Exception) {

@@ -127,14 +127,13 @@ class Flagship {
         internal var isFirstInit: Boolean? = null
 
         /**
-         * Initialize the flagship SDK
-         * Return a Builder class to instantiate the library.
+         * Return a Builder class to configure and instantiate the library.
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
          * @return Builder
          **/
-        fun init(appContext: Context, envId: String): Builder {
+        fun build(appContext: Context, envId: String): Builder {
             return Builder(appContext, envId)
         }
 
@@ -152,7 +151,6 @@ class Flagship {
             envId: String,
             ready: (() -> Unit)? = null
         ) {
-
             this.clientId = envId
             this.visitorId =
                 if (visitorId.isNotEmpty()) visitorId else Utils.genVisitorId(appContext)
@@ -455,34 +453,22 @@ class Flagship {
          * If the SDK is set with BUCKETING mode :
          * This function will re-apply targeting and update all the campaigns modifications from the server according to the user context.
          *
-         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
-         * @param campaignCustomId (optional) Specify a campaignId to get only its modifications. Set an empty string to get all campaigns modifications (by default).
+         * @param callback Lambda to be invoked when the SDK has finished to update the modifications from the server.
          *
          */
         @JvmOverloads
         fun syncCampaignModifications(
-            lambda: (() -> (Unit))? = null,
-            campaignCustomId: String = ""
+            callback: (() -> (Unit))? = null
         ) {
-//            if (mode == Mode.DECISION_API) {
-//                GlobalScope.async {
-//                    if (!panicMode) {
-//                        ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-//                        ready = true
-//                        lambda?.let { it() }
-//                    }
-//                }
-//            } else
-//                BucketingManager.syncBucketModifications(lambda)
             GlobalScope.async {
                 if (mode == Mode.DECISION_API) {
                     if (!panicMode) {
-                        ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
+                        ApiManager.getInstance().sendCampaignRequest(context)
                         ready = true
-                        lambda?.let { it() }
+                        callback?.let { it() }
                     }
                 } else
-                    BucketingManager.syncBucketModifications(lambda)
+                    BucketingManager.syncBucketModifications(callback)
                 Logger.v(Logger.TAG.SYNC, "current context : $context")
                 Logger.v(Logger.TAG.SYNC, "current modifications : $modifications")
             }
@@ -502,9 +488,9 @@ class Flagship {
 
 
         /**
-         * This function allows you to report that a visitor has seen a modification to our servers
+         * This function allows you to report that a visitor has seen a modification to our servers.
          *
-         * @param key key which identifies the modification
+         * @param key key which identifies the modification.
          */
         fun activateModification(key: String) {
             if (!panicMode)
@@ -521,7 +507,7 @@ class Flagship {
          * @see com.abtasty.flagship.api.Hit.Item
          *
          */
-        fun <T> sendTracking(hit: HitBuilder<T>) {
+        fun <T> sendHit(hit: HitBuilder<T>) {
             if (!panicMode)
                 ApiManager.getInstance().sendHitTracking(hit)
         }
@@ -550,7 +536,7 @@ class Flagship {
         )
         @JvmOverloads
         fun start(appContext: Context, envId: String, visitorId: String) {
-            init(appContext, envId)
+            build(appContext, envId)
                 .withVisitorId(visitorId)
                 .start()
         }
@@ -564,25 +550,6 @@ class Flagship {
         @JvmOverloads
         fun enableLog(mode: LogMode) {
             Logger.logMode = mode
-        }
-
-        /**
-         * This function calls the decision api and updates all the campaigns modification from the server according to the user context. @Deprecated
-         *
-         * @param campaignCustomId (optional) Specify a campaignId to get its modifications. All campaigns by default.
-         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
-         *
-         */
-        @Deprecated(
-            message = "Use `syncCampaignModifications(lambda, campaignCustomId` instead.",
-            replaceWith = ReplaceWith("Flagship.syncCampaignModifications(lambda, campaignCustomId)")
-        )
-        @JvmOverloads
-        fun syncCampaignModifications(
-            campaignCustomId: String = "",
-            lambda: () -> (Unit) = {}
-        ): Deferred<Unit> {
-            return GlobalScope.async { syncCampaignModifications(lambda, campaignCustomId) }
         }
     }
 }
