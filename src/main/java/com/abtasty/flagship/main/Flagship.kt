@@ -90,6 +90,15 @@ class Flagship {
             return this
         }
 
+        /**
+         * Use APAC region endpoints
+         */
+        fun withAPACRegion(apiKey : String) : Builder {
+            //x-api-key
+            Flagship.apiKey = apiKey
+            return this
+        }
+
 
         /**
          * Start the Flagship SDK
@@ -122,6 +131,8 @@ class Flagship {
         internal var ready = false
 
         internal var isFirstInit: Boolean? = null
+
+        internal var apiKey : String? = null
 
         /**
          * Initialize the flagship SDK
