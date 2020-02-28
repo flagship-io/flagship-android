@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 internal class ApiManager {
 
     val DOMAIN = "https://decision-api.flagship.io/v1/"
-    val APAC_DOMAIN = "https://apac.flagship.io/v1/"
+    val APAC_DOMAIN = "https://decision.flagship.io/v2/"
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
