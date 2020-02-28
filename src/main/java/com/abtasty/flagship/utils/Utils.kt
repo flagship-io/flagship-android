@@ -19,7 +19,7 @@ class Utils {
             appContext?.let {
                 loadDeviceResolution(appContext)
                 loadLocale(appContext)
-                for (fsContext in FlagshipContext.values()) {
+                for (fsContext in PresetContext.values()) {
                     fsContext.value(appContext)?.let {
                         if (fsContext.checkValue(it))
                             tmpContext[fsContext.key] = it

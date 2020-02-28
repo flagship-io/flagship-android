@@ -6,11 +6,8 @@ import com.abtasty.flagship.api.BucketingManager
 import com.abtasty.flagship.api.HitBuilder
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.model.Modification
-import com.abtasty.flagship.utils.FlagshipContext
-import com.abtasty.flagship.utils.FlagshipPrivateContext
+import com.abtasty.flagship.utils.*
 import com.abtasty.flagship.utils.Logger
-import com.abtasty.flagship.utils.Utils
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -237,14 +234,14 @@ class Flagship {
          * This function updates the visitor context value matching the given key.
          * A new context value associated with this key will be created if there is no matching.
          *
-         * @param key Flagship context key to associate with the following value
+         * @param key preset context key to associate with the following value
          * @param value new context value
          * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
          * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
          * You also have the possibility to update it manually : syncCampaignModifications()
          */
         @JvmOverloads
-        fun updateContext(key: FlagshipContext, value: Any, sync: (() -> (Unit))? = null) {
+        fun updateContext(key: PresetContext, value: Any, sync: (() -> (Unit))? = null) {
             if (key.checkValue(value))
                 updateContextValue(key.key, value, sync)
             else
@@ -457,7 +454,7 @@ class Flagship {
          *
          */
         @JvmOverloads
-        fun syncCampaignModifications(
+        fun synchronizeCampaignModifications(
             callback: (() -> (Unit))? = null
         ) {
             GlobalScope.async {
@@ -498,7 +495,7 @@ class Flagship {
         }
 
         /**
-         * This function allows you to send tracking events on our servers such as Transactions, page views, clicks ...
+         * This function allows you to send hit events on our servers such as Transactions, page views, clicks ...
          *
          * @param hit Hit to send
          * @see com.abtasty.flagship.api.Hit.Page
@@ -541,6 +538,15 @@ class Flagship {
                 .start()
         }
 
+        @Deprecated(
+            message = "Use sendHit instead.",
+            replaceWith = ReplaceWith("Flagship.sendHit(hit)")
+        )
+        @JvmOverloads
+        fun <T> sendTracking(hit: HitBuilder<T>) {
+            sendHit(hit)
+        }
+
         /**
          * Enable logs of the SDK @Deprecated
          *
@@ -550,6 +556,23 @@ class Flagship {
         @JvmOverloads
         fun enableLog(mode: LogMode) {
             Logger.logMode = mode
+        }
+
+        @Deprecated(message = "Use updateContext(key: PresetContext, value: Any, sync: (() -> (Unit))? = null)")
+        @JvmOverloads
+        fun updateContext(key: FlagshipContext, value: Any, sync: (() -> (Unit))? = null) {
+            PresetContext.getFromKey(key.key)?.let { newKey -> updateContext(newKey, value, sync) }
+        }
+
+        @Deprecated(
+            message = "Use synchronizeCampaignModifications instead.",
+            replaceWith = ReplaceWith("Flagship.synchronizeCampaignModifications(callback)")
+        )
+        @JvmOverloads
+        fun syncCampaignModifications(
+            callback: (() -> (Unit))? = null
+        ) {
+            synchronizeCampaignModifications(callback)
         }
     }
 }
