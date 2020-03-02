@@ -97,7 +97,6 @@ class Flagship {
          * Use APAC region endpoints
          */
         fun withAPACRegion(apiKey : String) : Builder {
-            //x-api-key
             Flagship.apiKey = apiKey
             return this
         }
