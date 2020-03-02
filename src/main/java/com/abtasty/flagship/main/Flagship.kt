@@ -130,7 +130,7 @@ class Flagship {
          * @param envId key provided by ABTasty
          * @return Builder
          **/
-        fun build(appContext: Context, envId: String): Builder {
+        fun builder(appContext: Context, envId: String): Builder {
             return Builder(appContext, envId)
         }
 
@@ -532,8 +532,8 @@ class Flagship {
             )
         )
         @JvmOverloads
-        fun start(appContext: Context, envId: String, visitorId: String) {
-            build(appContext, envId)
+        fun start(appContext: Context, envId: String, visitorId: String = "") {
+            builder(appContext, envId)
                 .withVisitorId(visitorId)
                 .start()
         }
