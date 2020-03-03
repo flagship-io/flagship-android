@@ -45,10 +45,18 @@ internal class DatabaseManager {
 
     }
 
+    val MIGRATION_3_4 = object  : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE `bucket` ADD COLUMN `lastModified` TEXT default '' NOT NULL")
+        }
+
+    }
+
     fun init(c: Context) {
         db = Room.databaseBuilder(c, Database::class.java, DATABASE)
             .addMigrations(MIGRATION_1_2)
             .addMigrations(MIGRATION_2_3)
+            .addMigrations(MIGRATION_3_4)
             .enableMultiInstanceInvalidation()
             .allowMainThreadQueries()
             .build()
@@ -183,16 +191,16 @@ internal class DatabaseManager {
         }
     }
 
-    fun insertBucket(bucket: String) {
+    fun insertBucket(bucket: String, lastModified : String) {
         db?.let {
-            val bucketData = BucketData("0", bucket, System.currentTimeMillis())
+            val bucketData = BucketData("0", bucket, System.currentTimeMillis(), lastModified)
             val row = if (it.bucketDao().countBucket() == 0) {
                 it.bucketDao().insertBucket(bucketData).toInt()
             } else {
-                it.bucketDao().updateBucket(bucket)
+                it.bucketDao().updateBucket(bucket, lastModified)
             }
             if (row > 0) {
-                Logger.v(Logger.TAG.BUCKETING, "[Bucket inserted][$row][$bucketData]")
+                Logger.v(Logger.TAG.BUCKETING, "[Bucket inserted][$row][$lastModified][$bucketData]")
             } else {
                 Logger.e(
                     Logger.TAG.BUCKETING,
@@ -213,5 +221,12 @@ internal class DatabaseManager {
             }
         }
         return null
+    }
+
+    fun getBucketLastModified() : String? {
+        return db?.let {
+            val bucket = it.bucketDao().getBucket()
+            bucket?.lastModified
+        }
     }
 }

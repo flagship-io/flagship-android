@@ -26,8 +26,8 @@ interface BucketDao {
     @Query("Select * FROM bucket WHERE bid = 0")
     fun getBucket() : BucketData?
 
-    @Query("Update bucket SET bucket = :bucket WHERE bid = 0")
-    fun updateBucket(bucket : String) : Int
+    @Query("Update bucket SET bucket = :bucket, lastModified = :lastModified WHERE bid = 0")
+    fun updateBucket(bucket : String, lastModified : String) : Int
 
     @Query("SELECT COUNT(bucket) FROM bucket")
     fun countBucket() : Int

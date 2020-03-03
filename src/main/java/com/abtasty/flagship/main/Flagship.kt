@@ -423,6 +423,12 @@ class Flagship {
             default: T,
             report: Boolean = false
         ): T {
+            val logError = {
+                Logger.e(
+                    Logger.TAG.PARSING,
+                    "Flagship.getValue \"$key\" is missing or types are different. Default value is returned."
+                )
+            }
             if (!panicMode) {
                 return try {
                     val modification = modifications[key]
@@ -431,19 +437,17 @@ class Flagship {
                         val variationId = modification.variationId
                         val value = modification.value
                         (value as? T)?.let {
-                            if (report)
+                            if (report) {
                                 ApiManager.getInstance().sendActivationRequest(
                                     variationGroupId,
                                     variationId
                                 )
+                            }
                             it
-                        } ?: default
-                    } ?: default
+                        } ?: default.also { logError() }
+                    } ?: default.also { logError() }
                 } catch (e: Exception) {
-                    Logger.e(
-                        Logger.TAG.PARSING,
-                        "Flagship.getValue \"$key\" is missing or types are different"
-                    )
+                    logError()
                     default
                 }
             } else return default
@@ -464,16 +468,6 @@ class Flagship {
             lambda: (() -> (Unit))? = null,
             campaignCustomId: String = ""
         ) {
-//            if (mode == Mode.DECISION_API) {
-//                GlobalScope.async {
-//                    if (!panicMode) {
-//                        ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
-//                        ready = true
-//                        lambda?.let { it() }
-//                    }
-//                }
-//            } else
-//                BucketingManager.syncBucketModifications(lambda)
             GlobalScope.async {
                 if (mode == Mode.DECISION_API) {
                     if (!panicMode) {
@@ -483,8 +477,8 @@ class Flagship {
                     }
                 } else
                     BucketingManager.syncBucketModifications(lambda)
-                Logger.v(Logger.TAG.SYNC, "current context : $context")
-                Logger.v(Logger.TAG.SYNC, "current modifications : $modifications")
+                Logger.v(Logger.TAG.SYNC, "[Current context] $context")
+                Logger.v(Logger.TAG.SYNC, "[Current modifications] $modifications")
             }
         }
 

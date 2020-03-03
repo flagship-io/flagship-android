@@ -6,6 +6,7 @@ import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -115,6 +116,5 @@ class Utils {
             }
             return results
         }
-
     }
 }

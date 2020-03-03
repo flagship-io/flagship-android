@@ -11,5 +11,6 @@ data class BucketData(
 
     @ColumnInfo(name = "bid") val bid : String,
     @ColumnInfo(name = "bucket") val bucket:String,
-    @ColumnInfo(name = "timestamp") val timestamp: Long
+    @ColumnInfo(name = "timestamp") val timestamp: Long,
+    @ColumnInfo(name = "lastModified") val lastModified : String
 ) : Parcelable
