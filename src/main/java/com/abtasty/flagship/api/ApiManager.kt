@@ -3,6 +3,7 @@ package com.abtasty.flagship.api
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
+import com.abtasty.flagship.main.Flagship.Companion.apiKey
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.utils.Logger
 import okhttp3.*
@@ -23,6 +24,7 @@ import kotlin.collections.HashMap
 internal class ApiManager {
 
     val DOMAIN = "https://decision-api.flagship.io/v1/"
+    val APAC_DOMAIN = "https://decision.flagship.io/v2/"
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
@@ -51,6 +53,10 @@ internal class ApiManager {
             .readTimeout(1, TimeUnit.MINUTES)
 //            .cache(Cache(cacheDir, cacheSize.toLong()))
             .build()
+    }
+
+    private fun getEndPoint() : String {
+        return if (apiKey != null) APAC_DOMAIN else DOMAIN
     }
 
     internal interface PostRequestInterface<B, I> {
@@ -88,6 +94,7 @@ internal class ApiManager {
                 .addHeader("Content-Type", "application/json")
             for (h in headers)
                 builder.addHeader(h.key, h.value)
+            apiKey?.let { key ->  builder.addHeader(X_API_KEY, key)}
             if (method == METHOD.POST) {
                 val body = jsonBody.toString()
                     .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
@@ -284,7 +291,7 @@ internal class ApiManager {
             jsonBody.put("context", context)
             jsonBody.put("trigger_hit", false)
             CampaignRequestBuilder()
-                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/")
+                .withUrl(getEndPoint() + Flagship.clientId + CAMPAIGNS + "/")
                 .withBodyParams(jsonBody)
                 .build()
                 .fire(false)
@@ -358,7 +365,7 @@ internal class ApiManager {
         val activation = Hit.Activation(variationGroupId, variationId)
         Hit.HitRequestBuilder(false)
             .withHit(activation)
-            .withUrl(DOMAIN + ACTIVATION)
+            .withUrl(getEndPoint() + ACTIVATION)
             .build()
             .fire(true)
     }
@@ -395,7 +402,7 @@ internal class ApiManager {
                         Hit.HitRequestBuilder(false)
                             .withBodyParams(JSONObject(h.content))
                             .withRequestId(h.id!!)
-                            .withUrl(DOMAIN + ACTIVATION)
+                            .withUrl(getEndPoint() + ACTIVATION)
                             .build()
                             .fire(true)
                     } catch (e: Exception) {

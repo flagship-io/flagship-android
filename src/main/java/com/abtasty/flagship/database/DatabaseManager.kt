@@ -154,7 +154,8 @@ internal class DatabaseManager {
         db?.let {
             it.modificationDao()
                 .deleteAllModifications(Flagship.visitorId)
-            for (m in Flagship.modifications) {
+            val mods = HashMap(Flagship.modifications)
+            for (m in mods) {
                 it.modificationDao().insertModification(m.value.toModificationData())
             }
         }
