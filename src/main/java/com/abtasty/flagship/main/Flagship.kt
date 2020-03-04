@@ -6,11 +6,8 @@ import com.abtasty.flagship.api.BucketingManager
 import com.abtasty.flagship.api.HitBuilder
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.model.Modification
-import com.abtasty.flagship.utils.FlagshipContext
-import com.abtasty.flagship.utils.FlagshipPrivateContext
+import com.abtasty.flagship.utils.*
 import com.abtasty.flagship.utils.Logger
-import com.abtasty.flagship.utils.Utils
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -127,14 +124,13 @@ class Flagship {
         internal var isFirstInit: Boolean? = null
 
         /**
-         * Initialize the flagship SDK
-         * Return a Builder class to instantiate the library.
+         * Return a Builder class to configure and instantiate the library.
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
          * @return Builder
          **/
-        fun init(appContext: Context, envId: String): Builder {
+        fun builder(appContext: Context, envId: String): Builder {
             return Builder(appContext, envId)
         }
 
@@ -152,7 +148,6 @@ class Flagship {
             envId: String,
             ready: (() -> Unit)? = null
         ) {
-
             this.clientId = envId
             this.visitorId =
                 if (visitorId.isNotEmpty()) visitorId else Utils.genVisitorId(appContext)
@@ -239,14 +234,14 @@ class Flagship {
          * This function updates the visitor context value matching the given key.
          * A new context value associated with this key will be created if there is no matching.
          *
-         * @param key Flagship context key to associate with the following value
+         * @param key preset context key to associate with the following value
          * @param value new context value
          * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
          * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
          * You also have the possibility to update it manually : syncCampaignModifications()
          */
         @JvmOverloads
-        fun updateContext(key: FlagshipContext, value: Any, sync: (() -> (Unit))? = null) {
+        fun updateContext(key: PresetContext, value: Any, sync: (() -> (Unit))? = null) {
             if (key.checkValue(value))
                 updateContextValue(key.key, value, sync)
             else
@@ -459,24 +454,22 @@ class Flagship {
          * If the SDK is set with BUCKETING mode :
          * This function will re-apply targeting and update all the campaigns modifications from the server according to the user context.
          *
-         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
-         * @param campaignCustomId (optional) Specify a campaignId to get only its modifications. Set an empty string to get all campaigns modifications (by default).
+         * @param callback Lambda to be invoked when the SDK has finished to update the modifications from the server.
          *
          */
         @JvmOverloads
-        fun syncCampaignModifications(
-            lambda: (() -> (Unit))? = null,
-            campaignCustomId: String = ""
+        fun synchronizeCampaignModifications(
+            callback: (() -> (Unit))? = null
         ) {
             GlobalScope.async {
                 if (mode == Mode.DECISION_API) {
                     if (!panicMode) {
-                        ApiManager.getInstance().sendCampaignRequest(campaignCustomId, context)
+                        ApiManager.getInstance().sendCampaignRequest(context)
                         ready = true
-                        lambda?.let { it() }
+                        callback?.let { it() }
                     }
                 } else
-                    BucketingManager.syncBucketModifications(lambda)
+                    BucketingManager.syncBucketModifications(callback)
                 Logger.v(Logger.TAG.SYNC, "[Current context] $context")
                 Logger.v(Logger.TAG.SYNC, "[Current modifications] $modifications")
             }
@@ -496,9 +489,9 @@ class Flagship {
 
 
         /**
-         * This function allows you to report that a visitor has seen a modification to our servers
+         * This function allows you to report that a visitor has seen a modification to our servers.
          *
-         * @param key key which identifies the modification
+         * @param key key which identifies the modification.
          */
         fun activateModification(key: String) {
             if (!panicMode)
@@ -506,7 +499,7 @@ class Flagship {
         }
 
         /**
-         * This function allows you to send tracking events on our servers such as Transactions, page views, clicks ...
+         * This function allows you to send hit events on our servers such as Transactions, page views, clicks ...
          *
          * @param hit Hit to send
          * @see com.abtasty.flagship.api.Hit.Page
@@ -515,7 +508,7 @@ class Flagship {
          * @see com.abtasty.flagship.api.Hit.Item
          *
          */
-        fun <T> sendTracking(hit: HitBuilder<T>) {
+        fun <T> sendHit(hit: HitBuilder<T>) {
             if (!panicMode)
                 ApiManager.getInstance().sendHitTracking(hit)
         }
@@ -543,10 +536,19 @@ class Flagship {
             )
         )
         @JvmOverloads
-        fun start(appContext: Context, envId: String, visitorId: String) {
-            init(appContext, envId)
+        fun start(appContext: Context, envId: String, visitorId: String = "") {
+            builder(appContext, envId)
                 .withVisitorId(visitorId)
                 .start()
+        }
+
+        @Deprecated(
+            message = "Use sendHit instead.",
+            replaceWith = ReplaceWith("Flagship.sendHit(hit)")
+        )
+        @JvmOverloads
+        fun <T> sendTracking(hit: HitBuilder<T>) {
+            sendHit(hit)
         }
 
         /**
@@ -560,23 +562,21 @@ class Flagship {
             Logger.logMode = mode
         }
 
-        /**
-         * This function calls the decision api and updates all the campaigns modification from the server according to the user context. @Deprecated
-         *
-         * @param campaignCustomId (optional) Specify a campaignId to get its modifications. All campaigns by default.
-         * @param lambda Lambda to be invoked when the SDK has finished to update the modifications from the server.
-         *
-         */
+        @Deprecated(message = "Use updateContext(key: PresetContext, value: Any, sync: (() -> (Unit))? = null)")
+        @JvmOverloads
+        fun updateContext(key: FlagshipContext, value: Any, sync: (() -> (Unit))? = null) {
+            PresetContext.getFromKey(key.key)?.let { newKey -> updateContext(newKey, value, sync) }
+        }
+
         @Deprecated(
-            message = "Use `syncCampaignModifications(lambda, campaignCustomId` instead.",
-            replaceWith = ReplaceWith("Flagship.syncCampaignModifications(lambda, campaignCustomId)")
+            message = "Use synchronizeCampaignModifications instead.",
+            replaceWith = ReplaceWith("Flagship.synchronizeCampaignModifications(callback)")
         )
         @JvmOverloads
         fun syncCampaignModifications(
-            campaignCustomId: String = "",
-            lambda: () -> (Unit) = {}
-        ): Deferred<Unit> {
-            return GlobalScope.async { syncCampaignModifications(lambda, campaignCustomId) }
+            callback: (() -> (Unit))? = null
+        ) {
+            synchronizeCampaignModifications(callback)
         }
     }
 }

@@ -125,6 +125,6 @@ abstract class HitBuilder<B> {
      * This function will send this hit event on our servers.
      */
     fun send() {
-        Flagship.sendTracking(this)
+        Flagship.sendHit(this)
     }
 }
