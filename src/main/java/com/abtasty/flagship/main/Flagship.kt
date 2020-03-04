@@ -531,16 +531,16 @@ class Flagship {
          *
          * Initialize the flagship SDK @Deprecated
          *
-         * Use the 'init' method and the returning 'Builder' instead
+         * Use the 'builder' method and the returning 'Builder' instead
          *
          * @param appContext application context
          * @param envId key provided by ABTasty
          * @param visitorId (optional) set an id for identifying the current visitor
          */
         @Deprecated(
-            message = "Use the 'init' method and the returning 'Builder' instead",
+            message = "Use the 'builder' method and the returning 'Builder' instead",
             replaceWith = ReplaceWith(
-                "Flagship.init(appContext, envId)" +
+                "Flagship.builder(appContext, envId)" +
                         "\n.withVisitorId(visitorId)" +
                         "\n.start()"
             )
@@ -564,7 +564,7 @@ class Flagship {
         /**
          * Enable logs of the SDK @Deprecated
          *
-         * Use the Builder returned by the 'init' method in order to enabled the logs
+         * Use the Builder returned by the 'builder' method in order to enabled the logs
          */
         @Deprecated(message = "Use the builder returned by the 'init method in order to enabled the logs")
         @JvmOverloads
