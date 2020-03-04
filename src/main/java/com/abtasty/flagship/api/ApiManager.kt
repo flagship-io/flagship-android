@@ -56,7 +56,7 @@ internal class ApiManager {
     }
 
     private fun getEndPoint() : String {
-        return if (apiKey != null) APAC_DOMAIN else DOMAIN
+        return if (apiKey != null && apiKey!!.isNotEmpty()) APAC_DOMAIN else DOMAIN
     }
 
     internal interface PostRequestInterface<B, I> {

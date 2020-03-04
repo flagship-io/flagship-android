@@ -172,7 +172,7 @@ class Flagship {
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
             when (mode) {
-                Mode.DECISION_API -> syncCampaignModifications(ready)
+                Mode.DECISION_API -> synchronizeCampaignModifications(ready)
                 Mode.BUCKETING -> BucketingManager.startBucketing(ready)
             }
         }
@@ -280,7 +280,7 @@ class Flagship {
                     updateContextValue(p.key, p.value)
                 }
                 if (ready && sync != null)
-                    syncCampaignModifications(sync)
+                    synchronizeCampaignModifications(sync)
             }
         }
 
@@ -307,7 +307,7 @@ class Flagship {
                     }
                 }
                 if (ready && sync != null)
-                    syncCampaignModifications(sync)
+                    synchronizeCampaignModifications(sync)
             }
         }
 
