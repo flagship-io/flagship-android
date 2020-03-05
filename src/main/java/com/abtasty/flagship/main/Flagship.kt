@@ -200,8 +200,8 @@ class Flagship {
          * @param value new context value
          * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
          * Then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually by calling syncCampaignModifications()
-         * @see syncCampaignModifications()
+         * You also have the possibility to update it manually by calling synchronizeModifications()
+         * @see synchronizeModifications()
          */
         @JvmOverloads
         fun updateContext(key: String, value: Number, sync: (() -> (Unit))? = null) {
@@ -216,8 +216,8 @@ class Flagship {
          * @param value new context value
          * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
          * Then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually by calling syncCampaignModifications()
-         * @see syncCampaignModifications()
+         * You also have the possibility to update it manually by calling synchronizeModifications()
+         * @see synchronizeModifications()
          */
         @JvmOverloads
         fun updateContext(key: String, value: String, sync: (() -> (Unit))? = null) {
@@ -232,8 +232,8 @@ class Flagship {
          * @param value new context value
          * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
          * Then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually by calling syncCampaignModifications()
-         * @see syncCampaignModifications()
+         * You also have the possibility to update it manually by calling synchronizeModifications()
+         * @see synchronizeModifications()
          */
         @JvmOverloads
         fun updateContext(key: String, value: Boolean, sync: (() -> (Unit))? = null) {
@@ -248,7 +248,7 @@ class Flagship {
          * @param value new context value
          * @param sync (optional : null by default) If a lambda is passed as parameter, it will automatically update the modifications
          * from the server for all the campaigns with the updated current context then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually : syncCampaignModifications()
+         * You also have the possibility to update it manually : synchronizeModifications()
          */
         @JvmOverloads
         fun updateContext(key: PresetContext, value: Any, sync: (() -> (Unit))? = null) {
@@ -270,8 +270,8 @@ class Flagship {
          * @param value new context value
          * @param sync (optional : null by default) If a lambda is passed as parameter : it will automatically update the campaigns modifications.
          * Then this lambda will be invoked when finished.
-         * You also have the possibility to update it manually by calling syncCampaignModifications()
-         * @see syncCampaignModifications()
+         * You also have the possibility to update it manually by calling synchronizeModifications()
+         * @see synchronizeModifications()
          */
         @JvmOverloads
         fun updateContext(values: HashMap<String, Any>, sync: (() -> (Unit))? = null) {
@@ -320,7 +320,7 @@ class Flagship {
         }
 
         /**
-         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * Get the campaign modification value matching the given key. Use synchronizeModifications beforehand,
          * in order to update all the modifications from the server.
          *
          * @param key key associated with the modification
@@ -328,7 +328,7 @@ class Flagship {
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling activateModification().
-         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.synchronizeModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         @JvmOverloads
@@ -337,7 +337,7 @@ class Flagship {
         }
 
         /**
-         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * Get the campaign modification value matching the given key. Use synchronizeModifications beforehand,
          * in order to update all the modifications from the server.
          *
          * @param key key associated with the modification
@@ -345,7 +345,7 @@ class Flagship {
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling activateModification().
-         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.synchronizeModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         @JvmOverloads
@@ -354,7 +354,7 @@ class Flagship {
         }
 
         /**
-         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * Get the campaign modification value matching the given key. Use synchronizeModifications beforehand,
          * in order to update all the modifications from the server.
          *
          * @param key key associated with the modification
@@ -362,7 +362,7 @@ class Flagship {
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling activateModification().
-         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.synchronizeModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         @JvmOverloads
@@ -372,7 +372,7 @@ class Flagship {
 
 
         /**
-         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * Get the campaign modification value matching the given key. Use synchronizeModifications beforehand,
          * in order to update all the modifications from the server.
          *
          * @param key key associated with the modification
@@ -380,7 +380,7 @@ class Flagship {
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling activateModification().
-         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.synchronizeModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         @JvmOverloads
@@ -389,7 +389,7 @@ class Flagship {
         }
 
         /**
-         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * Get the campaign modification value matching the given key. Use synchronizeModifications beforehand,
          * in order to update all the modifications from the server.
          *
          * @param key key associated with the modification
@@ -397,7 +397,7 @@ class Flagship {
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling activateModification().
-         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.synchronizeModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         @JvmOverloads
@@ -406,7 +406,7 @@ class Flagship {
         }
 
         /**
-         * Get the campaign modification value matching the given key. Use syncCampaignModifications beforehand,
+         * Get the campaign modification value matching the given key. Use synchronizeModifications beforehand,
          * in order to update all the modifications from the server.
          *
          * @param key key associated with the modification
@@ -414,7 +414,7 @@ class Flagship {
          * @param activate (false by default) Set this param to true to automatically report on our server :
          * the current visitor has seen this modification. You also have the possibility to do it afterward
          * by calling activateModification().
-         * @see com.abtasty.flagship.main.Flagship.syncCampaignModifications
+         * @see com.abtasty.flagship.main.Flagship.synchronizeModifications
          * @see com.abtasty.flagship.main.Flagship.activateModification
          */
         @JvmOverloads
@@ -579,8 +579,8 @@ class Flagship {
         }
 
         @Deprecated(
-            message = "Use synchronizeCampaignModifications instead.",
-            replaceWith = ReplaceWith("Flagship.synchronizeCampaignModifications(callback)")
+            message = "Use synchronizeModifications instead.",
+            replaceWith = ReplaceWith("Flagship.synchronizeModifications(callback)")
         )
         @JvmOverloads
         fun syncCampaignModifications(
