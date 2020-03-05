@@ -133,7 +133,7 @@ internal class ApiManager {
 
         open fun onFailure(response: Response?, message: String = "") {
             Logger.e(
-                Logger.TAG.POST, "[Response${getIdToString()}][FAIL]" +
+                if (method == METHOD.POST) Logger.TAG.POST else Logger.TAG.GET, "[Response${getIdToString()}][FAIL]" +
                         when (true) {
                             response != null -> "[${response.code}][${responseBody}]"
                             message.isNotEmpty() -> "[$message]"

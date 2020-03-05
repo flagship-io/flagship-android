@@ -172,7 +172,7 @@ class Flagship {
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
             when (mode) {
-                Mode.DECISION_API -> synchronizeCampaignModifications(ready)
+                Mode.DECISION_API -> synchronizeModifications(ready)
                 Mode.BUCKETING -> BucketingManager.startBucketing(ready)
             }
         }
@@ -280,7 +280,7 @@ class Flagship {
                     updateContextValue(p.key, p.value)
                 }
                 if (ready && sync != null)
-                    synchronizeCampaignModifications(sync)
+                    synchronizeModifications(sync)
             }
         }
 
@@ -307,7 +307,7 @@ class Flagship {
                     }
                 }
                 if (ready && sync != null)
-                    synchronizeCampaignModifications(sync)
+                    synchronizeModifications(sync)
             }
         }
 
@@ -468,7 +468,7 @@ class Flagship {
          *
          */
         @JvmOverloads
-        fun synchronizeCampaignModifications(
+        fun synchronizeModifications(
             callback: (() -> (Unit))? = null
         ) {
             GlobalScope.async {
@@ -586,7 +586,7 @@ class Flagship {
         fun syncCampaignModifications(
             callback: (() -> (Unit))? = null
         ) {
-            synchronizeCampaignModifications(callback)
+            synchronizeModifications(callback)
         }
     }
 }

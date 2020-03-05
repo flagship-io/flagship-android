@@ -33,7 +33,7 @@ internal data class Campaign(
                 }
                 return result
             } catch (e: Exception) {
-                Logger
+                Logger.e(Logger.TAG.PARSING, "An error occurred while parsing campaigns.")
                 null
             }
         }
