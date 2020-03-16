@@ -1,7 +1,7 @@
 package com.abtasty.flagship.utils
 
 import android.content.Context
-import androidx.core.os.ConfigurationCompat
+import android.os.Build
 import com.abtasty.flagship.api.Hit
 import com.abtasty.flagship.main.Flagship
 import org.json.JSONArray
@@ -45,8 +45,18 @@ class Utils {
         }
 
         private fun loadLocale(context: Context) {
-            val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
+//            val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
+            val locale = getCurrentLocale(context)
             tmpContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale.toString().toLowerCase().replace("_", "-")
+        }
+
+        private fun getCurrentLocale(context: Context) : Locale {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                context.resources.configuration.locales.get(0);
+            } else {
+                //noinspection deprecation
+                context.resources.configuration.locale;
+            }
         }
 
         internal fun logFailOrSuccess(boolean: Boolean) : String {
