@@ -45,18 +45,8 @@ class Utils {
         }
 
         private fun loadLocale(context: Context) {
-//            val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0]
-            val locale = getCurrentLocale(context)
-            tmpContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale.toString().toLowerCase().replace("_", "-")
-        }
-
-        private fun getCurrentLocale(context: Context) : Locale {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                context.resources.configuration.locales.get(0);
-            } else {
-                //noinspection deprecation
-                context.resources.configuration.locale;
-            }
+            val locale = Locale.getDefault().toString().toLowerCase().replace("_", "-")
+            tmpContext[Hit.KeyMap.DEVICE_LOCALE.key] = locale
         }
 
         internal fun logFailOrSuccess(boolean: Boolean) : String {
