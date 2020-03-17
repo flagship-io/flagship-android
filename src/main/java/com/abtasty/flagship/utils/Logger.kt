@@ -9,9 +9,13 @@ internal class Logger {
     internal enum class TAG(val value: String) {
         HIT("[HIT]"),
         POST("[POST]"),
+        GET("[GET]"),
         DB("[DB]"),
         PARSING("[PARSING]"),
+        BUCKETING("[BUCKETING]"),
         CONTEXT("[CONTEXT]"),
+        ALLOCATION("[ALLOCATION]"),
+        SYNC("[SYNC]"),
         INFO("[INFO]")
     }
 

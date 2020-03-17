@@ -3,23 +3,40 @@ package com.abtasty.flagship.api
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.Companion.VISITOR_ID
+import com.abtasty.flagship.main.Flagship.Companion.apiKey
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.utils.Logger
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.HashMap
+
 
 internal class ApiManager {
 
     val DOMAIN = "https://decision-api.flagship.io/v1/"
+    val APAC_DOMAIN = "https://decision.flagship.io/v2/"
     val CAMPAIGNS = "/campaigns"
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
+    val BUCKETING = "https://cdn.flagship.io/{id}/bucketing.json"
 
     companion object {
+
+        val IF_MODIFIED_SINCE = "If-Modified-Since"
+        val X_API_KEY = "x-api-key"
+        val LAST_MODIFIED = "last-modified"
+
+        var cacheDir: File? = null
         private var instance: ApiManager = ApiManager()
 
         @Synchronized
@@ -29,10 +46,17 @@ internal class ApiManager {
     }
 
     private val client: OkHttpClient by lazy {
+        //        val cacheSize = 4 * 1024 * 1024 // 4MB
+
         OkHttpClient().newBuilder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(1, TimeUnit.MINUTES)
+//            .cache(Cache(cacheDir, cacheSize.toLong()))
             .build()
+    }
+
+    private fun getEndPoint() : String {
+        return if (apiKey != null && apiKey!!.isNotEmpty()) APAC_DOMAIN else DOMAIN
     }
 
     internal interface PostRequestInterface<B, I> {
@@ -46,30 +70,37 @@ internal class ApiManager {
         fun withBodyParam(key: String, value: Any): B
         fun withBodyParams(params: HashMap<String, Any>): B
         fun withRequestIds(requestId: List<Long>): B
+        fun withHeaderParam(key : String, value : String) : B
     }
 
-    open class PostRequest : Callback {
+    enum class METHOD { POST, GET }
+
+    open class ApiRequest(private var method: METHOD = METHOD.POST) {
 
         internal open var url: String = ""
         internal open var jsonBody = JSONObject()
+        internal var headers = HashMap<String, String>()
         internal var request: Request? = null
         internal var response: Response? = null
+        internal var responseBody: String? = null
+        internal var code = 0
 
         internal var requestIds = mutableListOf<Long>()
 
         open fun build() {
 
-//            val body = RequestBody.create(
-//                MediaType.parse("application/json; charset=utf-8"),
-//                jsonBody.toString()
-//            )
-            val body = jsonBody.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-
-            request = Request.Builder()
+            val builder = Request.Builder()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
-                .post(body)
-                .build()
+            for (h in headers)
+                builder.addHeader(h.key, h.value)
+            apiKey?.let { key ->  builder.addHeader(X_API_KEY, key)}
+            if (method == METHOD.POST) {
+                val body = jsonBody.toString()
+                    .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+                builder.post(body)
+            }
+            request = builder.build()
         }
 
         open fun fire(async: Boolean) {
@@ -78,16 +109,20 @@ internal class ApiManager {
                 request?.let {
                     logRequest(async)
                     if (!async) {
-                        response = ApiManager.instance.client.newCall(it).execute()
-                        parseResponse()
+                        try {
+                            val response = instance.client.newCall(it).execute()
+                            onResponse(response)
+                        } catch (e: Exception) {
+                            onFailure(null, e.message ?: "")
+                        }
                     } else
-                        ApiManager.instance.client.newCall(it).enqueue(object : Callback {
+                        instance.client.newCall(it).enqueue(object : Callback {
                             override fun onFailure(call: Call, e: IOException) {
-                                this@PostRequest.onFailure(call, e)
+                                onFailure(null, e.message ?: "")
                             }
 
                             override fun onResponse(call: Call, response: Response) {
-                                this@PostRequest.onResponse(call, response)
+                                onResponse(response)
                             }
                         })
                 }
@@ -96,16 +131,31 @@ internal class ApiManager {
             }
         }
 
-        override fun onFailure(call: Call, e: IOException) {
-            logFailure(e.stackTrace.toString())
+        open fun onFailure(response: Response?, message: String = "") {
+            Logger.e(
+                if (method == METHOD.POST) Logger.TAG.POST else Logger.TAG.GET, "[Response${getIdToString()}][FAIL]" +
+                        when (true) {
+                            response != null -> "[${response.code}][${responseBody}]"
+                            message.isNotEmpty() -> "[$message]"
+                            headers.isNotEmpty() -> "[headers=$headers]"
+                            else -> ""
+                        }
+            )
         }
 
-        override fun onResponse(call: Call, response: Response) {
+        open fun onSuccess() {
+            parseResponse()
+        }
+
+        private fun onResponse(response: Response) {
+            this.code = response.code
             this.response = response
             logResponse(response.code)
-            if (response.isSuccessful) {
-                parseResponse()
-            }
+            this.responseBody = response.body?.string() ?: ""
+            if (response.isSuccessful || code == 304) {
+                onSuccess()
+            } else
+                onFailure(response)
         }
 
         open fun parseResponse(): Boolean {
@@ -118,37 +168,35 @@ internal class ApiManager {
 
         protected open fun logRequest(async: Boolean) {
             Logger.v(
-                Logger.TAG.POST,
+                if (method == METHOD.POST) Logger.TAG.POST else Logger.TAG.GET,
                 "[Request${getIdToString()}][async=$async] " + request?.url + " " + jsonBody
             )
         }
 
         protected open fun logResponse(code: Int) {
-            if (code in 200..299)
-                Logger.v(
-                    Logger.TAG.POST,
+            when (code) {
+                in 200..299, 304 -> Logger.v(
+                    if (method == METHOD.POST) Logger.TAG.POST else Logger.TAG.GET,
                     "[Response${getIdToString()}][$code] " + request?.url + " " + jsonBody
                 )
-            else
-                Logger.e(
-                    Logger.TAG.POST,
-                    "[Response${getIdToString()}][$code] " + request?.url + " " + jsonBody
+                else -> Logger.e(
+                    if (method == METHOD.POST) Logger.TAG.POST else Logger.TAG.GET,
+                    "[FAIL][Response${getIdToString()}][$code] " + request?.url + " " + jsonBody
                 )
-        }
-
-        protected open fun logFailure(message: String) {
-            Logger.e(Logger.TAG.POST, "[Response${getIdToString()}][FAIL] " + message)
+            }
         }
     }
 
-    open class PostRequestBuilder<B, I : PostRequest> : PostRequestInterface<B, I> {
+    open class PostRequestBuilder<B, I : ApiRequest> : PostRequestInterface<B, I> {
 
-        override var instance = PostRequest() as I
+        override var instance = ApiRequest() as I
 
         override fun withUrl(url: String): B {
             instance.url = url
             return this as B
         }
+
+
 
         override fun withBodyParams(params: HashMap<String, Any>): B {
             for (k in params) {
@@ -179,25 +227,39 @@ internal class ApiManager {
             return this as B
         }
 
+        override fun withHeaderParam(key: String, value: String): B {
+            if (key.isNotEmpty() && value.isNotEmpty())
+                instance.headers[key] = value
+            return this as B
+        }
+
         override fun build(): I {
             return instance
         }
-
     }
 
-    internal class CampaignRequest(var campaignId: String = "") : PostRequest() {
+    internal class CampaignRequest(var campaignId: String = "") : ApiRequest() {
+
+        override fun onSuccess() {
+            parseResponse()
+        }
 
         override fun parseResponse(): Boolean {
             try {
-                val jsonResponse = JSONObject(response?.body?.string())
+                val jsonResponse = JSONObject(responseBody)
                 if (campaignId.isEmpty()) {
                     Flagship.panicMode = jsonResponse.optBoolean("panic", false)
                     Flagship.modifications.clear()
                     val array = jsonResponse.getJSONArray("campaigns")
                     for (i in 0 until array.length()) {
-                        Flagship.updateModifications(Campaign.parse(array.getJSONObject(i))?.variation?.modifications?.values!!)
+                        val mods = Campaign.parse(array.getJSONObject(i))!!.getModifications(false)
+                        Flagship.updateModifications(mods)
                     }
-                } else Flagship.updateModifications(Campaign.parse(jsonResponse)?.variation?.modifications?.values!!)
+                } else Flagship.updateModifications(
+                    Campaign.parse(jsonResponse)!!.getModifications(
+                        false
+                    )
+                )
                 DatabaseManager.getInstance().updateModifications()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -217,11 +279,7 @@ internal class ApiManager {
         }
     }
 
-
-    internal fun sendCampaignRequest(
-        campaignId: String = "",
-        hashMap: HashMap<String, Any> = HashMap()
-    ) {
+    internal fun sendCampaignRequest(hashMap: HashMap<String, Any> = HashMap()) {
 
         try {
             val jsonBody = JSONObject()
@@ -233,9 +291,8 @@ internal class ApiManager {
             jsonBody.put("context", context)
             jsonBody.put("trigger_hit", false)
             CampaignRequestBuilder()
-                .withUrl(DOMAIN + Flagship.clientId + CAMPAIGNS + "/$campaignId")
+                .withUrl(getEndPoint() + Flagship.clientId + CAMPAIGNS + "/")
                 .withBodyParams(jsonBody)
-                .withCampaignId(campaignId)
                 .build()
                 .fire(false)
         } catch (e: Exception) {
@@ -243,12 +300,72 @@ internal class ApiManager {
         }
     }
 
+    internal class BucketingRequest : ApiRequest(METHOD.GET) {
+
+        var campaignsJson: JSONArray? = null
+
+        override fun onSuccess() {
+            parseResponse()
+        }
+
+        override fun onFailure(response: Response?, message: String) {
+            super.onFailure(response, message)
+            DatabaseManager.getInstance().getBucket()?.let { campaignsJson = JSONArray(it) }
+        }
+
+        override fun parseResponse(): Boolean {
+            try {
+
+//                Flagship.useVisitorConsolidation = jsonData.optBoolean("visitorConsolidation")
+                val headers = response?.headers
+                val date = headers!![LAST_MODIFIED] ?: ""
+                if (code in 200..299) {
+                    val jsonData = JSONObject(responseBody)
+                    Flagship.panicMode = jsonData.optBoolean("panic", false)
+                    val campaignsArr = jsonData.optJSONArray("campaigns")
+                    campaignsJson = campaignsArr ?: JSONArray()
+                    DatabaseManager.getInstance().insertBucket(campaignsJson.toString(), date)
+                    return true
+                } else if (code == 304) {
+                    Logger.v(Logger.TAG.BUCKETING, "[304] Not modified, load bucketing file from local")
+                    DatabaseManager.getInstance().getBucket()?.let { campaignsJson = JSONArray(it) }
+                    return true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            DatabaseManager.getInstance().getBucket()?.let { campaignsJson = JSONArray(it) }
+            return false
+        }
+    }
+
+    internal class BucketingRequestBuilder :
+        PostRequestBuilder<BucketingRequestBuilder, BucketingRequest>() {
+        override var instance = BucketingRequest()
+    }
+
+    internal fun sendBucketingRequest(): JSONArray? {
+
+        return try {
+            val request = BucketingRequestBuilder()
+                .withUrl(BUCKETING.replace("{id}", Flagship.clientId!!))
+                .withHeaderParam(ApiManager.IF_MODIFIED_SINCE, DatabaseManager.getInstance().getBucketLastModified() ?: "")
+                .build()
+            request.fire(false)
+            request.campaignsJson
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+
     internal fun sendActivationRequest(variationGroupId: String, variationId: String) {
 
         val activation = Hit.Activation(variationGroupId, variationId)
         Hit.HitRequestBuilder(false)
             .withHit(activation)
-            .withUrl(DOMAIN + ACTIVATION)
+            .withUrl(getEndPoint() + ACTIVATION)
             .build()
             .fire(true)
     }
@@ -265,8 +382,13 @@ internal class ApiManager {
         DatabaseManager.getInstance().getNonSentHits().let { hits ->
             if (hits.isNotEmpty()) {
                 try {
-                    DatabaseManager.getInstance().updateHitStatus(hits.map { h -> h.id!! })
-                    sendHitTracking(Hit.Batch(Flagship.visitorId!!, hits))
+                    DatabaseManager.getInstance().updateHitStatus(hits.map { h -> h.id!! }, 1)
+                    sendHitTracking(
+                        Hit.Batch(
+                            Flagship.visitorId,
+                            hits
+                        )
+                    )
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -280,7 +402,7 @@ internal class ApiManager {
                         Hit.HitRequestBuilder(false)
                             .withBodyParams(JSONObject(h.content))
                             .withRequestId(h.id!!)
-                            .withUrl(DOMAIN + ACTIVATION)
+                            .withUrl(getEndPoint() + ACTIVATION)
                             .build()
                             .fire(true)
                     } catch (e: Exception) {

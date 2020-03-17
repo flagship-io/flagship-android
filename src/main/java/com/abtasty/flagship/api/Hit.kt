@@ -3,11 +3,9 @@ package com.abtasty.flagship.api
 import com.abtasty.flagship.database.DatabaseManager
 import com.abtasty.flagship.database.HitData
 import com.abtasty.flagship.main.Flagship
-import okhttp3.Call
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
 
 class Hit {
 
@@ -29,6 +27,7 @@ class Hit {
         TYPE("t"),
         CLIENT_ID("cid"),
         VISITOR_ID("vid"),
+        CUSTOM_VISITOR_ID("cvid"),
         DATA_SOURCE("ds"),
         APP("APP"),
 
@@ -71,7 +70,7 @@ class Hit {
         HIT_BATCH("h")
     }
 
-    internal class HitRequest : ApiManager.PostRequest() {
+    internal class HitRequest : ApiManager.ApiRequest() {
 
         override fun fire(async: Boolean) {
             if (requestIds.isEmpty())
@@ -81,20 +80,14 @@ class Hit {
             super.fire(async)
         }
 
-        override fun onResponse(call: Call, response: Response) {
-
-            if (response.isSuccessful)
-                DatabaseManager.getInstance().removeHit(this)
-            super.onResponse(call, response)
+        override fun onSuccess() {
+            DatabaseManager.getInstance().removeHit(this)
+            super.onSuccess()
         }
 
-        override fun parseResponse(): Boolean {
-            return true
-        }
-
-        override fun onFailure(call: Call, e: IOException) {
+        override fun onFailure(response: Response?, message: String) {
             DatabaseManager.getInstance().updateHitStatus(this)
-            super.onFailure(call, e)
+            super.onFailure(response, message)
         }
     }
 
@@ -107,10 +100,12 @@ class Hit {
             withUrl(ApiManager.getInstance().ARIANE)
             withBodyParam(KeyMap.CLIENT_ID.key, Flagship.clientId ?: "")
             withBodyParam(KeyMap.VISITOR_ID.key, Flagship.visitorId ?: "")
+//            withBodyParam(KeyMap.CUSTOM_VISITOR_ID.key, Flagship.customVisitorId ?: "")
             if (includeDeviceContext) {
                 withBodyParam(KeyMap.TIMESTAMP.key, System.currentTimeMillis())
                 withBodyParam(KeyMap.DATA_SOURCE.key, KeyMap.APP)
-                withBodyParams(Flagship.deviceContext)
+                withBodyParam(KeyMap.DEVICE_LOCALE.key, Flagship.context[KeyMap.DEVICE_LOCALE.key].toString())
+                withBodyParam(KeyMap.DEVICE_RESOLUTION.key, Flagship.context[KeyMap.DEVICE_RESOLUTION.key].toString())
             }
         }
 
@@ -347,6 +342,7 @@ class Hit {
             withHitParam(KeyMap.TYPE, Type.ACTIVATION)
             withHitParam(KeyMap.VARIATION_GROUP_ID, variationGroupId)
             withHitParam(KeyMap.VARIATION_ID, variationId)
+//            withHitParam(KeyMap.CUSTOM_VISITOR_ID, Flagship.customVisitorId ?: "")
         }
     }
 
@@ -367,7 +363,8 @@ class Hit {
         }
     }
 
-    internal class  Batch(visitorId : String, hits : List<HitData> = ArrayList()) : HitBuilder<GenericHitFromData>()  {
+    internal class  Batch(visitorId : String,
+                          hits : List<HitData> = ArrayList()) : HitBuilder<GenericHitFromData>()  {
 
         init {
            try {
@@ -375,6 +372,7 @@ class Hit {
                withHitParam(KeyMap.TYPE, Type.BATCH)
                withHitParam(KeyMap.CLIENT_ID, Flagship.clientId!!)
                withHitParam(KeyMap.VISITOR_ID, visitorId)
+//               withHitParam(KeyMap.CUSTOM_VISITOR_ID, customVisitorId)
                withChild(hits)
            } catch (e : Exception) {
                e.printStackTrace()
@@ -388,6 +386,7 @@ class Hit {
                 val child = JSONObject(h.content)
                 child.remove(KeyMap.CLIENT_ID.key)
                 child.remove(KeyMap.VISITOR_ID.key)
+                child.remove(KeyMap.CUSTOM_VISITOR_ID.key)
                 child.remove(KeyMap.DATA_SOURCE.key)
                 child.remove(KeyMap.DEVICE_LOCALE.key)
                 child.remove(KeyMap.DEVICE_RESOLUTION.key)

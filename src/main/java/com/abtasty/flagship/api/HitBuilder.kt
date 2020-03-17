@@ -1,11 +1,12 @@
 package com.abtasty.flagship.api
 
+import com.abtasty.flagship.main.Flagship
 import org.json.JSONObject
 
 abstract class HitBuilder<B> {
 
     var data = JSONObject()
-    var type : Hit.Type? = null
+    var type: Hit.Type? = null
     var requestIds = mutableListOf<Long>()
 
     internal fun withParams(jsonObject: JSONObject): B {
@@ -30,12 +31,12 @@ abstract class HitBuilder<B> {
         return this as B
     }
 
-    internal fun withRequestIds(ids : List<Long>) : B {
+    internal fun withRequestIds(ids: List<Long>): B {
         requestIds.addAll(ids)
         return this as B
     }
 
-    internal fun withHitRequestType(type : Hit.Type) : B {
+    internal fun withHitRequestType(type: Hit.Type): B {
         this.type = type
         return this as B
     }
@@ -98,7 +99,7 @@ abstract class HitBuilder<B> {
      * @param width width in pixels
      * @param height height in pixels
      */
-    fun withDeviceResolution(width: Int, height: Int) : B {
+    fun withDeviceResolution(width: Int, height: Int): B {
         return withHitParam(Hit.KeyMap.DEVICE_RESOLUTION, "${width}x$height")
     }
 
@@ -107,7 +108,7 @@ abstract class HitBuilder<B> {
      *
      * @param locale locale of the device in the format : en-us
      */
-    fun withDeviceLocale(locale : String) : B {
+    fun withDeviceLocale(locale: String): B {
         return withHitParam(Hit.KeyMap.DEVICE_LOCALE, locale)
     }
 
@@ -116,7 +117,14 @@ abstract class HitBuilder<B> {
      *
      * @param timestamp UTC time
      */
-    fun withTimestamp(timestamp: Long) : B {
+    fun withTimestamp(timestamp: Long): B {
         return withHitParam(Hit.KeyMap.TIMESTAMP, timestamp)
+    }
+
+    /**
+     * This function will send this hit event on our servers.
+     */
+    fun send() {
+        Flagship.sendHit(this)
     }
 }

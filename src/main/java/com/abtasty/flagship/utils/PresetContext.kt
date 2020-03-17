@@ -12,15 +12,14 @@ import com.abtasty.flagship.BuildConfig
 import com.abtasty.flagship.main.Flagship
 import java.util.*
 
-@Deprecated(message = "use IPresetContext instead")
-interface IFlagshipContext {
+
+interface IPresetContext {
 
     fun value(context: Context): Any?
     fun checkValue(value: Any): Boolean
 }
 
-@Deprecated(message = "use PresetContext instead")
-enum class FlagshipContext(var key: String) : IFlagshipContext {
+enum class PresetContext(var key: String) : IPresetContext {
 
     /**
      * Set the current device locale in the visitor context.
@@ -390,5 +389,55 @@ enum class FlagshipContext(var key: String) : IFlagshipContext {
         override fun checkValue(value: Any): Boolean {
             return (value is String)
         }
+    };
+
+    companion object  {
+        fun keys() : List<String> {
+            return PresetContext.values().map { it.key }
+        }
+
+        fun getFromKey(key : String) : PresetContext? {
+            return try {
+                values().first { it.key == key }
+            } catch (e : java.lang.Exception) {
+                null
+            }
+        }
+    }
+}
+
+
+interface IPrivateFlagshipContext {
+
+    fun value(): Any?
+    fun checkValue(value: Any): Boolean
+}
+
+enum class FlagshipPrivateContext(var key: String) : IPrivateFlagshipContext {
+
+    ALL_USERS("fs_all_users") {
+        override fun value(): Any? {
+            return ""
+        }
+
+        override fun checkValue(value: Any): Boolean {
+            return true
+        }
     },
+
+    FS_USERS("fs_users") {
+        override fun value(): Any? {
+            return Flagship.visitorId
+        }
+
+        override fun checkValue(value: Any): Boolean {
+            return value is String
+        }
+    };
+
+    companion object  {
+        fun keys() : List<String> {
+            return values().map { it.key }
+        }
+    }
 }
