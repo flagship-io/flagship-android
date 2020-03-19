@@ -13,12 +13,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.collections.HashMap
 
 
 internal class ApiManager {
@@ -29,6 +24,7 @@ internal class ApiManager {
     val ARIANE = "https://ariane.abtasty.com"
     val ACTIVATION = "activate"
     val BUCKETING = "https://cdn.flagship.io/{id}/bucketing.json"
+    val EXPOSE_KEYS_PARAM = "?exposeAllKeys=true"
 
     companion object {
 
@@ -291,7 +287,7 @@ internal class ApiManager {
             jsonBody.put("context", context)
             jsonBody.put("trigger_hit", false)
             CampaignRequestBuilder()
-                .withUrl(getEndPoint() + Flagship.clientId + CAMPAIGNS + "/")
+                .withUrl(getEndPoint() + Flagship.clientId + CAMPAIGNS + "/" + EXPOSE_KEYS_PARAM)
                 .withBodyParams(jsonBody)
                 .build()
                 .fire(false)

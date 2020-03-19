@@ -52,11 +52,19 @@ internal class DatabaseManager {
 
     }
 
+    val MIGRATION_4_5 = object  : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE `modifications` ADD COLUMN `variationReference` INTEGER default 0 NOT NULL")
+        }
+
+    }
+
     fun init(c: Context) {
         db = Room.databaseBuilder(c, Database::class.java, DATABASE)
             .addMigrations(MIGRATION_1_2)
             .addMigrations(MIGRATION_2_3)
             .addMigrations(MIGRATION_3_4)
+            .addMigrations(MIGRATION_4_5)
             .enableMultiInstanceInvalidation()
             .allowMainThreadQueries()
             .build()

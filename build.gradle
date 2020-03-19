@@ -4,8 +4,8 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply from: 'flagship-publishing.gradle'
 
-def ABTastySDKVersion = '1.2.0' ///DEFINE HERE THE ABTASTY SDK VERSION
-def ABTastySDKVersionCode = 4 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
+def ABTastySDKVersion = '1.2.1' ///DEFINE HERE THE ABTASTY SDK VERSION
+def ABTastySDKVersionCode = 5 ///DEFINE HERE THE ABTASTY SDK VERSION CODE
 
 android {
     compileSdkVersion 29
@@ -14,8 +14,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "1.2.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         kapt {
             arguments {

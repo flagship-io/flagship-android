@@ -32,6 +32,7 @@ class Flagship {
          * Server-side mode - The server will apply targeting and allocate campaigns. (Default)
          */
         DECISION_API,
+
         /**
          * Client-side mode - The SDK will apply targeting and allocate campaigns.
          */
@@ -93,7 +94,7 @@ class Flagship {
         /**
          * Use APAC region endpoints
          */
-        fun withAPACRegion(apiKey : String) : Builder {
+        fun withAPACRegion(apiKey: String): Builder {
             Flagship.apiKey = apiKey
             return this
         }
@@ -131,7 +132,7 @@ class Flagship {
 
         internal var isFirstInit: Boolean? = null
 
-        internal var apiKey : String? = null
+        internal var apiKey: String? = null
 
         /**
          * Return a Builder class to configure and instantiate the library.
@@ -428,10 +429,10 @@ class Flagship {
             default: T,
             report: Boolean = false
         ): T {
-            val logError = {
+            val logError = { typeError: Boolean ->
                 Logger.e(
                     Logger.TAG.PARSING,
-                    "Flagship.getValue \"$key\" is missing or types are different. Default value is returned."
+                    "Flagship.getValue \"$key\" ${if (typeError) " types are different" else "is missing"}. Default value is returned."
                 )
             }
             if (!panicMode) {
@@ -441,21 +442,29 @@ class Flagship {
                         val variationGroupId = modification.variationGroupId
                         val variationId = modification.variationId
                         val value = modification.value
+                        System.out.println("#BO isReference => $variationId ${modification.variationReference}") //todo remove
                         (value as? T)?.let {
-                            if (report) {
-                                ApiManager.getInstance().sendActivationRequest(
-                                    variationGroupId,
-                                    variationId
-                                )
-                            }
+                            if (report) activateModification(variationGroupId, variationId)
                             it
-                        } ?: default.also { logError() }
-                    } ?: default.also { logError() }
+                        } ?: default.also {
+                            if (value == null && report) activateModification(
+                                variationGroupId,
+                                variationId
+                            ) else if (value != null) logError(true)
+                        }
+                    } ?: default.also { logError(false) }
                 } catch (e: Exception) {
-                    logError()
+                    logError(false)
                     default
                 }
             } else return default
+        }
+
+        private fun activateModification(variationGroupId: String, variationId: String) {
+            ApiManager.getInstance().sendActivationRequest(
+                variationGroupId,
+                variationId
+            )
         }
 
         /**

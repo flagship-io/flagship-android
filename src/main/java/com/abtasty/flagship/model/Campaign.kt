@@ -287,6 +287,7 @@ internal data class Targeting(val key: String, val value: @RawValue Any, val ope
 internal data class Variation(
     val groupId: String,
     val id: String,
+    val reference: Boolean = false,
     val modifications: Modifications?,
     val allocation: Int = 100,
     var selected: Boolean = false
@@ -296,10 +297,11 @@ internal data class Variation(
 
         fun parse(groupId: String, jsonObject: JSONObject): Variation {
             val id = jsonObject.getString("id")
+            val reference = jsonObject.optBoolean("reference")
             val modifications =
-                Modifications.parse(groupId, id, jsonObject.getJSONObject("modifications"))
+                Modifications.parse(groupId, id, reference, jsonObject.getJSONObject("modifications"))
             val allocation = jsonObject.optInt("allocation", -1)
-            return Variation(groupId, id, modifications, allocation)
+            return Variation(groupId, id, reference, modifications, allocation)
         }
     }
 }
@@ -308,6 +310,7 @@ internal data class Variation(
 internal data class Modifications(
     val variationGroupId: String,
     val variationId: String,
+    val variationReference: Boolean,
     val type: String,
     val values: HashMap<String, Modification>
 ) : Parcelable {
@@ -316,6 +319,7 @@ internal data class Modifications(
         fun parse(
             variationGroupId: String,
             variationId: String,
+            variationReference : Boolean,
             jsonObject: JSONObject
         ): Modifications {
             return try {
@@ -323,14 +327,14 @@ internal data class Modifications(
                 val values = HashMap<String, Modification>()
                 val valueObj = jsonObject.getJSONObject("value")
                 for (k in valueObj.keys()) {
-                    val value = valueObj.get(k)
-                    if (value is Boolean || value is Number || value is String) {
-                        values[k] = Modification(k, variationGroupId, variationId, value)
+                    val value: Any? = if (valueObj.isNull(k)) null else valueObj.get(k)
+                    if (value is Boolean || value is Number || value is String || value == null) {
+                        values[k] = Modification(k, variationGroupId, variationId, variationReference, value)
                     } else if (value is JSONObject || value is JSONArray) {
                         val recursiveValues = Utils.getJsonRecursiveValues(value)
                         for (v in recursiveValues) {
                             values[v.key] =
-                                Modification(v.key, variationGroupId, variationId, v.value)
+                                Modification(v.key, variationGroupId, variationId, variationReference, v.value)
                         }
                     } else {
                         Logger.e(
@@ -340,14 +344,14 @@ internal data class Modifications(
                     }
 
                 }
-                Modifications(variationGroupId, variationId, type, values)
+                Modifications(variationGroupId, variationId, variationReference, type, values)
             } catch (e: Exception) {
                 e.printStackTrace()
                 Logger.e(
                     Logger.TAG.PARSING,
                     "variationGroupId = $variationGroupId, variationId = $variationId"
                 )
-                Modifications("", "", "", HashMap())
+                Modifications("", "", false, "", HashMap())
             }
         }
     }
@@ -358,14 +362,19 @@ data class Modification(
     val key: String,
     val variationGroupId: String,
     val variationId: String,
-    val value: @RawValue Any
+    val variationReference : Boolean,
+    val value: @RawValue Any?
 ) : Parcelable {
 
     fun toModificationData(): ModificationData {
         val json = JSONObject().put(key, value)
         return ModificationData(
-            key, Flagship.visitorId,
-            variationGroupId, variationId, json
+            key,
+            Flagship.visitorId,
+            variationGroupId,
+            variationId,
+            json,
+            if (variationReference) 1 else 0
         )
     }
 
@@ -375,7 +384,11 @@ data class Modification(
                 modification.key,
                 modification.variationGroupId,
                 modification.variationId,
-                modification.value.get(modification.key)
+                modification.variationReference == 1,
+                if (modification.value.has(modification.key))
+                    modification.value.get(modification.key)
+                else
+                    null
             )
         }
     }
