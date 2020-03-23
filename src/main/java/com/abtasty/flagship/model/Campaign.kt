@@ -46,13 +46,13 @@ internal data class Campaign(
                 if (variationGroupsArr != null) {
                     for (i in 0 until variationGroupsArr.length()) {
                         val variationGroup =
-                            VariationGroup.parse(variationGroupsArr.getJSONObject(i))
+                            VariationGroup.parse(variationGroupsArr.getJSONObject(i), true)
                         variationGroup?.let {
                             variationGroups.put(it.variationGroupId, it)
                         }
                     }
                 } else {
-                    val variationGroup = VariationGroup.parse(jsonObject)
+                    val variationGroup = VariationGroup.parse(jsonObject, false)
                     variationGroup?.let {
                         variationGroups.put(it.variationGroupId, it)
                     }
@@ -118,9 +118,9 @@ internal data class VariationGroup(
 
     companion object {
 
-        fun parse(jsonObject: JSONObject): VariationGroup? {
+        fun parse(jsonObject: JSONObject, bucketing : Boolean): VariationGroup? {
             return try {
-                val groupId = jsonObject.getString("id")
+                val groupId = jsonObject.getString(if (bucketing) "id" else "variationGroupId")
                 var selectedVariationId: String?
                 val variations = HashMap<String, Variation>()
                 val variationObj = jsonObject.optJSONObject("variation")

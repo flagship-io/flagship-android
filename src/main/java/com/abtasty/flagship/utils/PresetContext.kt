@@ -15,7 +15,7 @@ import java.util.*
 
 interface IPresetContext {
 
-    fun value(context: Context): Any?
+    fun value(context: Context?): Any?
     fun checkValue(value: Any): Boolean
 }
 
@@ -28,7 +28,7 @@ enum class PresetContext(var key: String) : IPresetContext {
     DEVICE_LOCALE("sdk_deviceLanguage") {
 
         @SuppressLint("ConstantLocale")
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return Locale.getDefault().toString()
         }
 
@@ -48,11 +48,13 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     DEVICE_TYPE("sdk_deviceType") {
-        override fun value(context: Context): Any? {
-            return if ((context.resources.configuration.screenLayout and SCREENLAYOUT_SIZE_MASK) >= SCREENLAYOUT_SIZE_LARGE)
-                "tablet"
-            else
-                "mobile"
+        override fun value(context: Context?): Any? {
+            return context?.let {
+                if ((context.resources.configuration.screenLayout and SCREENLAYOUT_SIZE_MASK) >= SCREENLAYOUT_SIZE_LARGE)
+                    "tablet"
+                else
+                    "mobile"
+            } ?: null
         }
 
         override fun checkValue(value: Any): Boolean {
@@ -65,7 +67,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     DEVICE_MODEL("sdk_deviceModel") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             val manufacturer = MANUFACTURER
             val model = Build.MODEL
             return "$manufacturer $model"
@@ -81,7 +83,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a String)
      */
     LOCATION_CITY("sdk_city") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -95,7 +97,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a String)
      */
     LOCATION_REGION("sdk_region") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -109,7 +111,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a String)
      */
     LOCATION_COUNTRY("sdk_country") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -123,7 +125,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a Double)
      */
     LOCATION_LAT("sdk_lat") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -137,7 +139,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set bu the sdk (must be a Double)
      */
     LOCATION_LONG("sdk_long") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -152,7 +154,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a String)
      */
     IP("sdk_ip") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -170,7 +172,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     OS_NAME("sdk_osName") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return "android"
         }
 
@@ -184,7 +186,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     OS_VERSION("sdk_osVersion") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             val fields = Build.VERSION_CODES::class.java.fields
             return fields[Build.VERSION.SDK_INT].name
         }
@@ -199,7 +201,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be an Integer)
      */
     API_LEVEL("sdk_apiLevel") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return Build.VERSION.SDK_INT
         }
 
@@ -213,7 +215,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     ANDROID_VERSION("sdk_androidVersion") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return Build.VERSION.RELEASE
         }
 
@@ -227,9 +229,11 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     CARRIER_NAME("sdk_carrierName") {
-        override fun value(context: Context): Any? {
-            val manager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            return manager.networkOperatorName
+        override fun value(context: Context?): Any? {
+            return context?.let {
+                val manager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                manager.networkOperatorName
+            } ?: null
         }
 
         override fun checkValue(value: Any): Boolean {
@@ -242,7 +246,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a boolean)
      */
     DEV_MODE("sdk_devMode") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return BuildConfig.DEBUG
         }
 
@@ -257,7 +261,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      */
 
     FIRST_TIME_INIT("sdk_firstTimeInit") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return Flagship.isFirstInit
         }
 
@@ -271,7 +275,7 @@ enum class PresetContext(var key: String) : IPresetContext {
 //     * This value is automatically set by the SDK but can be overridden (must me a Boolean)
 //     */
 //    RETURNING_USER("sdk_returningUser") {
-//        override fun value(context: Context): Any? {
+//        override fun value(context: Context?): Any? {
 //            return Flagship.isNewVisitor == false
 //        }
 //
@@ -281,25 +285,25 @@ enum class PresetContext(var key: String) : IPresetContext {
 //    },
 
 //    LOGGED_IN_USER("sdk_loggedInUser") {
-//        override fun value(context: Context): Any? {
+//        override fun value(context: Context?): Any? {
 //            return Flagship.customVisitorId != null
 //        }
 //    },
 //
 //    LOGGED_OUT_USER("sdk_loggedOutUser") {
-//        override fun value(context: Context): Any? {
+//        override fun value(context: Context?): Any? {
 //            return Flagship.customVisitorId == null
 //        }
 //    },
 
 //    NUMBER_OF_SESSION("sdk_numberOfSession") {
-//        override fun value(context: Context): Any? {
+//        override fun value(context: Context?): Any? {
 //            return 0
 //        }
 //    },
 
     VISITOR_ID("sdk_visitorId") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return Flagship.visitorId
         }
 
@@ -309,13 +313,13 @@ enum class PresetContext(var key: String) : IPresetContext {
     },
 
 //    TIME_SPENT("sdk_timeSpent") {
-//        override fun value(context: Context): Any? {
+//        override fun value(context: Context?): Any? {
 //            return 0
 //        }
 //    },
 //
 //    TIME_INACTIVITY("sdk_timeInactivity") {
-//        override fun value(context: Context): Any? {
+//        override fun value(context: Context?): Any? {
 //            return 0
 //        }
 //    },
@@ -326,7 +330,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a String)
      */
     INTERNET_CONNECTION("sdk_internetConnection") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -340,7 +344,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a String)
      */
     APP_VERSION_NAME("sdk_versionName") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -354,7 +358,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be an Integer)
      */
     APP_VERSION_CODE("sdk_versionCode") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 
@@ -368,7 +372,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is automatically set by the SDK but can be overridden (must be a String)
      */
     FS_VERSION("sdk_fsVersion") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return BuildConfig.FLAGSHIP_VERSION_NAME
         }
 
@@ -382,7 +386,7 @@ enum class PresetContext(var key: String) : IPresetContext {
      * This value is not automatically set by the sdk (must be a String)
      */
     INTERFACE_NAME("sdk_interfaceName") {
-        override fun value(context: Context): Any? {
+        override fun value(context: Context?): Any? {
             return null
         }
 

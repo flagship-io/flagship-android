@@ -168,7 +168,6 @@ class Flagship {
 
             modifications.clear()
             context.clear()
-
             Utils.loadDeviceContext(appContext.applicationContext)
             DatabaseManager.getInstance().init(appContext.applicationContext)
             ApiManager.getInstance().fireOfflineHits()
@@ -442,15 +441,17 @@ class Flagship {
                         val variationGroupId = modification.variationGroupId
                         val variationId = modification.variationId
                         val value = modification.value
-                        System.out.println("#BO isReference => $variationId ${modification.variationReference}") //todo remove
                         (value as? T)?.let {
-                            if (report) activateModification(variationGroupId, variationId)
+                            if (report)
+                                activateModification(variationGroupId, variationId)
                             it
                         } ?: default.also {
-                            if (value == null && report) activateModification(
-                                variationGroupId,
-                                variationId
-                            ) else if (value != null) logError(true)
+                            if (value == null && report) {
+                                activateModification(
+                                    variationGroupId,
+                                    variationId
+                                )
+                            } else if (value != null) logError(true)
                         }
                     } ?: default.also { logError(false) }
                 } catch (e: Exception) {
