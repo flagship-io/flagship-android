@@ -1,0 +1,8 @@
+/build
+out.map
+flagship.iml
+flagship-publishing.gradle
+abtasty_demo/
+abtasty_demo
+TestWhithoutAndroidX.zip
+keystore.properties
