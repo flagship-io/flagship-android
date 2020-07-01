@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <p align="center">
 
 <img  src="https://mk0abtastybwtpirqi5t.kinstacdn.com/wp-content/uploads/picture-solutions-persona-product-flagship.jpg"  width="211"  height="182"  alt="flagship-android"  />
@@ -31,9 +30,3 @@
 ## Licence
 
 [Apache License.](https://github.com/abtasty/flagship-python-sdk/blob/master/LICENSE)
-=======
-# flagship android sdk
-
-Technical documentation is available at : https://developers.flagship.io/android/
-
->>>>>>> ccfdd56ce236048d3d589cf5ab34796b8db80f4b
