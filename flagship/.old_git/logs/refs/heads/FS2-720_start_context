@@ -1,4 +1,0 @@
-0000000000000000000000000000000000000000 5fa4c78067ae6394300c73a22c94add6bf37bb37 raf-abtasty <raphael@abtasty.com> 1592994881 +0200	branch: Created from HEAD
-5fa4c78067ae6394300c73a22c94add6bf37bb37 f137e8496f1ee8599a8db3f4c53b1602deea6f0f raf-abtasty <raphael@abtasty.com> 1593075374 +0200	commit: ok for QA
-f137e8496f1ee8599a8db3f4c53b1602deea6f0f 609d0f422209927d6351303dda49742036929b15 raf-abtasty <raphael@abtasty.com> 1593591273 +0200	pull priv master: Merge made by the 'recursive' strategy.
-609d0f422209927d6351303dda49742036929b15 27e9059e6e43c42e697e44622d850aa1d9d72b80 raf-abtasty <raphael@abtasty.com> 1593594454 +0200	commit: add optionnal visitor context to set visitor id

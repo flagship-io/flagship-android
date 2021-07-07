@@ -1,4 +1,0 @@
-0000000000000000000000000000000000000000 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595342462 +0200	branch: Created from HEAD
-cb26f31ef19a6ce91246a4ec89267558dd41b060 80f356c22d54052c7a2077ebbb32224a167a79e9 raf-abtasty <raphael@abtasty.com> 1595347706 +0200	commit: start
-80f356c22d54052c7a2077ebbb32224a167a79e9 ca1c49a4fa29a22b65df749ee8d3f1173a5f3e26 raf-abtasty <raphael@abtasty.com> 1595433691 +0200	commit: ok for tests
-ca1c49a4fa29a22b65df749ee8d3f1173a5f3e26 a508044441e0359c8ac166b3b21f49d9d877e9a5 raf-abtasty <raphael@abtasty.com> 1595499912 +0200	commit: unit test json mods

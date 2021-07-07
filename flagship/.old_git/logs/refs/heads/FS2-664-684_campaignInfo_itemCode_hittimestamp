@@ -1,4 +1,0 @@
-0000000000000000000000000000000000000000 653f9ec883f50c6b406a096dae3fe02b79f2d976 raf-abtasty <raphael@abtasty.com> 1591693378 +0200	branch: Created from HEAD
-653f9ec883f50c6b406a096dae3fe02b79f2d976 08b890f71acae30030ecc4fc680f6040e5920741 raf-abtasty <raphael@abtasty.com> 1591700046 +0200	commit: remove hit cst, add item code mendatory param, add getmodificationInfo, to test
-08b890f71acae30030ecc4fc680f6040e5920741 74e35e678c45eacd792325c92b08a15219dc9dbd raf-abtasty <raphael@abtasty.com> 1591712458 +0200	commit: add json scheme, ok for QA
-74e35e678c45eacd792325c92b08a15219dc9dbd c5078b1f7c93ec136bc6257b5688aa17ac66259f raf-abtasty <raphael@abtasty.com> 1591778793 +0200	commit: fix hit qt timestamp
