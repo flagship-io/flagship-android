@@ -1,0 +1,81 @@
+<resources>
+    <string name="app_name">Flagship QA</string>
+    <string name="title_config">Config</string>
+    <string name="title_visitor">Visitor</string>
+    <string name="title_context">Context</string>
+    <string name="title_modifications">Modifications</string>
+    <string name="title_events">Hits</string>
+
+    <string name="fragment_config_title">Configuration</string>
+    <string name="fragment_config_env_id">Env id :</string>
+    <string name="fragment_config_api_key">Api key :</string>
+    <string name="fragment_config_mode">Mode :</string>
+    <string name="fragment_config_bucketing">Bucketing</string>
+    <string name="fragment_config_api">Api</string>
+    <string name="fragment_config_authenticated_false">false</string>
+    <string name="fragment_config_authenticated_true">true</string>
+    <string name="fragment_config_timeout">Timeout :</string>
+    <string name="fragment_config_start">Start</string>
+    <string name="fragment_config_visitor_id">Visitor id :</string>
+    <string name="fragment_config_visitor_authenticated">Authenticated :</string>
+    <string name="fragment_config_visitor_context">Visitor context :</string>
+    <string name="fragment_config_error_env_id">Env id shouldn\'t be empty.</string>
+    <string name="fragment_config_error_api_key">Api key shouldn\'t be empty.</string>
+    <string name="fragment_config_error_started">An error occurred while starting Flagship.</string>
+    <string name="fragment_config_error_timeout">Timeout should be > 0.</string>
+    <string name="fragment_config_error_json">Json is not valid.</string>
+
+    <string name="fragment_visitor_title">Visitor</string>
+    <string name="fragment_visitor_id">Visitor id :</string>
+    <string name="fragment_visitor_anonymous_id">Anonymous id :</string>
+    <string name="fragment_visitor_authenticate">Authenticate</string>
+    <string name="fragment_visitor_authenticate_hint">New authenticated id</string>
+    <string name="fragment_visitor_unauthenticate">Unauthenticate</string>
+    <string name="fragment_visitor_authenticated_id_empty">Error : new authenticated id can\'t be empty.</string>
+    <string name="fragment_visitor_authenticated_sync_done">Sync done</string>
+
+    <string name="fragment_context_title">Visitor Context</string>
+    <string name="fragment_context_update">Synchronize</string>
+    <string name="fragment_context_error">Json is not valid.</string>
+    <string name="fragment_context_success">Success</string>
+
+    <string name="fragment_modifications_title">Modifications</string>
+    <string name="fragment_modifications_view_json">Json view</string>
+    <string name="fragment_modifications_view_compute">Compute view</string>
+    <string name="fragment_modifications_key">Key</string>
+    <string name="fragment_modifications_default">Default value</string>
+    <string name="fragment_modifications__info_default"></string>
+    <string name="fragment_modifications_info">Modification info: </string>
+    <string name="fragment_modifications_variation_group">Variation group id: </string>
+    <string name="fragment_modifications_variation">Variation id: </string>
+    <string name="fragment_modifications_activate">Activate</string>
+    <string name="fragment_modifications_key_missing">Key not found.</string>
+    <string name="fragment_modifications_value">Value :</string>
+    <string name="fragment_modifications_get">get</string>
+
+    <string name="fragment_hit_title">Hits</string>
+    <string name="fragment_hit_page">Screen</string>
+    <string name="fragment_hit_item">Item</string>
+    <string name="fragment_hit_transaction">Transaction</string>
+    <string name="fragment_hit_event">Event</string>
+    <string name="fragment_hit_page_title">Hit Screen:</string>
+    <string name="fragment_hit_item_title">Hit Item:</string>
+    <string name="fragment_hit_transaction_title">Hit Transaction: </string>
+    <string name="fragment_hit_event_title">Hit Event: </string>
+
+
+    <string name="fragment_hit_interface">Interface</string>
+    <string name="fragment_hit_transaction_id">Transaction id</string>
+    <string name="fragment_hit_affiliation">Affiliation</string>
+    <string name="fragment_hit_item_sku">Sku</string>
+    <string name="fragment_hit_item_name">Name</string>
+    <string name="fragment_hit_user_engagement">User engagement</string>
+    <string name="fragment_hit_user_action">Action Tracking</string>
+    <string name="fragment_hit_event_action">Event action</string>
+
+
+
+
+
+
+</resources>

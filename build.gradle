@@ -1,0 +1,83 @@
+buildscript {
+
+    /*
+        releaseAllVariantsToBintray =
+        - ./gradlew assembleRelease
+        - ./gradlew artifactoryPublish
+        - ./gradlew artifactoryPublish -Dvariant=compat
+
+        testAllVariantsWithCoverage =
+        ./gradlew clean testCommonDebugUnitTestCoverage
+        ./gradlew clean testCompatDebugUnitTestCoverage
+     */
+
+    ext {
+        kotlin_version = "1.5.0"
+        artifactory_artifact_id = "flagship-android"
+        artifactory_repo = "flagship-android"
+        artifactory_group_id = "com.abtasty"
+        artifactory_user_org = "abtasty"
+        artifactory_variant = System.getProperty("variant", "");
+    }
+
+    if (!artifactory_variant.isEmpty()) {
+        artifactory_artifact_id = artifactory_artifact_id + '-' + artifactory_variant
+    }
+
+    def flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME')
+    def flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE')
+
+    def artifactory_user = System.getenv('ARTIFACTORY_USER')
+    def artifactory_key = System.getenv('ARTIFACTORY_KEY')
+
+    if (flagship_version_name != null)
+        rootProject.ext.flagship_version_name = flagship_version_name
+    else
+        rootProject.ext.flagship_version_name = "2.1.0"
+
+    if (flagship_version_code != null)
+        rootProject.ext.flagship_version_code = flagship_version_code
+    else
+        rootProject.ext.flagship_version_code = 13
+
+    if (artifactory_user != null && artifactory_key != null) {
+        rootProject.ext.artifactory_user = artifactory_user
+        rootProject.ext.artifactory_key = artifactory_key
+    } else {
+        try {
+            def keystorePropertiesFile = file(getProjectDir().absolutePath+ "/keystore.properties")
+            def keystoreProperties = new Properties()
+            keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+            rootProject.ext.artifactory_user = keystoreProperties.getProperty("artifactory_user")
+            rootProject.ext.artifactory_key = keystoreProperties.getProperty("artifactory_key")
+
+        } catch (Exception e) {
+            rootProject.ext.artifactory_user = ''
+            rootProject.ext.artifactory_key = ''
+        }
+    }
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.23.4"
+        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.16"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://abtasty.jfrog.io/artifactory/flagship-android' }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

@@ -1,0 +1,304 @@
+{
+  "campaigns": [
+    {
+      "id": "bmsor064jaeg0gm4aaaa",
+      "type": "ab",
+      "variationGroups": [
+        {
+          "id": "bmsor064jaeg0gm4bbbb",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "LOWER_THAN_OR_EQUALS",
+                    "key": "daysSinceLastLaunch",
+                    "value": 5
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "bmsor064jaeg0gm4cccc",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "title": null,
+                  "visitorIdColor": null
+                }
+              },
+              "allocation": 20,
+              "reference": true
+            },
+            {
+              "id": "bmsor064jaeg0gm4dddd",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "title": "Ahoy",
+                  "visitorIdColor": "#028C9A"
+                }
+              },
+              "allocation": 20
+            },
+            {
+              "id": "bmsor064jaeg0gm4eeee",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "title": "Hi",
+                  "visitorIdColor": "#00C2AD"
+                }
+              },
+              "allocation": 20
+            },
+            {
+              "id": "bmsor064jaeg0gm4ffff",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "title": "Hey",
+                  "visitorIdColor": "#7300C2"
+                }
+              },
+              "allocation": 20
+            },
+            {
+              "id": "bmsor064jaeg0gm4gggg",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "title": "Hello",
+                  "visitorIdColor": "#E5B21D"
+                }
+              },
+              "allocation": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bmsorfe4jaeg0gi1hhhh",
+      "type": "toggle",
+      "variationGroups": [
+        {
+          "id": "bmsorfe4jaeg0gi1bhpg",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "EQUALS",
+                    "key": "isVIPUser",
+                    "value": true
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "bmsorfe4jaeg0gi1iiii",
+              "modifications": {
+                "type": "FLAG",
+                "value": {
+                  "featureEnabled": true
+                }
+              },
+              "allocation": 100
+            }
+          ]
+        },
+        {
+          "id": "bmsorfe4jaeg0gi1jjjj",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "EQUALS",
+                    "key": "isVIPUser",
+                    "value": false
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "bmsorfe4jaeg0gi1kkkk",
+              "modifications": {
+                "type": "FLAG",
+                "value": {
+                  "featureEnabled": false
+                }
+              },
+              "allocation": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bu6lgeu3bdt014iaaaaa",
+      "type": "perso",
+      "variationGroups": [
+        {
+          "id": "bu6lgeu3bdt014iabbbb",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "CONTAINS",
+                    "key": "sdk_deviceModel2",
+                    "value": [
+                      "Google Pixel 3",
+                      "Google Pixel X",
+                      "Google Pixel 0"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "bu6lgeu3bdt014iacccc",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "target": null
+                }
+              },
+              "reference": true
+            },
+            {
+              "id": "bu6lgeu3bdt014iadddd",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "target": "is"
+                }
+              },
+              "allocation": 100
+            }
+          ]
+        },
+        {
+          "id": "bu6lttip17b01emheeee",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "NOT_CONTAINS",
+                    "key": "sdk_deviceModel2",
+                    "value": [
+                      "Google Pixel 9",
+                      "Google Pixel 9000"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "bu6lttip17b01emhffff",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "target": null
+                }
+              },
+              "reference": true
+            },
+            {
+              "id": "bu6lttip17b01emhgggg",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "target": "is not"
+                }
+              },
+              "allocation": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "brjjpk7734cg0sl5llll",
+      "type": "ab",
+      "variationGroups": [
+        {
+          "id": "brjjpk7734cg0sl5mmmm",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "EQUALS",
+                    "key": "access",
+                    "value": "password"
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "brjjpk7734cg0sl5nnnn",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "rank": null,
+                  "rank_plus": null
+                }
+              },
+              "allocation": 25,
+              "reference": true
+            },
+            {
+              "id": "brjjpk7734cg0sl5oooo",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "rank": 81111,
+                  "rank_plus": null
+                }
+              },
+              "allocation": 25
+            },
+            {
+              "id": "brjjpk7734cg0sl5pppp",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "rank": 83333,
+                  "rank_plus": null
+                }
+              },
+              "allocation": 25
+            },
+            {
+              "id": "brjjpk7734cg0sl5qqqq",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "rank": 82222,
+                  "rank_plus": 22.22
+                }
+              },
+              "allocation": 25
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

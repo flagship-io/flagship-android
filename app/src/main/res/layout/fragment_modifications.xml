@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_grey"
+    android:paddingStart="20dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="20dp"
+    tools:context=".ui.dashboard.ConfigFragment">
+
+    <com.abtasty.flagshipqa.utils.LatoRegularTextView
+        android:id="@+id/main_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/fragment_modifications_title"
+        android:textColor="@color/primary_white"
+        android:textSize="40sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <EditText
+        android:id="@+id/edit_modifications"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="15dp"
+        android:backgroundTint="@color/gradient_start"
+        android:cursorVisible="false"
+        android:focusableInTouchMode="false"
+        android:gravity="top"
+        android:inputType="none"
+        android:orientation="vertical"
+        android:textColor="@color/primary_white"
+        android:textColorHint="@color/primary_white"
+        android:textIsSelectable="true"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/switch_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_title" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/get_modifications"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="15dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/switch_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.875"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_title"
+        app:layout_constraintVertical_bias="0.0">
+
+        <EditText
+            android:id="@+id/edit_text_result_value"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/gradient_start"
+            android:ems="10"
+            android:enabled="false"
+            android:inputType="textPersonName"
+            android:textColor="@color/primary_white"
+            android:textColorHint="@color/primary_white"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@+id/text_value"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/text_value"
+            app:layout_constraintTop_toTopOf="@+id/text_value" />
+
+        <com.abtasty.flagshipqa.utils.LatoRegularTextView
+            android:id="@+id/text_campaing_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="start"
+            android:text="@string/fragment_modifications_info"
+            android:textColor="@color/primary_white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_value"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <com.abtasty.flagshipqa.utils.LatoRegularTextView
+            android:id="@+id/text_value"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="start"
+            android:text="@string/fragment_modifications_value"
+            android:textColor="@color/primary_white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edit_text_default"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <EditText
+            android:id="@+id/edit_text_key"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/gradient_start"
+            android:ems="10"
+            android:hint="@string/fragment_modifications_key"
+            android:inputType="textPersonName"
+            android:textColor="@color/primary_white"
+            android:textColorHint="@color/primary_white"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/edit_text_default"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/gradient_start"
+            android:ems="10"
+            android:hint="@string/fragment_modifications_default"
+            android:inputType="textPersonName"
+            android:textColor="@color/primary_white"
+            android:textColorHint="@color/primary_white"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toStartOf="@+id/spinner"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edit_text_key"
+            android:layout_marginRight="20dp" />
+
+        <EditText
+            android:id="@+id/edit_text_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/gradient_start"
+            android:ems="10"
+            android:gravity="top"
+            android:hint="@string/fragment_modifications__info_default"
+            android:inputType="textMultiLine"
+            android:lines="6"
+            android:textColor="@color/primary_white"
+            android:textColorHint="@color/primary_white"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_campaing_id" />
+
+        <Button
+            android:id="@+id/get_modification_value"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/background_gradient"
+            android:text="@string/fragment_modifications_get"
+            android:textColor="@color/primary_white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edit_text_info"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <Button
+            android:id="@+id/activate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/background_gradient"
+            android:text="@string/fragment_modifications_activate"
+            android:textColor="@color/primary_white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/get_modification_value"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorPrimaryDark"
+            app:layout_constraintBottom_toBottomOf="@+id/edit_text_default"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/edit_text_default"
+            app:layout_constraintWidth_percent="0.34" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/switch_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/background_gradient"
+        android:text="@string/fragment_modifications_view_compute"
+        android:textColor="@color/primary_white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

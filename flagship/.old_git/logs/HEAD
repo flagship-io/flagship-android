@@ -1,0 +1,133 @@
+0000000000000000000000000000000000000000 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raph <raph@raph-XPS-13-9370.(none)> 1586274398 +0200	clone: from git@gitlab.com:raf-abtasty/flagship-android.git
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1586447892 +0200	checkout: moving from master to ouisncf-ssl
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 e6dc863aefdb9c305459bc17d6af68d876873622 raf-abtasty <raphael@abtasty.com> 1586447901 +0200	commit: test ssl
+e6dc863aefdb9c305459bc17d6af68d876873622 c7cbb2a1b7df55755212f0ee0e364dbb56a5dfcb raf-abtasty <raphael@abtasty.com> 1586454152 +0200	commit: to clean
+c7cbb2a1b7df55755212f0ee0e364dbb56a5dfcb b29c38d9220a6b0dcdfe14bda983b1302b78170c raf-abtasty <raphael@abtasty.com> 1586975169 +0200	commit: try variant
+b29c38d9220a6b0dcdfe14bda983b1302b78170c 14d0b6bc593eb56075a7077064e20b5eda18e39f raf-abtasty <raphael@abtasty.com> 1587023921 +0200	commit: nuild
+14d0b6bc593eb56075a7077064e20b5eda18e39f 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1587023934 +0200	checkout: moving from ouisncf-ssl to master
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1587023946 +0200	checkout: moving from master to compat
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 1994c804f4e1c932b21e6c50d7a5094e36b37378 raf-abtasty <raphael@abtasty.com> 1587035509 +0200	commit: ok for compat version
+1994c804f4e1c932b21e6c50d7a5094e36b37378 e5204b9f90c70aa3d25f213d760687cdcd7ce95e raf-abtasty <raphael@abtasty.com> 1587043413 +0200	commit: Flagship sdk version compat
+e5204b9f90c70aa3d25f213d760687cdcd7ce95e b11b6a1f61ef8c5113be996c47e3470a0186466e raf-abtasty <raphael@abtasty.com> 1588768779 +0200	commit: remove coma
+b11b6a1f61ef8c5113be996c47e3470a0186466e 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1588773434 +0200	checkout: moving from compat to master
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1588773574 +0200	checkout: moving from master to FS2-644_bucketing_context
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 a4b34ffa0a1378b947a98bc23ddfc7b28ee992ed raf-abtasty <raphael@abtasty.com> 1588780856 +0200	commit: send bucketing context
+a4b34ffa0a1378b947a98bc23ddfc7b28ee992ed b11b6a1f61ef8c5113be996c47e3470a0186466e raf-abtasty <raphael@abtasty.com> 1588780904 +0200	checkout: moving from FS2-644_bucketing_context to compat
+b11b6a1f61ef8c5113be996c47e3470a0186466e b11b6a1f61ef8c5113be996c47e3470a0186466e raf-abtasty <raphael@abtasty.com> 1588781002 +0200	checkout: moving from compat to FS2-644_bucketing_context-Compat
+b11b6a1f61ef8c5113be996c47e3470a0186466e af2e5a686b44bc7791cd58e7011a93af8cfcb112 raf-abtasty <raphael@abtasty.com> 1588781350 +0200	commit (merge): ok for compat
+af2e5a686b44bc7791cd58e7011a93af8cfcb112 a4b34ffa0a1378b947a98bc23ddfc7b28ee992ed raf-abtasty <raphael@abtasty.com> 1588781396 +0200	checkout: moving from FS2-644_bucketing_context-Compat to FS2-644_bucketing_context
+a4b34ffa0a1378b947a98bc23ddfc7b28ee992ed f952200016c0acbe5021729821c30be3de12a348 raf-abtasty <raphael@abtasty.com> 1588782561 +0200	commit: fix urls
+f952200016c0acbe5021729821c30be3de12a348 af2e5a686b44bc7791cd58e7011a93af8cfcb112 raf-abtasty <raphael@abtasty.com> 1588782596 +0200	checkout: moving from FS2-644_bucketing_context to FS2-644_bucketing_context-Compat
+af2e5a686b44bc7791cd58e7011a93af8cfcb112 833e09f9687618b194eb053f3e4cf758ff5f85a0 raf-abtasty <raphael@abtasty.com> 1588782616 +0200	pull priv FS2-644_bucketing_context: Merge made by the 'recursive' strategy.
+833e09f9687618b194eb053f3e4cf758ff5f85a0 f952200016c0acbe5021729821c30be3de12a348 raf-abtasty <raphael@abtasty.com> 1588782942 +0200	checkout: moving from FS2-644_bucketing_context-Compat to FS2-644_bucketing_context
+f952200016c0acbe5021729821c30be3de12a348 1a5bfd8888d5812d87b92810c89812c978974409 raf-abtasty <raphael@abtasty.com> 1589270939 +0200	commit: add response condition
+1a5bfd8888d5812d87b92810c89812c978974409 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1590743765 +0200	checkout: moving from FS2-644_bucketing_context to master
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 1a5bfd8888d5812d87b92810c89812c978974409 raf-abtasty <raphael@abtasty.com> 1590743787 +0200	checkout: moving from master to FS2-644_bucketing_context
+1a5bfd8888d5812d87b92810c89812c978974409 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1590743807 +0200	checkout: moving from FS2-644_bucketing_context to master
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 1a5bfd8888d5812d87b92810c89812c978974409 raf-abtasty <raphael@abtasty.com> 1590743828 +0200	pull priv FS2-644_bucketing_context: Fast-forward
+1a5bfd8888d5812d87b92810c89812c978974409 b11b6a1f61ef8c5113be996c47e3470a0186466e raf-abtasty <raphael@abtasty.com> 1590743885 +0200	checkout: moving from master to compat
+b11b6a1f61ef8c5113be996c47e3470a0186466e b11b6a1f61ef8c5113be996c47e3470a0186466e raf-abtasty <raphael@abtasty.com> 1590743978 +0200	reset: moving to HEAD
+b11b6a1f61ef8c5113be996c47e3470a0186466e 59562123c58fd9acb8ce38ef75a0199422ed2f4b raf-abtasty <raphael@abtasty.com> 1590744101 +0200	commit: remove unused import
+59562123c58fd9acb8ce38ef75a0199422ed2f4b 05825c49a97ce3ac966f939ceffc1645abbcea9c raf-abtasty <raphael@abtasty.com> 1590744480 +0200	commit (merge): merge master
+05825c49a97ce3ac966f939ceffc1645abbcea9c 1a5bfd8888d5812d87b92810c89812c978974409 raf-abtasty <raphael@abtasty.com> 1590744492 +0200	checkout: moving from compat to master
+1a5bfd8888d5812d87b92810c89812c978974409 653f9ec883f50c6b406a096dae3fe02b79f2d976 raf-abtasty <raphael@abtasty.com> 1590744943 +0200	commit: remane artefact bintray
+653f9ec883f50c6b406a096dae3fe02b79f2d976 05825c49a97ce3ac966f939ceffc1645abbcea9c raf-abtasty <raphael@abtasty.com> 1590744971 +0200	checkout: moving from master to compat
+05825c49a97ce3ac966f939ceffc1645abbcea9c 3c6187cba71016f7daa74fb17b6bbc8a2615e375 raf-abtasty <raphael@abtasty.com> 1590745019 +0200	commit: ignore publish bintray
+3c6187cba71016f7daa74fb17b6bbc8a2615e375 653f9ec883f50c6b406a096dae3fe02b79f2d976 raf-abtasty <raphael@abtasty.com> 1590745047 +0200	checkout: moving from compat to master
+0000000000000000000000000000000000000000 2697660f651154ae9fe90586994518ba937fd8a9 raf-abtasty <raphael@abtasty.com> 1590745194 +0200	commit (initial): iso priv - public
+0000000000000000000000000000000000000000 1172906130c44efd4abbbfb59cff5d0608315310 raf-abtasty <raphael@abtasty.com> 1590745526 +0200	commit (initial): a
+1172906130c44efd4abbbfb59cff5d0608315310 3c6187cba71016f7daa74fb17b6bbc8a2615e375 raf-abtasty <raphael@abtasty.com> 1590771630 +0200	checkout: moving from tmp-master-iso-2 to compat
+3c6187cba71016f7daa74fb17b6bbc8a2615e375 653f9ec883f50c6b406a096dae3fe02b79f2d976 raf-abtasty <raphael@abtasty.com> 1591693297 +0200	checkout: moving from compat to master
+653f9ec883f50c6b406a096dae3fe02b79f2d976 653f9ec883f50c6b406a096dae3fe02b79f2d976 raf-abtasty <raphael@abtasty.com> 1591693378 +0200	checkout: moving from master to FS2-664-684_campaignInfo_itemCode_hittimestamp
+653f9ec883f50c6b406a096dae3fe02b79f2d976 08b890f71acae30030ecc4fc680f6040e5920741 raf-abtasty <raphael@abtasty.com> 1591700046 +0200	commit: remove hit cst, add item code mendatory param, add getmodificationInfo, to test
+08b890f71acae30030ecc4fc680f6040e5920741 74e35e678c45eacd792325c92b08a15219dc9dbd raf-abtasty <raphael@abtasty.com> 1591712458 +0200	commit: add json scheme, ok for QA
+74e35e678c45eacd792325c92b08a15219dc9dbd c5078b1f7c93ec136bc6257b5688aa17ac66259f raf-abtasty <raphael@abtasty.com> 1591778793 +0200	commit: fix hit qt timestamp
+c5078b1f7c93ec136bc6257b5688aa17ac66259f c5078b1f7c93ec136bc6257b5688aa17ac66259f raf-abtasty <raphael@abtasty.com> 1592224362 +0200	checkout: moving from FS2-664-684_campaignInfo_itemCode_hittimestamp to unit-tests
+c5078b1f7c93ec136bc6257b5688aa17ac66259f 8224f7bc0328fab11c02d76933884693fb884bc8 raf-abtasty <raphael@abtasty.com> 1592407790 +0200	commit: start unit test
+8224f7bc0328fab11c02d76933884693fb884bc8 1d1344e040801ccfe28541eb4171441ca5fe5e61 raf-abtasty <raphael@abtasty.com> 1592410851 +0200	commit: ok
+1d1344e040801ccfe28541eb4171441ca5fe5e61 28cafde053cc63d79b55071a661956156ef8c7b4 raf-abtasty <raphael@abtasty.com> 1592499306 +0200	commit: add synchronize
+28cafde053cc63d79b55071a661956156ef8c7b4 1474aede0fe640bf319d7054800145d985ea6c22 raf-abtasty <raphael@abtasty.com> 1592843383 +0200	commit: start bucketing
+1474aede0fe640bf319d7054800145d985ea6c22 5fa4c78067ae6394300c73a22c94add6bf37bb37 raf-abtasty <raphael@abtasty.com> 1592922719 +0200	commit: 81% coverage
+5fa4c78067ae6394300c73a22c94add6bf37bb37 5fa4c78067ae6394300c73a22c94add6bf37bb37 raf-abtasty <raphael@abtasty.com> 1592994881 +0200	checkout: moving from unit-tests to FS2-720_start_context
+5fa4c78067ae6394300c73a22c94add6bf37bb37 5fa4c78067ae6394300c73a22c94add6bf37bb37 raf-abtasty <raphael@abtasty.com> 1593075210 +0200	checkout: moving from FS2-720_start_context to unit-tests
+5fa4c78067ae6394300c73a22c94add6bf37bb37 5fa4c78067ae6394300c73a22c94add6bf37bb37 raf-abtasty <raphael@abtasty.com> 1593075265 +0200	checkout: moving from unit-tests to FS2-720_start_context
+5fa4c78067ae6394300c73a22c94add6bf37bb37 f137e8496f1ee8599a8db3f4c53b1602deea6f0f raf-abtasty <raphael@abtasty.com> 1593075374 +0200	commit: ok for QA
+f137e8496f1ee8599a8db3f4c53b1602deea6f0f 653f9ec883f50c6b406a096dae3fe02b79f2d976 raf-abtasty <raphael@abtasty.com> 1593076042 +0200	checkout: moving from FS2-720_start_context to master
+653f9ec883f50c6b406a096dae3fe02b79f2d976 5fa4c78067ae6394300c73a22c94add6bf37bb37 raf-abtasty <raphael@abtasty.com> 1593076061 +0200	pull priv unit-tests: Fast-forward
+5fa4c78067ae6394300c73a22c94add6bf37bb37 4bb139f5f9c76277294b1e782400625f887cd825 raf-abtasty <raphael@abtasty.com> 1593076225 +0200	commit: upgrade version to 1.2.3
+4bb139f5f9c76277294b1e782400625f887cd825 3c6187cba71016f7daa74fb17b6bbc8a2615e375 raf-abtasty <raphael@abtasty.com> 1593076987 +0200	checkout: moving from master to compat
+3c6187cba71016f7daa74fb17b6bbc8a2615e375 e684f02d0144d1776004c153af3efe20f94bf278 raf-abtasty <raphael@abtasty.com> 1593077823 +0200	commit (merge): ok for release compat
+e684f02d0144d1776004c153af3efe20f94bf278 f137e8496f1ee8599a8db3f4c53b1602deea6f0f raf-abtasty <raphael@abtasty.com> 1593591222 +0200	checkout: moving from compat to FS2-720_start_context
+f137e8496f1ee8599a8db3f4c53b1602deea6f0f 4bb139f5f9c76277294b1e782400625f887cd825 raf-abtasty <raphael@abtasty.com> 1593591242 +0200	checkout: moving from FS2-720_start_context to master
+4bb139f5f9c76277294b1e782400625f887cd825 f137e8496f1ee8599a8db3f4c53b1602deea6f0f raf-abtasty <raphael@abtasty.com> 1593591258 +0200	checkout: moving from master to FS2-720_start_context
+f137e8496f1ee8599a8db3f4c53b1602deea6f0f 609d0f422209927d6351303dda49742036929b15 raf-abtasty <raphael@abtasty.com> 1593591273 +0200	pull priv master: Merge made by the 'recursive' strategy.
+609d0f422209927d6351303dda49742036929b15 4bb139f5f9c76277294b1e782400625f887cd825 raf-abtasty <raphael@abtasty.com> 1593591285 +0200	checkout: moving from FS2-720_start_context to master
+4bb139f5f9c76277294b1e782400625f887cd825 0ea91dccc2020dfd12eb365baa9e1dee3fb51ca3 raf-abtasty <raphael@abtasty.com> 1593591310 +0200	pull priv FS2-720_start_context: Merge made by the 'recursive' strategy.
+0ea91dccc2020dfd12eb365baa9e1dee3fb51ca3 609d0f422209927d6351303dda49742036929b15 raf-abtasty <raphael@abtasty.com> 1593593929 +0200	checkout: moving from master to FS2-720_start_context
+609d0f422209927d6351303dda49742036929b15 27e9059e6e43c42e697e44622d850aa1d9d72b80 raf-abtasty <raphael@abtasty.com> 1593594454 +0200	commit: add optionnal visitor context to set visitor id
+27e9059e6e43c42e697e44622d850aa1d9d72b80 0ea91dccc2020dfd12eb365baa9e1dee3fb51ca3 raf-abtasty <raphael@abtasty.com> 1593594544 +0200	checkout: moving from FS2-720_start_context to master
+0ea91dccc2020dfd12eb365baa9e1dee3fb51ca3 78d004cd2c3e09b5b98f9f59700ed396d273b76c raf-abtasty <raphael@abtasty.com> 1593594565 +0200	pull priv FS2-720_start_context: Merge made by the 'recursive' strategy.
+78d004cd2c3e09b5b98f9f59700ed396d273b76c e684f02d0144d1776004c153af3efe20f94bf278 raf-abtasty <raphael@abtasty.com> 1593594704 +0200	checkout: moving from master to compat
+e684f02d0144d1776004c153af3efe20f94bf278 06b43eeee6103c6101478f2dd2fe6cff3db29bd5 raf-abtasty <raphael@abtasty.com> 1593594714 +0200	pull priv master: Merge made by the 'recursive' strategy.
+06b43eeee6103c6101478f2dd2fe6cff3db29bd5 78d004cd2c3e09b5b98f9f59700ed396d273b76c raf-abtasty <raphael@abtasty.com> 1593596240 +0200	checkout: moving from compat to master
+78d004cd2c3e09b5b98f9f59700ed396d273b76c ccfdd56ce236048d3d589cf5ab34796b8db80f4b raf-abtasty <raphael@abtasty.com> 1593596340 +0200	commit: upgrade version code
+ccfdd56ce236048d3d589cf5ab34796b8db80f4b 06b43eeee6103c6101478f2dd2fe6cff3db29bd5 raf-abtasty <raphael@abtasty.com> 1593597416 +0200	checkout: moving from master to compat
+06b43eeee6103c6101478f2dd2fe6cff3db29bd5 4afb5713884ce9565ba10bda18ef5386d3618791 raf-abtasty <raphael@abtasty.com> 1593597430 +0200	pull priv master: Merge made by the 'recursive' strategy.
+4afb5713884ce9565ba10bda18ef5386d3618791 706ad960d85d089725e922965409d1d8f1ec7c42 raf-abtasty <raphael@abtasty.com> 1593598628 +0200	commit: update bintray script for deply compat
+706ad960d85d089725e922965409d1d8f1ec7c42 ccfdd56ce236048d3d589cf5ab34796b8db80f4b raf-abtasty <raphael@abtasty.com> 1593613526 +0200	checkout: moving from compat to master
+ccfdd56ce236048d3d589cf5ab34796b8db80f4b cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1593613865 +0200	commit: change read me
+cb26f31ef19a6ce91246a4ec89267558dd41b060 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1594800295 +0200	checkout: moving from master to FS2-765_Murmur_Comparison_rule
+cb26f31ef19a6ce91246a4ec89267558dd41b060 d041ce8b84de3b309963412d2cc8e9fdbe721b6a raf-abtasty <raphael@abtasty.com> 1594810297 +0200	commit: change alloc to <
+d041ce8b84de3b309963412d2cc8e9fdbe721b6a cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1594896349 +0200	checkout: moving from FS2-765_Murmur_Comparison_rule to master
+cb26f31ef19a6ce91246a4ec89267558dd41b060 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1594896402 +0200	checkout: moving from master to FS2-734_remove_fs_all_users_context
+cb26f31ef19a6ce91246a4ec89267558dd41b060 2b8b6c77a41b8309d8ef908eb6086d81f0ea4c1a raf-abtasty <raphael@abtasty.com> 1594897125 +0200	commit: ok remove sdk_visitorId, fs_all_users, fs_users from requests with context
+2b8b6c77a41b8309d8ef908eb6086d81f0ea4c1a d041ce8b84de3b309963412d2cc8e9fdbe721b6a raf-abtasty <raphael@abtasty.com> 1595235995 +0200	checkout: moving from FS2-734_remove_fs_all_users_context to FS2-765_Murmur_Comparison_rule
+d041ce8b84de3b309963412d2cc8e9fdbe721b6a f76ecba50d42e0c02c7cbb749a23e1b2e1e247a1 raf-abtasty <raphael@abtasty.com> 1595254435 +0200	commit: fix regression on sendcontext
+f76ecba50d42e0c02c7cbb749a23e1b2e1e247a1 c7cffea953a4d32eee0e132234a682a4087750c8 raf-abtasty <raphael@abtasty.com> 1595256567 +0200	commit: fix tu bucketing alloc
+c7cffea953a4d32eee0e132234a682a4087750c8 c7cffea953a4d32eee0e132234a682a4087750c8 raf-abtasty <raphael@abtasty.com> 1595256660 +0200	checkout: moving from FS2-765_Murmur_Comparison_rule to FS2-738_murmur_variation_group_id
+c7cffea953a4d32eee0e132234a682a4087750c8 e8c2c111c4277665eb7c4831a7fe1b0beeca1e3a raf-abtasty <raphael@abtasty.com> 1595260666 +0200	commit: ok add variation group id in murmur
+e8c2c111c4277665eb7c4831a7fe1b0beeca1e3a 3598099702ca53a066ef1239373edef282cc090f raf-abtasty <raphael@abtasty.com> 1595262525 +0200	commit: update unit test
+3598099702ca53a066ef1239373edef282cc090f d7ed17467d1c038dc8529e932be3768d97cd11c6 raf-abtasty <raphael@abtasty.com> 1595263601 +0200	commit: fix unit test ids
+d7ed17467d1c038dc8529e932be3768d97cd11c6 61ee015b85b3a97900cab25ef999d3564e9dc7b0 raf-abtasty <raphael@abtasty.com> 1595266426 +0200	commit: fix unit test
+61ee015b85b3a97900cab25ef999d3564e9dc7b0 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595336748 +0200	checkout: moving from FS2-738_murmur_variation_group_id to master
+cb26f31ef19a6ce91246a4ec89267558dd41b060 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595342462 +0200	checkout: moving from master to FS2-772-json_modification
+cb26f31ef19a6ce91246a4ec89267558dd41b060 80f356c22d54052c7a2077ebbb32224a167a79e9 raf-abtasty <raphael@abtasty.com> 1595347706 +0200	commit: start
+80f356c22d54052c7a2077ebbb32224a167a79e9 c7cffea953a4d32eee0e132234a682a4087750c8 raf-abtasty <raphael@abtasty.com> 1595347735 +0200	checkout: moving from FS2-772-json_modification to FS2-765_Murmur_Comparison_rule
+c7cffea953a4d32eee0e132234a682a4087750c8 61ee015b85b3a97900cab25ef999d3564e9dc7b0 raf-abtasty <raphael@abtasty.com> 1595407635 +0200	checkout: moving from FS2-765_Murmur_Comparison_rule to FS2-738_murmur_variation_group_id
+61ee015b85b3a97900cab25ef999d3564e9dc7b0 80f356c22d54052c7a2077ebbb32224a167a79e9 raf-abtasty <raphael@abtasty.com> 1595422772 +0200	checkout: moving from FS2-738_murmur_variation_group_id to FS2-772-json_modification
+80f356c22d54052c7a2077ebbb32224a167a79e9 ca1c49a4fa29a22b65df749ee8d3f1173a5f3e26 raf-abtasty <raphael@abtasty.com> 1595433691 +0200	commit: ok for tests
+ca1c49a4fa29a22b65df749ee8d3f1173a5f3e26 a508044441e0359c8ac166b3b21f49d9d877e9a5 raf-abtasty <raphael@abtasty.com> 1595499912 +0200	commit: unit test json mods
+a508044441e0359c8ac166b3b21f49d9d877e9a5 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595583774 +0200	checkout: moving from FS2-772-json_modification to master
+cb26f31ef19a6ce91246a4ec89267558dd41b060 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595591950 +0200	checkout: moving from master to FS2-776_api_v2
+cb26f31ef19a6ce91246a4ec89267558dd41b060 0000000000000000000000000000000000000000 raf-abtasty <raphael@abtasty.com> 1595598443 +0200	Branch: renamed refs/heads/FS2-776_api_v2 to refs/heads/FS2-777_force_api_v2
+0000000000000000000000000000000000000000 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595598443 +0200	Branch: renamed refs/heads/FS2-776_api_v2 to refs/heads/FS2-777_force_api_v2
+cb26f31ef19a6ce91246a4ec89267558dd41b060 418b6faa0e718ff766843b38eebc09b1a024c19b raf-abtasty <raphael@abtasty.com> 1595858913 +0200	commit: ok force v2 delete depreciation
+418b6faa0e718ff766843b38eebc09b1a024c19b cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1596553453 +0200	checkout: moving from FS2-777_force_api_v2 to master
+cb26f31ef19a6ce91246a4ec89267558dd41b060 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1596553473 +0200	checkout: moving from master to FS2-795_timeout
+cb26f31ef19a6ce91246a4ec89267558dd41b060 dc096942efaff4f719974182a36a6ef77a6559ae raf-abtasty <raphael@abtasty.com> 1596634699 +0200	commit: start customize http client
+dc096942efaff4f719974182a36a6ef77a6559ae 418b6faa0e718ff766843b38eebc09b1a024c19b raf-abtasty <raphael@abtasty.com> 1596634762 +0200	checkout: moving from FS2-795_timeout to FS2-777_force_api_v2
+418b6faa0e718ff766843b38eebc09b1a024c19b a508044441e0359c8ac166b3b21f49d9d877e9a5 raf-abtasty <raphael@abtasty.com> 1596635781 +0200	checkout: moving from FS2-777_force_api_v2 to FS2-772-json_modification
+a508044441e0359c8ac166b3b21f49d9d877e9a5 dc096942efaff4f719974182a36a6ef77a6559ae raf-abtasty <raphael@abtasty.com> 1596639884 +0200	checkout: moving from FS2-772-json_modification to FS2-795_timeout
+dc096942efaff4f719974182a36a6ef77a6559ae 5893d8852db652e2d5f241e202b5e43478e17eef raf-abtasty <raphael@abtasty.com> 1596704341 +0200	commit: timeout seems ok
+5893d8852db652e2d5f241e202b5e43478e17eef 2b8b6c77a41b8309d8ef908eb6086d81f0ea4c1a raf-abtasty <raphael@abtasty.com> 1596704368 +0200	checkout: moving from FS2-795_timeout to FS2-734_remove_fs_all_users_context
+2b8b6c77a41b8309d8ef908eb6086d81f0ea4c1a 5893d8852db652e2d5f241e202b5e43478e17eef raf-abtasty <raphael@abtasty.com> 1596716240 +0200	checkout: moving from FS2-734_remove_fs_all_users_context to FS2-795_timeout
+5893d8852db652e2d5f241e202b5e43478e17eef 1beb4d9a48debe146c99ffcde9c5726993468cc6 raf-abtasty <raphael@abtasty.com> 1597066935 +0200	commit: timeout in millisec
+1beb4d9a48debe146c99ffcde9c5726993468cc6 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1597067020 +0200	checkout: moving from FS2-795_timeout to master
+cb26f31ef19a6ce91246a4ec89267558dd41b060 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1597067062 +0200	checkout: moving from master to merge_6wk_5_2020
+cb26f31ef19a6ce91246a4ec89267558dd41b060 418b6faa0e718ff766843b38eebc09b1a024c19b raf-abtasty <raphael@abtasty.com> 1597067090 +0200	pull priv FS2-777_force_api_v2: Fast-forward
+418b6faa0e718ff766843b38eebc09b1a024c19b ae411884dfa56e3e020aacbd545d49eb3bb24416 raf-abtasty <raphael@abtasty.com> 1597067865 +0200	commit (merge): meger FS2-738
+ae411884dfa56e3e020aacbd545d49eb3bb24416 066da62f79583a5a920c88c29ca1f4f52b6f99ec raf-abtasty <raphael@abtasty.com> 1597067898 +0200	pull priv FS2-734_remove_fs_all_users_context: Merge made by the 'recursive' strategy.
+066da62f79583a5a920c88c29ca1f4f52b6f99ec c3c32f98266f958cbf0a88ed4d67e1be9bc63102 raf-abtasty <raphael@abtasty.com> 1597068035 +0200	pull priv FS2-772-json_modification: Merge made by the 'recursive' strategy.
+c3c32f98266f958cbf0a88ed4d67e1be9bc63102 74726e3385a08e7acb63a7845c4810ad813cb432 raf-abtasty <raphael@abtasty.com> 1597671801 +0200	commit: fix unittest
+74726e3385a08e7acb63a7845c4810ad813cb432 1beb4d9a48debe146c99ffcde9c5726993468cc6 raf-abtasty <raphael@abtasty.com> 1597671817 +0200	checkout: moving from merge_6wk_5_2020 to FS2-795_timeout
+1beb4d9a48debe146c99ffcde9c5726993468cc6 f6c21557cc9c93ff15d2a50776660f0b1c619954 raf-abtasty <raphael@abtasty.com> 1597671985 +0200	commit (merge): merge 6wk
+f6c21557cc9c93ff15d2a50776660f0b1c619954 be376179ec0badb266ca6f11a503aa2032b325c5 raf-abtasty <raphael@abtasty.com> 1598352074 +0200	commit: ok fix unit timeout
+be376179ec0badb266ca6f11a503aa2032b325c5 74726e3385a08e7acb63a7845c4810ad813cb432 raf-abtasty <raphael@abtasty.com> 1598352106 +0200	checkout: moving from FS2-795_timeout to merge_6wk_5_2020
+74726e3385a08e7acb63a7845c4810ad813cb432 be376179ec0badb266ca6f11a503aa2032b325c5 raf-abtasty <raphael@abtasty.com> 1598352124 +0200	pull priv FS2-795_timeout: Fast-forward
+be376179ec0badb266ca6f11a503aa2032b325c5 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1598361041 +0200	checkout: moving from merge_6wk_5_2020 to master
+cb26f31ef19a6ce91246a4ec89267558dd41b060 be376179ec0badb266ca6f11a503aa2032b325c5 raf-abtasty <raphael@abtasty.com> 1598361675 +0200	checkout: moving from master to merge_6wk_5_2020
+be376179ec0badb266ca6f11a503aa2032b325c5 756a78d25187039c3270406dba340bc0f00d02bd raf-abtasty <raphael@abtasty.com> 1598363879 +0200	commit: fix client for unit test
+756a78d25187039c3270406dba340bc0f00d02bd 756a78d25187039c3270406dba340bc0f00d02bd raf-abtasty <raphael@abtasty.com> 1598537704 +0200	checkout: moving from merge_6wk_5_2020 to merge_6wk_5_2020
+756a78d25187039c3270406dba340bc0f00d02bd 15db4dfa5d1c66e3508ade9abe2a69b0cfb33bce raf-abtasty <raphael@abtasty.com> 1598602449 +0200	commit: ok
+15db4dfa5d1c66e3508ade9abe2a69b0cfb33bce 4a4407d035956a2edddf5ad1287cf22aeb13fbde raf-abtasty <raphael@abtasty.com> 1598602529 +0200	commit: uncomment alloc test
+4a4407d035956a2edddf5ad1287cf22aeb13fbde 4a4407d035956a2edddf5ad1287cf22aeb13fbde raf-abtasty <raphael@abtasty.com> 1598602561 +0200	checkout: moving from merge_6wk_5_2020 to CI

@@ -1,0 +1,47 @@
+s
+
+# Veuillez saisir le message de validation pour vos modifications. Les lignes
+# commençant par '#' seront ignorées, et un message vide abandonne la validation.
+#
+# Sur la branche tmp-master-iso-2
+#
+# Validation initiale
+#
+# Modifications qui seront validées :
+#	nouveau fichier : .gitignore
+#	nouveau fichier : LICENSE
+#	nouveau fichier : README.md
+#	nouveau fichier : build.gradle
+#	nouveau fichier : flagship-publishing.gradle
+#	nouveau fichier : proguard-rules.pro
+#	nouveau fichier : schemas/com.abtasty.flagship.database.Database/4.json
+#	nouveau fichier : schemas/com.abtasty.flagship.database.Database/5.json
+#	nouveau fichier : src/androidTest/java/com/abtasty/flagship/ExampleInstrumentedTest.java
+#	nouveau fichier : src/main/AndroidManifest.xml
+#	nouveau fichier : src/main/assets/NOTICE
+#	nouveau fichier : src/main/java/com/abtasty/flagship/api/ApiManager.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/api/BucketingManager.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/api/Hit.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/api/HitBuilder.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/AllocationDao.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/AllocationData.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/BucketDao.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/BucketData.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/Converters.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/Database.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/DatabaseManager.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/HitDao.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/HitData.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/ModificationDao.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/database/ModificationData.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/main/Flagship.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/model/Campaign.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/utils/ETargetingComp.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/utils/FlagshipContext.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/utils/Logger.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/utils/MurmurHash.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/utils/PresetContext.kt
+#	nouveau fichier : src/main/java/com/abtasty/flagship/utils/Utils.kt
+#	nouveau fichier : src/main/res/values/strings.xml
+#	nouveau fichier : src/test/java/com/abtasty/flagship/ExampleUnitTest.java
+#

@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595591950 +0200	branch: Created from HEAD
+cb26f31ef19a6ce91246a4ec89267558dd41b060 cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1595598443 +0200	Branch: renamed refs/heads/FS2-776_api_v2 to refs/heads/FS2-777_force_api_v2
+cb26f31ef19a6ce91246a4ec89267558dd41b060 418b6faa0e718ff766843b38eebc09b1a024c19b raf-abtasty <raphael@abtasty.com> 1595858913 +0200	commit: ok force v2 delete depreciation

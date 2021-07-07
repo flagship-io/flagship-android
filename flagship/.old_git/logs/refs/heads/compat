@@ -1,0 +1,11 @@
+0000000000000000000000000000000000000000 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raf-abtasty <raphael@abtasty.com> 1587023946 +0200	branch: Created from HEAD
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 1994c804f4e1c932b21e6c50d7a5094e36b37378 raf-abtasty <raphael@abtasty.com> 1587035509 +0200	commit: ok for compat version
+1994c804f4e1c932b21e6c50d7a5094e36b37378 e5204b9f90c70aa3d25f213d760687cdcd7ce95e raf-abtasty <raphael@abtasty.com> 1587043413 +0200	commit: Flagship sdk version compat
+e5204b9f90c70aa3d25f213d760687cdcd7ce95e b11b6a1f61ef8c5113be996c47e3470a0186466e raf-abtasty <raphael@abtasty.com> 1588768779 +0200	commit: remove coma
+b11b6a1f61ef8c5113be996c47e3470a0186466e 59562123c58fd9acb8ce38ef75a0199422ed2f4b raf-abtasty <raphael@abtasty.com> 1590744101 +0200	commit: remove unused import
+59562123c58fd9acb8ce38ef75a0199422ed2f4b 05825c49a97ce3ac966f939ceffc1645abbcea9c raf-abtasty <raphael@abtasty.com> 1590744480 +0200	commit (merge): merge master
+05825c49a97ce3ac966f939ceffc1645abbcea9c 3c6187cba71016f7daa74fb17b6bbc8a2615e375 raf-abtasty <raphael@abtasty.com> 1590745019 +0200	commit: ignore publish bintray
+3c6187cba71016f7daa74fb17b6bbc8a2615e375 e684f02d0144d1776004c153af3efe20f94bf278 raf-abtasty <raphael@abtasty.com> 1593077823 +0200	commit (merge): ok for release compat
+e684f02d0144d1776004c153af3efe20f94bf278 06b43eeee6103c6101478f2dd2fe6cff3db29bd5 raf-abtasty <raphael@abtasty.com> 1593594714 +0200	pull priv master: Merge made by the 'recursive' strategy.
+06b43eeee6103c6101478f2dd2fe6cff3db29bd5 4afb5713884ce9565ba10bda18ef5386d3618791 raf-abtasty <raphael@abtasty.com> 1593597430 +0200	pull priv master: Merge made by the 'recursive' strategy.
+4afb5713884ce9565ba10bda18ef5386d3618791 706ad960d85d089725e922965409d1d8f1ec7c42 raf-abtasty <raphael@abtasty.com> 1593598628 +0200	commit: update bintray script for deply compat

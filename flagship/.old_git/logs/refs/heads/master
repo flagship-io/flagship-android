@@ -1,0 +1,9 @@
+0000000000000000000000000000000000000000 58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 raph <raph@raph-XPS-13-9370.(none)> 1586274398 +0200	clone: from git@gitlab.com:raf-abtasty/flagship-android.git
+58be6a23a75f6dca0f1f0c1bfc2a09e3de946413 1a5bfd8888d5812d87b92810c89812c978974409 raf-abtasty <raphael@abtasty.com> 1590743828 +0200	pull priv FS2-644_bucketing_context: Fast-forward
+1a5bfd8888d5812d87b92810c89812c978974409 653f9ec883f50c6b406a096dae3fe02b79f2d976 raf-abtasty <raphael@abtasty.com> 1590744943 +0200	commit: remane artefact bintray
+653f9ec883f50c6b406a096dae3fe02b79f2d976 5fa4c78067ae6394300c73a22c94add6bf37bb37 raf-abtasty <raphael@abtasty.com> 1593076061 +0200	pull priv unit-tests: Fast-forward
+5fa4c78067ae6394300c73a22c94add6bf37bb37 4bb139f5f9c76277294b1e782400625f887cd825 raf-abtasty <raphael@abtasty.com> 1593076225 +0200	commit: upgrade version to 1.2.3
+4bb139f5f9c76277294b1e782400625f887cd825 0ea91dccc2020dfd12eb365baa9e1dee3fb51ca3 raf-abtasty <raphael@abtasty.com> 1593591310 +0200	pull priv FS2-720_start_context: Merge made by the 'recursive' strategy.
+0ea91dccc2020dfd12eb365baa9e1dee3fb51ca3 78d004cd2c3e09b5b98f9f59700ed396d273b76c raf-abtasty <raphael@abtasty.com> 1593594565 +0200	pull priv FS2-720_start_context: Merge made by the 'recursive' strategy.
+78d004cd2c3e09b5b98f9f59700ed396d273b76c ccfdd56ce236048d3d589cf5ab34796b8db80f4b raf-abtasty <raphael@abtasty.com> 1593596340 +0200	commit: upgrade version code
+ccfdd56ce236048d3d589cf5ab34796b8db80f4b cb26f31ef19a6ce91246a4ec89267558dd41b060 raf-abtasty <raphael@abtasty.com> 1593613865 +0200	commit: change read me

@@ -1,0 +1,20 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "priv"]
+	url = git@gitlab.com:raf-abtasty/flagship-android.git
+	fetch = +refs/heads/*:refs/remotes/priv/*
+[branch "master"]
+	remote = priv
+	merge = refs/heads/master
+[remote "public-gitlab"]
+	url = git@gitlab.com:abtasty-public/mobile/flagship-android.git
+	fetch = +refs/heads/*:refs/remotes/public-gitlab/*
+[remote "public-github"]
+	url = git@github.com:abtasty/flagship-android.git
+	fetch = +refs/heads/*:refs/remotes/public-github/*
+[branch "tmp-master-iso-2"]
+	remote = public-gitlab
+	merge = refs/heads/tmp-master-iso-2
