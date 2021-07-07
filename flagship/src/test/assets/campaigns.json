@@ -1,0 +1,35 @@
+
+{
+    "visitorId": "visitorId",
+    "campaigns": [
+        {
+            "id": "bmsorfe4jaeg0gi1xxxxx",
+            "variationGroupId": "bmsorfe4jaeg0giyyyyy",
+            "variation": {
+                "id": "bmsorfe4jaeg0gi1zzzz",
+                "modifications": {
+                    "type": "FLAG",
+                    "value": {
+                        "featureEnabled": true
+                    }
+                },
+                "reference": false
+            }
+        },
+        {
+            "id": "brjjpk7734cg0sl5iiii",
+            "variationGroupId": "brjjpk7734cg0sl5jjjj",
+            "variation": {
+                "id": "brjjpk7734cg0slkkkk",
+                "modifications": {
+                    "type": "JSON",
+                    "value": {
+                        "rank": 82222,
+                        "rank_plus": 22.22
+                    }
+                },
+                "reference": true
+            }
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--    <color name="colorPrimary">#6200EE</color>-->
+    <color name="colorPrimary">#D81B60</color>
+    <color name="colorPrimaryDark">#D81B60</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="pink_secondray">#D81B60</color>
+
+    <color name="gradient_start">#DE436F</color>
+    <color name="gradient_end">#FF7856</color>
+    <color name="gradient_selected_start">#D01C6C</color>
+    <color name="gradient_selected_end">#FF6842</color>
+
+    <color name="dark_grey">#272727</color>
+    <color name="lite_grey">#909090</color>
+    <color name="primary_white">#FFFFFF
+    </color>
+
+
+</resources>

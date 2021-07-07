@@ -1,0 +1,109 @@
+{
+  "visitorId": "8_je_re_bet_variation_0",
+  "campaigns": [
+    {
+      "id": "bmsor064jaeg0gm4aaaa",
+      "variationGroupId": "bmsor064jaeg0gm4bbbb",
+      "variation": {
+        "id": "bmsor064jaeg0gm49cccc",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "title": "Hello",
+            "visitorIdColor": "#E5B21D"
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "bmsorfe4jaeg0gi1xxxx",
+      "variationGroupId": "bmsorfe4jaeg0gi1yyyy",
+      "variation": {
+        "id": "bmsorfe4jaeg0gi1zzzz",
+        "modifications": {
+          "type": "FLAG",
+          "value": {
+            "featureEnabled": true
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "brjjpk7734cg0sliiii",
+      "variationGroupId": "brjjpk7734cg0sljjjj",
+      "variation": {
+        "id": "brjjpk7734cg0sl5kkkk",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "rank": 82222,
+            "rank_plus": 22.22
+          }
+        },
+        "reference": true
+      }
+    },
+    {
+      "id": "bsbgq4rjhsqg11tnkkkk",
+      "type": "ab",
+      "variationGroups": [
+        {
+          "id": "bsbgq4rjhsqg11tnllll",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "EQUALS",
+                    "key": "fs_all_users",
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "bsbgq4rjhsqg11tnmmmm",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "array": null,
+                  "complex": null,
+                  "object": null
+                }
+              },
+              "reference": true
+            },
+            {
+              "id": "bsbgq4rjhsqg11tnnnnn",
+              "modifications": {
+                "type": "JSON",
+                "value": {
+                  "array": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "complex": {
+                    "carray": [
+                      {
+                        "cobject": 0
+                      }
+                    ]
+                  },
+                  "object": {
+                    "value": 123456
+                  }
+                }
+              },
+              "allocation": 100
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
