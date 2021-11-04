@@ -19,12 +19,10 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@v2.14.3
         with: 
           api-level: 29
-          script: ./gradlew connectedCheck 
+          script: ./gradlew flagship:connectedCheck 
         continue-on-error: true
 
        # run: ./gradlew testDebugUnitTest
-      - name: Upload coverage to Codecov
-        run: |
-          curl -Os https://uploader.codecov.io/latest/macos/codecov
-          chmod +x codecov
-          ./codecov
+
+      - name: Upload Test Report
+        run:  bash <(curl -s https://codecov.io/bash) -f "flagship/build/reports/coverage/common/debug/report.xml"
