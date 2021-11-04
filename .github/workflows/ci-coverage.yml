@@ -1,0 +1,40 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI & Coverage
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-18.04
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+       # Execute unit tests
+      - name: Unit Test with Android Emulator Runner
+        uses: ReactiveCircus/android-emulator-runner@v2.14.3
+        with: 
+            api-level: 29
+            script: ./gradlew connectedCheck 
+
+       # run: ./gradlew testDebugUnitTest
+
+      - name: generate report
+        uses: actions/upload-artifact@v2
+        with:
+          name: report 
+          path: app/build/reports/coverage/debug
+
+
+      - name: Download Test Reports Folder
+        uses: actions/download-artifact@v2
+        with:
+          name: report
+          path: app/build/reports/coverage/debug
+
+      - name: Upload Test Report
+        run:  bash <(curl -s https://codecov.io/bash) -f "app/build/reports/coverage/debug/report.xml"
