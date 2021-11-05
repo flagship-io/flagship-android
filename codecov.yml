@@ -1,8 +1,0 @@
-{
-    "fixes": [
-        "/home/runner/work/flagship-android/flagship-android>/::"
-    ],
-    "codecov": {
-        "disable_default_path_fixes": true
-    }
-}
