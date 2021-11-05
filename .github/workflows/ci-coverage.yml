@@ -19,10 +19,10 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@v2.14.3
         with: 
           api-level: 29
-          script: ./gradlew flagship:connectedCheck 
+          script: ./gradlew flagship:testAllVariantsWithCoverage
         continue-on-error: true
 
        # run: ./gradlew testDebugUnitTest
 
       - name: Upload Test Report
-        run:  bash <(curl -s https://codecov.io/bash) -f "flagship/build/reports/coverage/common/debug/report.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -f "flagship/build/reports/jacoco/testCommonDebugUnitTestCoverage/testCommonDebugUnitTestCoverage.xml"
