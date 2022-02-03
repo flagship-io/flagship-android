@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_config">
+
+    <fragment
+        android:id="@+id/navigation_config"
+        android:name="com.abtasty.flagshipqa.ui.dashboard.ConfigFragment"
+        android:label="@string/title_config"
+        tools:layout="@layout/fragment_config" />
+
+    <fragment
+        android:id="@+id/navigation_visitor"
+        android:name="com.abtasty.flagshipqa.ui.visitor.VisitorFragment"
+        android:label="@string/title_visitor"
+        tools:layout="@layout/fragment_visitor" />
+
+    <fragment
+        android:id="@+id/navigation_context"
+        android:name="com.abtasty.flagshipqa.ui.context.ContextFragment"
+        android:label="@string/title_context"
+        tools:layout="@layout/fragment_config" />
+
+    <fragment
+        android:id="@+id/navigation_modifications"
+        android:name="com.abtasty.flagshipqa.ui.modifications.ModificationFragment"
+        android:label="@string/title_modifications"
+        tools:layout="@layout/fragment_modifications" />
+
+    <fragment
+        android:id="@+id/navigation_events"
+        android:name="com.abtasty.flagshipqa.ui.events.EventFragment"
+        android:label="@string/title_events"
+        tools:layout="@layout/fragment_event" />
+</navigation>

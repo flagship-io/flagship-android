@@ -1,0 +1,31 @@
+[
+  {
+    "version": 1,
+    "data": {
+      "time": 1637606882234,
+      "visitorId": "visitor_id",
+      "anonymousId": null,
+      "type": "BATCH",
+      "content": {
+        "cid": "_ENV_ID_",
+        "t": "BATCH",
+        "ds": "APP",
+        "h": [
+          {
+            "t": "SCREENVIEW",
+            "dl": "Screen_1",
+            "qt": 46688
+          },
+          {
+            "t": "EVENT",
+            "ec": "User Engagement",
+            "ea": "Event_1",
+            "qt": 34304
+          }
+        ],
+        "cuid": null,
+        "vid": "visitor_id"
+      }
+    }
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "data": {
+    "visitorId": "visitor_id",
+    "consent": true,
+    "context": {
+      "daysSinceLastLaunch": 2,
+      "sdk_osVersionCode": 29,
+      "sdk_deviceModel": "unknown robolectric",
+      "access": "password",
+      "fs_version": "3.0.0",
+      "sdk_carrierName": "",
+      "sdk_deviceType": "mobile",
+      "sdk_deviceLanguage": "eng",
+      "fs_users": "visitor_id",
+      "fs_client": "android",
+      "sdk_osVersionName": "Android 10 O_MR1",
+      "vip": true,
+      "sdk_osName": "Android"
+    },
+    "campaigns": [
+      {
+        "campaignId": "brjjpk7734cg0sl5llll",
+        "variationGroupId": "brjjpk7734cg0sl5mmmm",
+        "variationId": "brjjpk7734cg0sl5oooo",
+        "isReference": false,
+        "type": "ab",
+        "activated": false,
+        "flags": {
+          "rank": 81111,
+          "rank_plus": null
+        }
+      },
+      {
+        "campaignId": "bmsor064jaeg0gm4aaaa",
+        "variationGroupId": "bmsor064jaeg0gm4bbbb",
+        "variationId": "bmsor064jaeg0gm4dddd",
+        "isReference": false,
+        "type": "ab",
+        "activated": false,
+        "flags": {
+          "title": "Ahoy",
+          "visitorIdColor": "#028C9A"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,114 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
+apply plugin: 'kotlin-kapt'
+apply from: 'flagship-publishing.gradle'
+apply from: 'jacoco.gradle'
+
+android {
+    publishNonDefault true
+    compileSdkVersion 31
+
+    defaultConfig {
+//        multiDexEnabled true
+        minSdkVersion 16
+        compileSdkVersion 31
+        targetSdkVersion 31
+
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas".toString())
+            }
+        }
+    }
+
+    testOptions {
+
+        unitTests.includeAndroidResources = true
+        unitTests.returnDefaultValues = true
+    }
+
+    buildTypes {
+        debug {
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        all {
+            buildConfigField "String", "FLAGSHIP_VERSION_NAME", "\"${flagship_version_name}\""
+            buildConfigField "int", "FLAGSHIP_VERSION_CODE", "${flagship_version_code}"
+            resValue("integer", "ABTastyVersionCode", "${flagship_version_code}")
+            resValue("string", "ABTastyVersion", "${flagship_version_name}")
+        }
+        jacoco {
+            version = '0.8.7'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    android.libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.name.contains('Release')) {
+                if (variant.name.contains(android.productFlavors.compat.name))
+                    outputFileName = "flagship-android-compat-${flagship_version_name}.aar"
+                else
+                    outputFileName = "flagship-android-${flagship_version_name}.aar"
+            }
+        }
+    }
+    flavorDimensions 'default'
+    productFlavors {
+        common {
+            dimension 'default'
+            minSdkVersion 21
+            resValue("string", "variant", "common")
+        }
+        compat {
+            dimension 'default'
+            minSdkVersion 16
+            resValue("string", "variant", "compat")
+        }
+    }
+}
+
+configurations {
+    common
+    compat
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'androidx.test:core:1.4.0'
+    testImplementation 'org.robolectric:robolectric:4.6'
+    testImplementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.0'
+    testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    testCompatImplementation  'org.conscrypt:conscrypt-openjdk-uber:2.5.1'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
+    implementation 'androidx.room:room-runtime:2.4.1'
+
+    commonImplementation 'com.squareup.okhttp3:okhttp:4.9.3'
+
+    //keep this old version for compat
+    compatImplementation 'com.squareup.okhttp3:okhttp:3.12.12'
+    compatImplementation 'org.conscrypt:conscrypt-android:2.5.1'
+
+    annotationProcessor("androidx.room:room-compiler:2.4.1")
+    kapt 'androidx.room:room-compiler:2.4.1'
+}
+
+
+
+repositories {
+    google()
+    mavenCentral()
+}
+

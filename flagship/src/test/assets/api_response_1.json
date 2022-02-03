@@ -1,0 +1,106 @@
+{
+  "visitorId": "_ENV_ID_",
+  "campaigns": [
+    {
+      "id": "bmsorfe4jaeg0g000000",
+      "variationGroupId": "bmsorfe4jaeg0g1111111",
+      "variation": {
+        "id": "bmsorfe4jaeg0g222222",
+        "modifications": {
+          "type": "FLAG",
+          "value": {
+            "featureEnabled": false
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "bu6lgeu3bdt014333333",
+      "variationGroupId": "bu6lgeu3bdt014444444",
+      "variation": {
+        "id": "bu6lgeu3bdt01555555",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "target": "is"
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "bv6vpqjh6h101f666666",
+      "variationGroupId": "bv6vpqjh6h101f777777",
+      "variation": {
+        "id": "bv6vpqjh6h101f888888",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "isref": "nope"
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "c04bed3m649g0h999999",
+      "variationGroupId": "c04bed3m649g0hAAAAAA",
+      "variation": {
+        "id": "c04bed3m649g0hBBBBBB",
+        "modifications": {
+          "type": "FLAG",
+          "value": {
+            "release": 100
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "c0vlhkc8tbo3s7CCCCCC",
+      "variationGroupId": "c0vlhkc8tbo3sDDDDDD",
+      "variation": {
+        "id": "c0vlhkc8tbo3s7EEEEEE",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "all_users": 1
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "c27tejc3fk9jdbFFFFFF",
+      "variationGroupId": "c27tejc3fk9jdbGGGGGG",
+      "variation": {
+        "id": "c27tfn8bcahim7HHHHHH",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "ab10_variation": 7
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "c348750k33nnjIIIIII",
+      "variationGroupId": "c348750k33nnjpJJJJJJ",
+      "variation": {
+        "id": "c348750k33nnjpKKKKKK",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "json": {
+              "variation": 0
+            },
+            "string": null
+          }
+        },
+        "reference": true
+      }
+    }
+  ]
+}
