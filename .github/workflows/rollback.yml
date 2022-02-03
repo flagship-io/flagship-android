@@ -1,0 +1,22 @@
+
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Artifactory rollback CI
+
+on:
+  delete:
+    tags:
+      - '*.*.*'
+      - '*.*'
+
+jobs:
+  proceed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Artifactory delete version
+        run: |
+          curl --location --request DELETE 'https://abtasty.jfrog.io/artifactory/flagship-android/com/abtasty/flagship-android/${{ github.event.ref }}' --header 'Authorization: Bearer ${{ secrets.ARTIFACTORY_TOKEN }}'
+          curl --location --request DELETE 'https://abtasty.jfrog.io/artifactory/flagship-android-compat/com/abtasty/flagship-android-compat/${{ github.event.ref }}' --header 'Authorization: Bearer ${{ secrets.ARTIFACTORY_TOKEN }}'
