@@ -6,7 +6,7 @@
 
 <h3 align="center">Bring your features to life</h3>
 
-![CI UnitTest & Build](https://github.com/raf-abtasty/flagship-android/workflows/CI%20UnitTest%20&%20Build/badge.svg)
+[![CI UnitTest & Build](https://github.com/flagship-io/flagship-android/actions/workflows/ci-unitest-build.yml/badge.svg)](https://github.com/flagship-io/flagship-android/actions/workflows/ci-unitest-build.yml)
 [![android](https://img.shields.io/badge/Android-api%2021%2B-blue.svg)]()
 [![compat version](https://img.shields.io/badge/Android%20compat%20version-16%2B-blue.svg)]()
 [![codecov](https://codecov.io/gh/flagship-io/flagship-android/branch/master/graph/badge.svg?token=QSZQCfdi39)](https://codecov.io/gh/flagship-io/flagship-android)
