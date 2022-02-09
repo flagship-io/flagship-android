@@ -43,6 +43,7 @@ class ContextViewModel(val appContext: Application) : AndroidViewModel(appContex
 
     fun synchronize(success: (String) -> Unit, error: (String) -> Unit) {
         val context = getVisitorContext(error)
+        Flagship.getVisitor()?.clearContext()
         Flagship.getVisitor()?.updateContext(context)
         Flagship.getVisitor()?.synchronizeModifications()?.invokeOnCompletion {
             Handler(Looper.getMainLooper()).post {
