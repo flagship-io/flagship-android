@@ -35,8 +35,7 @@ object HttpManager {
     fun initHttpManager() {
         initThreadPoolExecutor()
         HttpCompat.insertProviderIfNeeded()
-//        if (!testOn)
-            initHttpClient()
+        initHttpClient()
     }
 
     private fun initThreadPoolExecutor() {

@@ -86,7 +86,7 @@ class TrackingManager {
             logHit(tag, response, response?.requestContent)
             if (response == null || response.code !in 200..204) {
                 val json = CacheHelper.fromHit(visitorDTO, type, data, time)
-                visitorDTO.visitorDelegate.getStrategy().cacheHit(visitorDTO.visitorId, json)
+                visitorDTO.visitorStrategy?.cacheHit(visitorDTO.visitorId, json)
             }
         }
     }

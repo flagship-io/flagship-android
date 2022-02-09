@@ -14,8 +14,8 @@ import org.json.JSONObject
 class CacheHelper {
 
     interface CacheHitMigrationInterface {
-        fun applyForBatch(visitorDTO: VisitorDelegateDTO, data: JSONObject) : JSONObject?
-        fun applyForEvent(visitorDTO: VisitorDelegateDTO, data : JSONObject)
+        fun applyForBatch(visitorDelegateDTO: VisitorDelegateDTO, data: JSONObject) : JSONObject?
+        fun applyForEvent(visitorDelegateDTO: VisitorDelegateDTO, data : JSONObject)
     }
 
     interface CacheVisitorMigrationInterface {
@@ -26,9 +26,9 @@ class CacheHelper {
 
         MIGRATION_1() {
 
-            override fun applyForBatch(visitorDTO: VisitorDelegateDTO, data: JSONObject) : JSONObject? {
+            override fun applyForBatch(visitorDelegateDTO: VisitorDelegateDTO, data: JSONObject) : JSONObject? {
                 val dataJSON = data.getJSONObject("data")
-                if (dataJSON.get("visitorId") == visitorDTO.visitorId) {
+                if (dataJSON.get("visitorId") == visitorDelegateDTO.visitorId) {
                     val time = dataJSON.getLong("time")
                     if (System.currentTimeMillis() <= (time + _HIT_EXPIRATION_MS_)) {
                         val type = dataJSON.getString("type")
@@ -46,15 +46,15 @@ class CacheHelper {
                 return null
             }
 
-            override fun applyForEvent(visitorDTO: VisitorDelegateDTO, data: JSONObject) {
+            override fun applyForEvent(visitorDelegateDTO: VisitorDelegateDTO, data: JSONObject) {
 
                 val dataJSON = data.getJSONObject("data")
-                if (dataJSON.get("visitorId") == visitorDTO.visitorId) { // todo think anonymous
+                if (dataJSON.get("visitorId") == visitorDelegateDTO.visitorId) { // todo think anonymous
                     val time = dataJSON.getLong("time")
                     val type = dataJSON.getString("type")
                     val content = dataJSON.getJSONObject("content")
                     if (System.currentTimeMillis() <= (time + _HIT_EXPIRATION_MS_))
-                        visitorDTO.configManager.trackingManager.sendHit(visitorDTO, type, time, content)
+                        visitorDelegateDTO.configManager.trackingManager?.sendHit(visitorDelegateDTO, type, time, content)
                 }
             }
         };
@@ -68,35 +68,7 @@ class CacheHelper {
             override fun applyFromJSON(visitor: VisitorDelegate, data: JSONObject) {
                 val dataJSON = data.getJSONObject("data")
                 if (dataJSON.get("visitorId") == visitor.visitorId) { // todo think anonymous
-                    dataJSON.optJSONObject("context")?.let {
-                        for (k in it.keys()) {
-                            visitor.getStrategy().updateContext(k, it.get(k))
-                        }
-                    }
-                    dataJSON.optJSONArray("campaigns")?.let { array ->
-                        val iterator = array.iterator()
-                        while (iterator.hasNext()) {
-                            val campaignJSON = iterator.next()
-                            if (campaignJSON.optBoolean("activated", false) &&
-                                !visitor.activatedVariations.contains(campaignJSON.getString("variationId"))
-                            )
-                                visitor.activatedVariations.add(campaignJSON.getString("variationId"))
-                            campaignJSON.optJSONObject("flags")?.let { flagJSON ->
-                                for (k in flagJSON.keys()) {
-                                    val modification = Modification(
-                                        k,
-                                        campaignJSON.getString("campaignId"),
-                                        campaignJSON.getString("variationGroupId"),
-                                        campaignJSON.getString("variationId"),
-                                        campaignJSON.getBoolean("isReference"),
-                                        flagJSON.get(k),
-                                        campaignJSON.getString("type")
-                                    )
-                                    visitor.modifications[k] = modification
-                                }
-                            }
-                        }
-                    }
+                    visitor.cachedVisitor.fromCacheJSON(dataJSON)
                 }
             }
         };
@@ -107,47 +79,6 @@ class CacheHelper {
         internal val _VISITOR_CACHE_VERSION_ = 1
         internal val _HIT_CACHE_VERSION_ = 1
         internal val _HIT_EXPIRATION_MS_ = 14400000 // 4h
-
-        internal fun fromVisitor(visitorDTO: VisitorDelegateDTO): JSONObject {
-            val data = JSONObject()
-                .put("visitorId", visitorDTO.visitorId)
-                .put("anonymousId", visitorDTO.anonymousId)
-                .put("consent", visitorDTO.hasConsented)
-                .put("context", visitorDTO.getContextAsJson())
-                .put("campaigns", modificationsToJSON(visitorDTO))
-            return JSONObject()
-                .put("version", _VISITOR_CACHE_VERSION_)
-                .put("data", data)
-        }
-
-        private fun modificationsToJSON(visitorDTO: VisitorDelegateDTO): JSONArray {
-
-            val campaigns = JSONArray()
-            for (m in visitorDTO.modifications) {
-                var isCampaignSet = false
-                for (i in 0 until campaigns.length()) {
-                    val campaign = campaigns.getJSONObject(i)
-                    if (campaign.optString("campaignId") == m.value.campaignId && campaign.optString("variationGroupId") == m.value.variationGroupId &&
-                        campaign.optString("variationId") == m.value.variationId
-                    ) {
-                        isCampaignSet = true
-                        campaign.optJSONObject("flags")?.put(m.value.key, m.value.value ?: JSONObject.NULL)
-                    }
-                }
-                if (!isCampaignSet) {
-                    campaigns.put(JSONObject()
-                        .put("campaignId", m.value.campaignId)
-                        .put("variationGroupId", m.value.variationGroupId)
-                        .put("variationId", m.value.variationId)
-                        .put("isReference", m.value.isReference)
-                        .put("type", m.value.campaignType)
-                        .put("activated", visitorDTO.activatedVariations.contains(m.value.variationId))
-                        .put("flags", JSONObject().put(m.value.key, m.value.value ?: JSONObject.NULL))
-                    )
-                }
-            }
-            return campaigns
-        }
 
 
         fun fromHit(visitorDelegate: VisitorDelegateDTO, type: String, hitData: JSONObject, time: Long = -1): JSONObject {

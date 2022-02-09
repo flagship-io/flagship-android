@@ -4,6 +4,7 @@ import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
 import com.abtasty.flagship.utils.MurmurHash
+import com.abtasty.flagship.visitor.VisitorCache
 import com.abtasty.flagship.visitor.VisitorDelegate
 import com.abtasty.flagship.visitor.VisitorDelegateDTO
 import org.json.JSONObject
@@ -11,15 +12,15 @@ import org.json.JSONObject
 data class VariationGroup(val campaignId: String, val variationGroupId: String,
     val variations: LinkedHashMap<String, Variation>?, val targetingGroups: TargetingGroups?) {
 
-    fun selectVariation(visitor: VisitorDelegateDTO): Variation? {
+    fun selectVariation(visitorDelegateDTO: VisitorDelegateDTO): Variation? {
         variations?.let {
-            val cachedVariation = selectVariationFromCache(visitor, variations)
+            val cachedVariation = selectVariationFromCache(visitorDelegateDTO, variations)
             if (cachedVariation != null)
                 return cachedVariation
             else {
                 var p = 0
                 val murmurAllocation: Int =
-                    MurmurHash.getAllocationFromMurmur(variationGroupId, visitor.visitorId)
+                    MurmurHash.getAllocationFromMurmur(variationGroupId, visitorDelegateDTO.visitorId)
                 for ((variationId, variation) in variations) {
                     if (variation.allocation > 0) { //Variation with 0% are only loaded to check if it matches one from the cache, and should be ignored otherwise.
                         p += variation.allocation
@@ -41,9 +42,9 @@ data class VariationGroup(val campaignId: String, val variationGroupId: String,
         return null
     }
 
-    fun selectVariationFromCache(visitorDTO: VisitorDelegateDTO, variations: LinkedHashMap<String, Variation>) : Variation? {
+    fun selectVariationFromCache(visitorDelegateDTO: VisitorDelegateDTO, variations: LinkedHashMap<String, Variation>) : Variation? {
         for ((vid, v) in variations) {
-            if (visitorDTO.isVariationAssigned(v.variationId)) {
+            if (visitorDelegateDTO.mergedCachedVisitor?.isVariationAlreadyAssigned(v.variationId) == true) {
                 FlagshipLogManager.log(FlagshipLogManager.Tag.ALLOCATION, LogManager.Level.DEBUG,
                     FlagshipConstants.Info.CACHED_ALLOCATION.format(v.variationId))
                 return v

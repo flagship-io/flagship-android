@@ -19,7 +19,6 @@ abstract class DecisionManager(var flagshipConfig: FlagshipConfig<*>) : IDecisio
             try {
                 val json = JSONObject(content)
                 panic = json.has("panic")
-                updateFlagshipStatus(if (panic) Flagship.Status.PANIC else Flagship.Status.READY)
                 if (!panic) return Campaign.parse(json.getJSONArray("campaigns"))
             } catch (e: Exception) {
                 FlagshipLogManager.log(

@@ -203,12 +203,12 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
 
 
     override fun cacheVisitor() {
-        val visitorDTO = visitor.toDTO()
+        val visitorDelegateDTO = visitor.toDTO()
         Flagship.coroutineScope().launch {
             try {
-                flagshipConfig.cacheManager.visitorCacheImplementation?.cacheVisitor(visitorDTO.visitorId , CacheHelper.fromVisitor(visitorDTO))
+                flagshipConfig.cacheManager.visitorCacheImplementation?.cacheVisitor(visitorDelegateDTO.visitorId , visitorDelegateDTO.mergedCachedVisitor.toCacheJSON())
             } catch (e : Exception) {
-                logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("cacheVisitor", visitorDTO.visitorId), e)
+                logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("cacheVisitor", visitorDelegateDTO.visitorId), e)
             }
         }
     }
