@@ -36,10 +36,13 @@ class FlagshipConstants {
             val METHOD_DEACTIVATED_ERROR = "Method '%s' is deactivated while SDK status is: %s."
             val METHOD_DEACTIVATED_CONSENT_ERROR = "Method '%s' is deactivated for visitor '%s': visitor did not consent."
             val CONFIGURATION_POLLING_ERROR = "Setting a polling interval is only available for Bucketing configuration."
+            val BUCKETING_POLLING_ERROR = "An error occurred during Bucketing polling: %s."
             val AUTHENTICATION_BUCKETING_ERROR = "'%s' method will be ignored in Bucketing configuration."
             val CACHE_IMPL_ERROR  = "Error: '%s' for visitor '%s' threw an exception."
             val CACHE_IMPL_TIMEOUT = "Error: '%s' for visitor '%s' has timed out."
             val CACHE_IMPL_FORMAT_ERROR = "Error: '%s' have loaded a bad format version (%d) for visitor '%s'."
+
+            val HTTP_ERROR = "An error occured while sending request to %s: %s"
         }
     }
 
@@ -49,6 +52,7 @@ class FlagshipConstants {
             //Info
             val READY = "Flagship SDK (version: %s) READY"
             val BUCKETING_INTERVAL = "Polling event."
+            val BUCKETING_CACHE = "Bucketing file have been loaded from cache (%s): \n%s."
             val NEW_ALLOCATION = "Variation %s selected with allocation %d."
             val CACHED_ALLOCATION = "Variation %s selected from cache."
             val STATUS_CHANGED = "SDK status has changed : %s."

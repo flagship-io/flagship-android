@@ -1,7 +1,6 @@
 package com.abtasty.flagship.decision
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.BUCKETING
 import com.abtasty.flagship.main.Flagship
@@ -10,10 +9,11 @@ import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.utils.FlagshipConstants
+import com.abtasty.flagship.utils.FlagshipConstants.Errors.Companion.BUCKETING_POLLING_ERROR
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
-import com.abtasty.flagship.visitor.VisitorCache
 import com.abtasty.flagship.visitor.VisitorDelegateDTO
+import org.json.JSONObject
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipConfig) {
 
     private val LOCAL_DECISION_FILE = "LOCAL_DECISION_FILE"
-    private val LAST_MODIFIED_LOCAL_DECISION_FILE = "LOCAL_DECISION_FILE"
+    private val LAST_MODIFIED_LOCAL_DECISION_FILE = "LAST_MODIFIED_LOCAL_DECISION_FILE"
 
     private var executor: ScheduledExecutorService? = null
     private var lastModified: String? = null
@@ -64,9 +64,15 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
             if (lastModified != null) headers["If-Modified-Since"] = lastModified!!
             try {
                 HttpManager.sendHttpRequest(HttpManager.RequestType.GET, String.format(BUCKETING, flagshipConfig.envId), headers, null)
-            } catch (e : Exception) {
+            } catch (e: Exception) {
+                FlagshipLogManager.log(FlagshipLogManager.Tag.BUCKETING, LogManager.Level.ERROR, BUCKETING_POLLING_ERROR.format(e.message ?: ""))
+                localDecisionFile?.let { decisionFile ->
+                    FlagshipLogManager.log(FlagshipLogManager.Tag.BUCKETING, LogManager.Level.INFO, FlagshipConstants.Info.BUCKETING_CACHE.format(
+                        lastModified,
+                        JSONObject(decisionFile).toString(4)))
+                }
                 null
-            } ?.let { response ->
+            }?.let { response ->
                 logResponse(response)
                 if (response.code < 300) {
                     localDecisionFile = response.content
@@ -77,10 +83,7 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
                     }
                 }
             }
-//                ?: run {
-//                localDecisionFile = loadLocalDecisionFile()
-//            }
-            parseLocalDecisionFile() //???
+            parseLocalDecisionFile()
         } catch (e: Exception) {
             FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")
         }
@@ -88,8 +91,10 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
     }
 
     private fun parseLocalDecisionFile() {
-        parseCampaignsResponse(localDecisionFile)?.let { campaigns ->
-            this.campaigns = campaigns
+        localDecisionFile?.let { content ->
+            parseCampaignsResponse(content)?.let { campaigns ->
+                this.campaigns = campaigns
+            }
         }
     }
 
@@ -137,12 +142,12 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
         prefs.apply()
     }
 
-    private fun loadLocalDecisionFile() : String? {
+    private fun loadLocalDecisionFile(): String? {
         val prefs = Flagship.application.getSharedPreferences(flagshipConfig.envId, Context.MODE_PRIVATE)
         return prefs.getString(LOCAL_DECISION_FILE, null)
     }
 
-    private fun loadLastModifiedLocalDecisionFile() : String? {
+    private fun loadLastModifiedLocalDecisionFile(): String? {
         val prefs = Flagship.application.getSharedPreferences(flagshipConfig.envId, Context.MODE_PRIVATE)
         return prefs.getString(LAST_MODIFIED_LOCAL_DECISION_FILE, null)
     }
