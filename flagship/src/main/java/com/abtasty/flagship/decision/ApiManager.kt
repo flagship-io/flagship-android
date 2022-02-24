@@ -6,17 +6,16 @@ import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.CAMPAIGNS
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.CONTEXT_PARAM
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.DECISION_API
 import com.abtasty.flagship.api.ResponseCompat
+import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.main.Flagship.getStatus
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.visitor.VisitorDelegateDTO
 import org.json.JSONObject
 import java.io.IOException
-import com.abtasty.flagship.main.Flagship
-import com.abtasty.flagship.main.Flagship.getStatus
-import com.abtasty.flagship.visitor.VisitorCache
-import com.abtasty.flagship.visitor.VisitorDelegateDTO
 
 class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipConfig) {
 
@@ -52,6 +51,7 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
                 for ((_, _, variationGroups) in campaigns) {
                     for (variationGroup in variationGroups) {
                         for (variation in variationGroup?.variations!!.values) {
+                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId); //save for cache
                             variation.getModificationsValues()?.let { modificationsValues ->
                                 campaignsModifications.putAll(modificationsValues)
                             }

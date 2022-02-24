@@ -6,6 +6,7 @@ import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.ARIANE
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.DECISION_API
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.EVENTS
 import com.abtasty.flagship.cache.CacheHelper
+import com.abtasty.flagship.cache.HitCacheHelper
 import com.abtasty.flagship.hits.Activate
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.main.Flagship
@@ -85,8 +86,8 @@ class TrackingManager {
             val tag = if (type == FlagshipLogManager.Tag.ACTIVATE.name) FlagshipLogManager.Tag.ACTIVATE else FlagshipLogManager.Tag.TRACKING
             logHit(tag, response, response?.requestContent)
             if (response == null || response.code !in 200..204) {
-                val json = CacheHelper.fromHit(visitorDTO, type, data, time)
-                visitorDTO.visitorStrategy?.cacheHit(visitorDTO.visitorId, json)
+                val json = HitCacheHelper.fromHit(visitorDTO, type, data, time)
+                visitorDTO.visitorStrategy.cacheHit(visitorDTO.visitorId, json)
             }
         }
     }

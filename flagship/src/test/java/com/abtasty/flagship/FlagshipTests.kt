@@ -1136,7 +1136,7 @@ class FlagshipTests {
             visitor.synchronizeModifications().await()
             Thread.sleep(100)
             val cachedVisitor = (visitor.configManager.flagshipConfig.cacheManager as? DefaultCacheManager)?.visitorCacheImplementation?.lookupVisitor("visitor_id") ?: JSONObject()
-            assertEquals(CacheHelper._VISITOR_CACHE_VERSION_, cachedVisitor.get("version"))
+            assertEquals(VisitorCacheHelper._VISITOR_CACHE_VERSION_, cachedVisitor.get("version"))
             assertEquals(true, cachedVisitor.getJSONObject("data").getBoolean("consent"))
             assertEquals("visitor_id", cachedVisitor.getJSONObject("data").getString("visitorId"))
 
@@ -1296,7 +1296,7 @@ class FlagshipTests {
                 .withVisitorCacheImplementation(object : IVisitorCacheImplementation {
                     override fun cacheVisitor(visitorId: String, data: JSONObject) {
                         assertEquals("visitor_id", visitorId)
-                        assertEquals(CacheHelper._VISITOR_CACHE_VERSION_, data.get("version"))
+                        assertEquals(VisitorCacheHelper._VISITOR_CACHE_VERSION_, data.get("version"))
                         assertEquals(true, data.getJSONObject("data").getBoolean("consent"))
                         assertEquals("visitor_id", data.getJSONObject("data").getString("visitorId"))
                         assertEquals("null", data.getJSONObject("data").optString("anonymousId", "null"))
@@ -1331,7 +1331,7 @@ class FlagshipTests {
                 .withHitCacheImplementation(object: IHitCacheImplementation {
                     override fun cacheHit(visitorId: String, data: JSONObject) {
                         assertEquals("visitor_id", visitorId)
-                        assertEquals(CacheHelper._HIT_CACHE_VERSION_, data.get("version"))
+                        assertEquals(HitCacheHelper._HIT_CACHE_VERSION_, data.get("version"))
                         val jsonData = data.getJSONObject("data")
                         assertTrue(jsonData.getLong("time") > 0)
                         assertEquals("visitor_id", data.getJSONObject("data").getString("visitorId"))

@@ -42,7 +42,7 @@ class FlagshipConstants {
             val CACHE_IMPL_TIMEOUT = "Error: '%s' for visitor '%s' has timed out."
             val CACHE_IMPL_FORMAT_ERROR = "Error: '%s' have loaded a bad format version (%d) for visitor '%s'."
 
-            val HTTP_ERROR = "An error occured while sending request to %s: %s"
+            val HTTP_ERROR = "An error occurred while sending request to %s: %s"
         }
     }
 

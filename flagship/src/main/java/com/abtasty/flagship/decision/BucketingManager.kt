@@ -102,8 +102,8 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
         executor?.let { executor ->
             if (!executor.isShutdown)
                 executor.shutdownNow()
-
         }
+        executor = null
     }
 
     override fun getCampaignsModifications(visitorDelegateDTO: VisitorDelegateDTO): HashMap<String, Modification>? {
@@ -114,6 +114,7 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
                     if (variationGroup!!.isTargetingValid(HashMap(visitorDelegateDTO.context))) {
                         val variation = variationGroup.selectVariation(visitorDelegateDTO)
                         if (variation != null) {
+                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId)
                             val modificationsValues = variation.getModificationsValues()
                             if (modificationsValues != null)
                                 campaignsModifications.putAll(modificationsValues)

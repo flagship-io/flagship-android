@@ -25,14 +25,13 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
     var activatedVariations = ConcurrentLinkedQueue<String>()
     var hasConsented: Boolean
     var isAuthenticated: Boolean
-    var cachedVisitor: VisitorCache
+    var assignmentsHistory: ConcurrentMap<String, String> = ConcurrentHashMap()
 
     init {
         this.visitorId = if (visitorId == null || visitorId.isEmpty()) generateUUID() else visitorId
         this.isAuthenticated = isAuthenticated
         this.hasConsented = hasConsented
         anonymousId = if (isAuthenticated) generateUUID(true) else null
-        cachedVisitor = VisitorCache(this)
         getStrategy().lookupVisitorCache()
         getStrategy().lookupHitCache()
         loadContext(context)
@@ -93,7 +92,6 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
     }
 
     internal fun toDTO(): VisitorDelegateDTO {
-        this.cachedVisitor.merge(this)
         return VisitorDelegateDTO(this)
     }
 }
