@@ -21,12 +21,12 @@ import java.util.concurrent.TimeUnit
 
 class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipConfig) {
 
-    private val LOCAL_DECISION_FILE = "LOCAL_DECISION_FILE"
-    private val LAST_MODIFIED_LOCAL_DECISION_FILE = "LAST_MODIFIED_LOCAL_DECISION_FILE"
+    private val DECISION_FILE = "DECISION_FILE"
+    private val LAST_MODIFIED_DECISION_FILE = "LAST_MODIFIED_DECISION_FILE"
 
     private var executor: ScheduledExecutorService? = null
     private var lastModified: String? = null
-    private var localDecisionFile: String? = null
+    private var decisionFile: String? = null
     private var campaigns: ArrayList<Campaign> = ArrayList()
 
     override fun init(listener : ((Flagship.Status) -> Unit)?) {
@@ -59,14 +59,14 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
     private fun updateBucketingCampaigns() {
         try {
             val headers = HashMap<String, String>()
-            if (lastModified == null) lastModified = loadLastModifiedLocalDecisionFile()
-            if (localDecisionFile == null) localDecisionFile = loadLocalDecisionFile()
+            if (lastModified == null) lastModified = loadLastModifiedDecisionFile()
+            if (decisionFile == null) decisionFile = loadDecisionFile()
             if (lastModified != null) headers["If-Modified-Since"] = lastModified!!
             try {
                 HttpManager.sendHttpRequest(HttpManager.RequestType.GET, String.format(BUCKETING, flagshipConfig.envId), headers, null)
             } catch (e: Exception) {
                 FlagshipLogManager.log(FlagshipLogManager.Tag.BUCKETING, LogManager.Level.ERROR, BUCKETING_POLLING_ERROR.format(e.message ?: ""))
-                localDecisionFile?.let { decisionFile ->
+                decisionFile?.let { decisionFile ->
                     FlagshipLogManager.log(FlagshipLogManager.Tag.BUCKETING, LogManager.Level.INFO, FlagshipConstants.Info.BUCKETING_CACHE.format(
                         lastModified,
                         JSONObject(decisionFile).toString(4)))
@@ -75,23 +75,23 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
             }?.let { response ->
                 logResponse(response)
                 if (response.code < 300) {
-                    localDecisionFile = response.content
+                    decisionFile = response.content
                     lastModified = response.headers?.get("Last-Modified")
-                    if (lastModified != null && localDecisionFile != null) {
-                        saveLastModifiedLocalDecisionFile(lastModified!!)
-                        saveLocalDecisionFile(localDecisionFile!!)
+                    if (lastModified != null && decisionFile != null) {
+                        saveLastModifiedDecisionFile(lastModified!!)
+                        saveDecisionFile(decisionFile!!)
                     }
                 }
             }
-            parseLocalDecisionFile()
+            parseDecisionFile()
         } catch (e: Exception) {
             FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")
         }
         updateFlagshipStatus(if (panic) Flagship.Status.PANIC else Flagship.Status.READY)
     }
 
-    private fun parseLocalDecisionFile() {
-        localDecisionFile?.let { content ->
+    private fun parseDecisionFile() {
+        decisionFile?.let { content ->
             parseCampaignsResponse(content)?.let { campaigns ->
                 this.campaigns = campaigns
             }
@@ -131,26 +131,26 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
         return null
     }
 
-    private fun saveLocalDecisionFile(content : String) {
+    private fun saveDecisionFile(content : String) {
         val prefs = Flagship.application.getSharedPreferences(flagshipConfig.envId, Context.MODE_PRIVATE).edit()
-        prefs.putString(LOCAL_DECISION_FILE, content)
+        prefs.putString(DECISION_FILE, content)
         prefs.apply()
     }
 
-    private fun saveLastModifiedLocalDecisionFile(lastModified : String) {
+    private fun saveLastModifiedDecisionFile(lastModified : String) {
         val prefs = Flagship.application.getSharedPreferences(flagshipConfig.envId, Context.MODE_PRIVATE).edit()
-        prefs.putString(LAST_MODIFIED_LOCAL_DECISION_FILE, lastModified)
+        prefs.putString(LAST_MODIFIED_DECISION_FILE, lastModified)
         prefs.apply()
     }
 
-    private fun loadLocalDecisionFile(): String? {
+    private fun loadDecisionFile(): String? {
         val prefs = Flagship.application.getSharedPreferences(flagshipConfig.envId, Context.MODE_PRIVATE)
-        return prefs.getString(LOCAL_DECISION_FILE, null)
+        return prefs.getString(DECISION_FILE, null)
     }
 
-    private fun loadLastModifiedLocalDecisionFile(): String? {
+    private fun loadLastModifiedDecisionFile(): String? {
         val prefs = Flagship.application.getSharedPreferences(flagshipConfig.envId, Context.MODE_PRIVATE)
-        return prefs.getString(LAST_MODIFIED_LOCAL_DECISION_FILE, null)
+        return prefs.getString(LAST_MODIFIED_DECISION_FILE, null)
     }
 
 

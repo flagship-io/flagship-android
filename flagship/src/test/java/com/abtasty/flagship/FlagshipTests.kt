@@ -1540,8 +1540,8 @@ class FlagshipTests {
             fail()
 
         val prefRead = (ApplicationProvider.getApplicationContext() as? Context)?.applicationContext?.getSharedPreferences(Flagship.getConfig().envId, Context.MODE_PRIVATE);
-        var content = prefRead?.getString("LOCAL_DECISION_FILE", null)
-        var lastModified = prefRead?.getString("LAST_MODIFIED_LOCAL_DECISION_FILE", null)
+        var content = prefRead?.getString("DECISION_FILE", null)
+        var lastModified = prefRead?.getString("LAST_MODIFIED_DECISION_FILE", null)
 
         assertNotNull(content)
         assertNotNull(lastModified)
@@ -1565,8 +1565,8 @@ class FlagshipTests {
             .build())
 
 
-        content = prefRead?.getString("LOCAL_DECISION_FILE", null)
-        lastModified = prefRead?.getString("LAST_MODIFIED_LOCAL_DECISION_FILE", null)
+        content = prefRead?.getString("DECISION_FILE", null)
+        lastModified = prefRead?.getString("LAST_MODIFIED_DECISION_FILE", null)
 
         assertNotNull(content)
         assertNotNull(lastModified)
@@ -1587,8 +1587,8 @@ class FlagshipTests {
 
         Thread.sleep(2000)
 
-        content = prefRead?.getString("LOCAL_DECISION_FILE", null)
-        lastModified = prefRead?.getString("LAST_MODIFIED_LOCAL_DECISION_FILE", null)
+        content = prefRead?.getString("DECISION_FILE", null)
+        lastModified = prefRead?.getString("LAST_MODIFIED_DECISION_FILE", null)
 
         assertNotNull(content)
         assertNotNull(lastModified)
