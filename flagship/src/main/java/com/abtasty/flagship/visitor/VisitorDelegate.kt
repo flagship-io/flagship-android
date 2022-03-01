@@ -25,6 +25,7 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
     var activatedVariations = ConcurrentLinkedQueue<String>()
     var hasConsented: Boolean
     var isAuthenticated: Boolean
+    var assignmentsHistory: ConcurrentMap<String, String> = ConcurrentHashMap()
 
     init {
         this.visitorId = if (visitorId == null || visitorId.isEmpty()) generateUUID() else visitorId

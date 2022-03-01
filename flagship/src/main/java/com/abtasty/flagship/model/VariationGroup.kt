@@ -4,49 +4,38 @@ import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
 import com.abtasty.flagship.utils.MurmurHash
-import com.abtasty.flagship.visitor.VisitorDelegate
 import com.abtasty.flagship.visitor.VisitorDelegateDTO
 import org.json.JSONObject
 
 data class VariationGroup(val campaignId: String, val variationGroupId: String,
     val variations: LinkedHashMap<String, Variation>?, val targetingGroups: TargetingGroups?) {
 
-    fun selectVariation(visitor: VisitorDelegateDTO): Variation? {
-        variations?.let {
-            val cachedVariation = selectVariationFromCache(visitor, variations)
-            if (cachedVariation != null)
-                return cachedVariation
-            else {
-                var p = 0
-                val murmurAllocation: Int =
-                    MurmurHash.getAllocationFromMurmur(variationGroupId, visitor.visitorId)
-                for ((variationId, variation) in variations) {
-                    if (variation.allocation > 0) { //Variation with 0% are only loaded to check if it matches one from the cache, and should be ignored otherwise.
-                        p += variation.allocation
-                        if (murmurAllocation < p) {
-                            FlagshipLogManager.log(
-                                FlagshipLogManager.Tag.ALLOCATION,
-                                LogManager.Level.DEBUG,
-                                FlagshipConstants.Info.NEW_ALLOCATION.format(
-                                    variation.variationId,
-                                    murmurAllocation
-                                )
-                            )
-                            return variation
+    fun selectVariation(visitorDelegateDTO: VisitorDelegateDTO): Variation? {
+        variations?.let { variations ->
+            val cachedVariationId = visitorDelegateDTO.getVariationGroupAssignment(variationGroupId)
+            val cachedVariationEntry = variations.entries.firstOrNull { e -> e.value.variationId == cachedVariationId }
+            when {
+                cachedVariationEntry != null -> {
+                    val variation = cachedVariationEntry.value
+                    FlagshipLogManager.log(FlagshipLogManager.Tag.ALLOCATION, LogManager.Level.DEBUG,
+                        FlagshipConstants.Info.CACHED_ALLOCATION.format(variation.variationId))
+                    return variation
+                }
+                cachedVariationId != null -> return null
+                else -> {
+                    var p = 0
+                    val murmurAllocation: Int = MurmurHash.getAllocationFromMurmur(variationGroupId, visitorDelegateDTO.visitorId)
+                    for ((variationId, variation) in variations) {
+                        if (variation.allocation > 0) { //Variation with 0% are only loaded to check if it matches one from the cache, and should be ignored otherwise.
+                            p += variation.allocation
+                            if (murmurAllocation < p) {
+                                FlagshipLogManager.log(FlagshipLogManager.Tag.ALLOCATION, LogManager.Level.DEBUG, FlagshipConstants.Info.NEW_ALLOCATION.format(
+                                        variation.variationId, murmurAllocation))
+                                return variation
+                            }
                         }
                     }
                 }
-            }
-        }
-        return null
-    }
-
-    fun selectVariationFromCache(visitorDTO: VisitorDelegateDTO, variations: LinkedHashMap<String, Variation>) : Variation? {
-        for ((vid, v) in variations) {
-            if (visitorDTO.isVariationAssigned(v.variationId)) {
-                FlagshipLogManager.log(FlagshipLogManager.Tag.ALLOCATION, LogManager.Level.DEBUG,
-                    FlagshipConstants.Info.CACHED_ALLOCATION.format(v.variationId))
-                return v
             }
         }
         return null

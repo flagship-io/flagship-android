@@ -2,6 +2,8 @@ package com.abtasty.flagship.visitor
 
 import com.abtasty.flagship.api.TrackingManager
 import com.abtasty.flagship.cache.CacheHelper
+import com.abtasty.flagship.cache.HitCacheHelper
+import com.abtasty.flagship.cache.VisitorCacheHelper
 import com.abtasty.flagship.decision.DecisionManager
 import com.abtasty.flagship.hits.Activate
 import com.abtasty.flagship.hits.Consent
@@ -203,27 +205,27 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
 
 
     override fun cacheVisitor() {
-        val visitorDTO = visitor.toDTO()
+        val visitorDelegateDTO = visitor.toDTO()
         Flagship.coroutineScope().launch {
             try {
-                flagshipConfig.cacheManager.visitorCacheImplementation?.cacheVisitor(visitorDTO.visitorId , CacheHelper.fromVisitor(visitorDTO))
+                flagshipConfig.cacheManager.visitorCacheImplementation?.cacheVisitor(visitorDelegateDTO.visitorId , VisitorCacheHelper.visitorToCacheJSON(visitorDelegateDTO))
             } catch (e : Exception) {
-                logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("cacheVisitor", visitorDTO.visitorId), e)
+                logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("cacheVisitor", visitorDelegateDTO.visitorId), e)
             }
         }
     }
 
     override fun lookupVisitorCache() {
         runBlocking {
-            val visitorDTO = visitor.toDTO()
+            val visitorDelegateDTO = visitor.toDTO()
             val lookupLatch = CountDownLatch(1)
             var result = JSONObject()
             val coroutine = Flagship.coroutineScope().launch {
                 try {
-                    result = flagshipConfig.cacheManager.visitorCacheImplementation?.lookupVisitor(visitorDTO.visitorId) ?: JSONObject()
+                    result = flagshipConfig.cacheManager.visitorCacheImplementation?.lookupVisitor(visitorDelegateDTO.visitorId) ?: JSONObject()
                     lookupLatch.countDown()
                 } catch (e: Exception) {
-                    logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("lookupVisitor", visitorDTO.visitorId), e)
+                    logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("lookupVisitor", visitorDelegateDTO.visitorId), e)
                     lookupLatch.countDown()
                     cancel()
                 }
@@ -231,10 +233,9 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
             val isSuccess = lookupLatch.await(flagshipConfig.cacheManager.visitorCacheLookupTimeout, flagshipConfig.cacheManager.timeoutUnit)
             if (!isSuccess) {
                 coroutine.cancelAndJoin()
-                logCacheError(FlagshipConstants.Errors.CACHE_IMPL_TIMEOUT.format("lookupVisitor", visitorDTO.visitorId))
-            } else {
-                CacheHelper.applyVisitorMigration(visitor, result)
-            }
+                logCacheError(FlagshipConstants.Errors.CACHE_IMPL_TIMEOUT.format("lookupVisitor", visitorDelegateDTO.visitorId))
+            } else
+                VisitorCacheHelper.applyVisitorMigration(visitorDelegateDTO, result)
         }
     }
 
@@ -269,7 +270,7 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
                 coroutine.cancelAndJoin()
                 logCacheError(FlagshipConstants.Errors.CACHE_IMPL_TIMEOUT.format("lookupHits", visitorDTO.visitorId))
             } else
-                CacheHelper.applyHitMigration(visitor.toDTO(), result)
+                HitCacheHelper.applyHitMigration(visitor.toDTO(), result)
         }
     }
 

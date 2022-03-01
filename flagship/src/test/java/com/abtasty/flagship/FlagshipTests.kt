@@ -1,9 +1,9 @@
 package com.abtasty.flagship
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.platform.app.InstrumentationRegistry
 import com.abtasty.flagship.api.HttpCompat
 import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.cache.*
@@ -11,7 +11,9 @@ import com.abtasty.flagship.decision.ApiManager
 import com.abtasty.flagship.decision.BucketingManager
 import com.abtasty.flagship.hits.*
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.main.Flagship.start
 import com.abtasty.flagship.main.FlagshipConfig
+import com.abtasty.flagship.main.FlagshipConfig.Bucketing
 import com.abtasty.flagship.utils.ETargetingComp
 import com.abtasty.flagship.utils.FlagshipContext
 import com.abtasty.flagship.utils.FlagshipLogManager
@@ -32,6 +34,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.shadows.ShadowLog
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -1136,7 +1140,7 @@ class FlagshipTests {
             visitor.synchronizeModifications().await()
             Thread.sleep(100)
             val cachedVisitor = (visitor.configManager.flagshipConfig.cacheManager as? DefaultCacheManager)?.visitorCacheImplementation?.lookupVisitor("visitor_id") ?: JSONObject()
-            assertEquals(CacheHelper._VISITOR_CACHE_VERSION_, cachedVisitor.get("version"))
+            assertEquals(VisitorCacheHelper._VISITOR_CACHE_VERSION_, cachedVisitor.get("version"))
             assertEquals(true, cachedVisitor.getJSONObject("data").getBoolean("consent"))
             assertEquals("visitor_id", cachedVisitor.getJSONObject("data").getString("visitorId"))
 
@@ -1296,7 +1300,7 @@ class FlagshipTests {
                 .withVisitorCacheImplementation(object : IVisitorCacheImplementation {
                     override fun cacheVisitor(visitorId: String, data: JSONObject) {
                         assertEquals("visitor_id", visitorId)
-                        assertEquals(CacheHelper._VISITOR_CACHE_VERSION_, data.get("version"))
+                        assertEquals(VisitorCacheHelper._VISITOR_CACHE_VERSION_, data.get("version"))
                         assertEquals(true, data.getJSONObject("data").getBoolean("consent"))
                         assertEquals("visitor_id", data.getJSONObject("data").getString("visitorId"))
                         assertEquals("null", data.getJSONObject("data").optString("anonymousId", "null"))
@@ -1313,6 +1317,9 @@ class FlagshipTests {
                         val jsonFlags = jsonCampaign.getJSONObject("flags")
                         assertEquals(81111, jsonFlags.get("rank"))
                         assertEquals(true, jsonFlags.has("rank_plus"))
+                        val jsonHistory = data.getJSONObject("data").getJSONObject("assignmentsHistory")
+                        assertEquals("brjjpk7734cg0sl5oooo", jsonHistory.getString("brjjpk7734cg0sl5mmmm"))
+                        assertEquals("bmsor064jaeg0gm4dddd", jsonHistory.getString("bmsor064jaeg0gm4bbbb"))
                         cacheVisitorLatch.countDown()
                     }
 
@@ -1331,7 +1338,7 @@ class FlagshipTests {
                 .withHitCacheImplementation(object: IHitCacheImplementation {
                     override fun cacheHit(visitorId: String, data: JSONObject) {
                         assertEquals("visitor_id", visitorId)
-                        assertEquals(CacheHelper._HIT_CACHE_VERSION_, data.get("version"))
+                        assertEquals(HitCacheHelper._HIT_CACHE_VERSION_, data.get("version"))
                         val jsonData = data.getJSONObject("data")
                         assertTrue(jsonData.getLong("time") > 0)
                         assertEquals("visitor_id", data.getJSONObject("data").getString("visitorId"))
@@ -1503,5 +1510,89 @@ class FlagshipTests {
 
 //        System.out.println("=> " + visitor.getFlag("rank_plus", null).value(true))
 
+    }
+
+    @Test
+    public fun cache_bucketing() {
+
+        val pref = (ApplicationProvider.getApplicationContext() as? Context)?.applicationContext?.getSharedPreferences(Flagship.getConfig().envId, Context.MODE_PRIVATE)?.edit()
+        pref?.clear()?.commit()
+        val format = SimpleDateFormat("EEE, d MMM Y hh:mm:ss", Locale.ENGLISH)
+        format.timeZone = TimeZone.getTimeZone("UTC")
+
+        var timestampDate = Date(System.currentTimeMillis() - 86400000)
+        var date: String = format.format(timestampDate).toString() + " GMT"
+
+        FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(BUCKETING_URL.format(_ENV_ID_))
+            .returnResponse { request, i ->
+                FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "bucketing_response_1.json", 200, hashMapOf(
+                    "Last-Modified" to date
+                ))
+            }
+            .build())
+
+        val readyLatch = CountDownLatch(1)
+        Flagship.start(ApplicationProvider.getApplicationContext(), _ENV_ID_, _API_KEY_, Bucketing()
+            .withPollingIntervals(1, TimeUnit.SECONDS)
+            .withStatusListener { newStatus: Flagship.Status -> if (newStatus === Flagship.Status.READY) readyLatch.countDown() })
+
+        if (!readyLatch.await(2, TimeUnit.HOURS))
+            fail()
+
+        val prefRead = (ApplicationProvider.getApplicationContext() as? Context)?.applicationContext?.getSharedPreferences(Flagship.getConfig().envId, Context.MODE_PRIVATE);
+        var content = prefRead?.getString("DECISION_FILE", null)
+        var lastModified = prefRead?.getString("LAST_MODIFIED_DECISION_FILE", null)
+
+        assertNotNull(content)
+        assertNotNull(lastModified)
+
+        assertEquals(date, lastModified)
+        assertEquals(4, JSONObject(content!!).getJSONArray("campaigns").length())
+
+        Thread.sleep(2000)
+
+        FlagshipTestsHelper.interceptor().clearRules()
+
+        timestampDate = Date(System.currentTimeMillis())
+        var date2 = format.format(timestampDate).toString() + " GMT"
+
+        FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(BUCKETING_URL.format(_ENV_ID_))
+            .returnResponse { request, i ->
+                FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "bucketing_response_1.json", 304, hashMapOf(
+                    "Last-Modified" to date2
+                ))
+            }
+            .build())
+
+
+        content = prefRead?.getString("DECISION_FILE", null)
+        lastModified = prefRead?.getString("LAST_MODIFIED_DECISION_FILE", null)
+
+        assertNotNull(content)
+        assertNotNull(lastModified)
+        assertEquals(date, lastModified)
+        assertEquals(4, JSONObject(content!!).getJSONArray("campaigns").length())
+
+        Thread.sleep(2000)
+
+        FlagshipTestsHelper.interceptor().clearRules()
+
+        FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(BUCKETING_URL.format(_ENV_ID_))
+            .returnResponse { request, i ->
+                FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "bucketing_response_1.json", 200, hashMapOf(
+                    "Last-Modified" to date2
+                ))
+            }
+            .build())
+
+        Thread.sleep(2000)
+
+        content = prefRead?.getString("DECISION_FILE", null)
+        lastModified = prefRead?.getString("LAST_MODIFIED_DECISION_FILE", null)
+
+        assertNotNull(content)
+        assertNotNull(lastModified)
+        assertEquals(date2, lastModified)
+        assertEquals(4, JSONObject(content).getJSONArray("campaigns").length())
     }
 }
