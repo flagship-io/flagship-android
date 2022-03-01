@@ -1,7 +1,9 @@
 package com.abtasty.flagship.api
 
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
+import com.abtasty.flagship.utils.LogManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import okhttp3.Dispatcher
@@ -35,8 +37,7 @@ object HttpManager {
     fun initHttpManager() {
         initThreadPoolExecutor()
         HttpCompat.insertProviderIfNeeded()
-//        if (!testOn)
-            initHttpClient()
+        initHttpClient()
     }
 
     private fun initThreadPoolExecutor() {
@@ -88,8 +89,12 @@ object HttpManager {
         return Flagship.coroutineScope().async {
             try {
                 sendHttpRequest(type, uri, headers, content)
-            } catch (e: IOException) {
-                FlagshipLogManager.exception(e)
+            } catch (e: Exception) {
+//                FlagshipLogManager.exception(e)
+                FlagshipLogManager.log(FlagshipLogManager.Tag.TRACKING, LogManager.Level.ERROR, FlagshipConstants.Errors.HTTP_ERROR.format(
+                    uri,
+                    e.message ?: ""
+                ))
                 null
             }
         }

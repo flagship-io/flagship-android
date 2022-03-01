@@ -105,7 +105,6 @@ class FlagshipTestsHelper {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
             val url: String = HttpCompat.requestUrl(request)
-            System.out.println("#D url : " + url)
             return rules[url]?.proceed(request) ?: chain.proceed(request)
         }
 

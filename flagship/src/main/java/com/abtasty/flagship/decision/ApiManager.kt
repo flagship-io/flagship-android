@@ -6,16 +6,16 @@ import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.CAMPAIGNS
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.CONTEXT_PARAM
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.DECISION_API
 import com.abtasty.flagship.api.ResponseCompat
+import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.main.Flagship.getStatus
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.visitor.VisitorDelegateDTO
 import org.json.JSONObject
 import java.io.IOException
-import com.abtasty.flagship.main.Flagship
-import com.abtasty.flagship.main.Flagship.getStatus
-import com.abtasty.flagship.visitor.VisitorDelegateDTO
 
 class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipConfig) {
 
@@ -25,30 +25,33 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
     }
 
     @Throws(IOException::class)
-    private fun sendCampaignRequest(visitor: VisitorDelegateDTO): ArrayList<Campaign>? {
+    private fun sendCampaignRequest(visitorDelegateDTO: VisitorDelegateDTO): ArrayList<Campaign>? {
         val json = JSONObject()
         val headers: HashMap<String, String> = HashMap<String, String>()
         headers["x-api-key"] = flagshipConfig.apiKey
         headers["x-sdk-client"] = "android"
         headers["x-sdk-version"] = BuildConfig.FLAGSHIP_VERSION_NAME
-        json.put("visitorId", visitor.visitorId)
-        json.put("anonymousId", visitor.anonymousId)
+        json.put("visitorId", visitorDelegateDTO.visitorId)
+        json.put("anonymousId", visitorDelegateDTO.anonymousId)
         json.put("trigger_hit", false)
-        json.put("context", visitor.getContextAsJson())
+        json.put("context", visitorDelegateDTO.contextToJson())
         val response: ResponseCompat = HttpManager.sendHttpRequest(HttpManager.RequestType.POST,
-            DECISION_API + flagshipConfig.envId + CAMPAIGNS + if (!visitor.hasConsented) CONTEXT_PARAM else "", headers, json.toString())
+            DECISION_API + flagshipConfig.envId + CAMPAIGNS + if (!visitorDelegateDTO.hasConsented) CONTEXT_PARAM else "", headers, json.toString())
         logResponse(response)
-        return if (response.code < 400) parseCampaignsResponse(response.content) else null
+        val results = if (response.code < 400) parseCampaignsResponse(response.content) else null
+        updateFlagshipStatus(if (panic) Flagship.Status.PANIC else Flagship.Status.READY)
+        return results
     }
 
 
-    override fun getCampaignsModifications(visitorDTO: VisitorDelegateDTO): HashMap<String, Modification>? {
+    override fun getCampaignsModifications(visitorDelegateDTO : VisitorDelegateDTO): HashMap<String, Modification>? {
         val campaignsModifications: HashMap<String, Modification> = HashMap()
         try {
-            sendCampaignRequest(visitorDTO)?.let { campaigns ->
+            sendCampaignRequest(visitorDelegateDTO)?.let { campaigns ->
                 for ((_, _, variationGroups) in campaigns) {
                     for (variationGroup in variationGroups) {
                         for (variation in variationGroup?.variations!!.values) {
+                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId); //save for cache
                             variation.getModificationsValues()?.let { modificationsValues ->
                                 campaignsModifications.putAll(modificationsValues)
                             }
