@@ -84,7 +84,7 @@ class HitCacheHelper: CacheHelper() {
                                 "CONTEXT", "ACTIVATION", "BATCH" -> HitMigrations.values()[version - 1].applyForEvent(visitorDTO, e) //Send event to flagship
                                 "SCREENVIEW", "PAGEVIEW", "EVENT", "TRANSACTION", "ITEM", "CONSENT" -> { //batch hit to ariane
                                     HitMigrations.values()[version - 1].applyForBatch(visitorDTO, e)?.let { jsonChild ->
-                                        val batch = batches.firstOrNull { e -> e.isMaxSizeReached(jsonChild.length()) }
+                                        val batch = batches.firstOrNull { e -> e.isMaxSizeReached(jsonChild.toString().length) }
                                         if (batch == null) {
                                             val newBatch = Batch()
                                             newBatch.addChildAsJson(jsonChild)

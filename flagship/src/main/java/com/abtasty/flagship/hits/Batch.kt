@@ -6,7 +6,7 @@ import org.json.JSONObject
 
 internal class Batch : Hit<Batch> {
 
-    internal val MAX_SIZE = 2500
+    internal val MAX_SIZE = 2500000 // 2,5 mb
 
     constructor() : super(Companion.Type.BATCH) {
         this.data.put(FlagshipConstants.HitKeyMap.HIT_BATCH, JSONArray())
@@ -18,7 +18,7 @@ internal class Batch : Hit<Batch> {
     }
 
     fun isMaxSizeReached(lengthToAdd : Int): Boolean {
-        return (MAX_SIZE - this.data.length()) > lengthToAdd
+        return (MAX_SIZE - this.data.toString().length) > lengthToAdd
     }
 
     override fun checkData(): Boolean {

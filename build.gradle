@@ -33,7 +33,7 @@ buildscript {
     if (flagship_version_name != null)
         rootProject.ext.flagship_version_name = flagship_version_name
     else
-        rootProject.ext.flagship_version_name = "3.0.1"
+        rootProject.ext.flagship_version_name = "3.0.2"
 
     if (flagship_version_code != null)
         rootProject.ext.flagship_version_code = flagship_version_code
