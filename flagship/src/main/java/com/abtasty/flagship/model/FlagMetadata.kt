@@ -10,7 +10,8 @@ data class FlagMetadata(
     val variationGroupId: String = "",
     val variationId: String = "",
     val isReference: Boolean = false,
-    val campaignType: String = ""
+    val campaignType: String = "",
+    val slug: String = ""
 ) {
 
     companion object {
@@ -23,7 +24,8 @@ data class FlagMetadata(
                     modification.variationGroupId,
                     modification.variationId,
                     modification.isReference,
-                    modification.campaignType
+                    modification.campaignType,
+                    modification.slug
                 )
         }
     }
@@ -48,5 +50,6 @@ data class FlagMetadata(
                 .put("variationId", variationId)
                 .put("isReference", isReference)
                 .put("campaignType", campaignType)
+                .put("slug", slug)
     }
 }

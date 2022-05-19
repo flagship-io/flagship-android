@@ -48,7 +48,8 @@ class VisitorCacheHelper: CacheHelper() {
                                         campaignJSON.getString("variationId"),
                                         campaignJSON.getBoolean("isReference"),
                                         flagJSON.get(k),
-                                        campaignJSON.getString("type")
+                                        campaignJSON.getString("type"),
+                                        campaignJSON.optString("slug", "")
                                     )
                                     visitorDelegate.modifications[k] = modification
                                 }
@@ -102,6 +103,7 @@ class VisitorCacheHelper: CacheHelper() {
                         .put("variationId", m.value.variationId)
                         .put("isReference", m.value.isReference)
                         .put("type", m.value.campaignType)
+                        .put("slug", m.value.slug)
                         .put("activated", visitorDelegateDTO.activatedVariations.contains(m.value.variationId))
                         .put("flags", JSONObject().put(m.value.key, m.value.value ?: JSONObject.NULL))
                     )

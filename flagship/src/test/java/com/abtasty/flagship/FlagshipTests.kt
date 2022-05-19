@@ -1482,7 +1482,7 @@ class FlagshipTests {
         assertEquals(false, rank_plus.metadata().isReference)
         assertEquals("ab", rank_plus.metadata().campaignType)
         assertEquals(true, rank_plus.metadata().exists())
-        assertEquals(5, rank_plus.metadata().toJson().length())
+        assertEquals(6, rank_plus.metadata().toJson().length())
 
         val do_not_exists = visitor.getFlag("do_not_exists", "a")
         assertEquals("a", do_not_exists.value( false))
@@ -1507,6 +1507,12 @@ class FlagshipTests {
 
         Thread.sleep(1500)
         assertEquals(6, activateLatch.count)
+
+        //testing slug
+
+        assertEquals("", visitor.getFlag("visitorIdColor", "#00000000").metadata().slug)
+        assertEquals("campaignSlug", visitor.getFlag("rank_plus", "#00000000").metadata().slug)
+        assertEquals("", visitor.getFlag("eflzjefl", "#00000000").metadata().slug)
 
 //        System.out.println("=> " + visitor.getFlag("rank_plus", null).value(true))
 

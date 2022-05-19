@@ -36,19 +36,20 @@ data class Campaign(val id: String, val type: String = "", val variationGroups: 
             return try {
                 val id = campaignObject.getString("id")
                 val type = campaignObject.optString("type") ?: ""
+                val slug = if (campaignObject.isNull("slug")) "" else campaignObject.optString("slug", "")
                 val variationGroups: LinkedList<VariationGroup?> = LinkedList()
                 val variationGroupArray = campaignObject.optJSONArray("variationGroups")
                 variationGroupArray?.let {
                     //bucketing
                     for (variationGroupsObj in variationGroupArray) {
                         val variationGroup: VariationGroup? =
-                            VariationGroup.parse(id, type, variationGroupsObj, true)
+                            VariationGroup.parse(id, type, slug, variationGroupsObj, true)
                         variationGroup?.let { variationGroups.add(variationGroup) }
                     }
                 } ?: run {
                     //api
                     val variationGroup: VariationGroup? =
-                        VariationGroup.parse(id, type, campaignObject, false)
+                        VariationGroup.parse(id, type, slug, campaignObject, false)
                     variationGroup?.let { variationGroups.add(variationGroup) }
                 }
                 Campaign(id, type, variationGroups)
