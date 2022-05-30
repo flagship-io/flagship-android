@@ -6,11 +6,30 @@ import org.json.JSONObject
  * This class contains the flag campaign information.
  */
 data class FlagMetadata(
+    /**
+     * Flag use case id.
+     */
     val campaignId: String = "",
+    /**
+     * Flag use case variation group id.
+     */
     val variationGroupId: String = "",
+    /**
+     * Flag use case variation id.
+     */
     val variationId: String = "",
+    /**
+     * Is flag from the reference variation.
+     */
     val isReference: Boolean = false,
-    val campaignType: String = ""
+    /**
+     * Flag use case type
+     */
+    val campaignType: String = "",
+    /**
+     * Flag use case custom slug
+     */
+    val slug: String = ""
 ) {
 
     companion object {
@@ -23,7 +42,8 @@ data class FlagMetadata(
                     modification.variationGroupId,
                     modification.variationId,
                     modification.isReference,
-                    modification.campaignType
+                    modification.campaignType,
+                    modification.slug
                 )
         }
     }
@@ -48,5 +68,6 @@ data class FlagMetadata(
                 .put("variationId", variationId)
                 .put("isReference", isReference)
                 .put("campaignType", campaignType)
+                .put("slug", slug)
     }
 }

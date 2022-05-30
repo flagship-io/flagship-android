@@ -11,11 +11,11 @@ data class Variation(val campaignId : String, val variationGroupId : String, val
 
     companion object {
 
-        fun parse(bucketingMode : Boolean, campaignId: String, campaignType: String,  variationGroupId: String, variationObj: JSONObject): Variation? {
+        fun parse(bucketingMode : Boolean, campaignId: String, campaignType: String,  slug: String, variationGroupId: String, variationObj: JSONObject): Variation? {
             return try {
                 val variationId = variationObj.getString("id")
                 val isReference = variationObj.optBoolean("reference", false)
-                val modifications: Modifications? = Modifications.parse(campaignId, campaignType, variationGroupId,
+                val modifications: Modifications? = Modifications.parse(campaignId, campaignType, slug, variationGroupId,
                     variationId, isReference, variationObj.getJSONObject("modifications"))
                 val allocation = variationObj.optInt("allocation", if (bucketingMode) 0 else 100)
                 //In Api mode always 100%, in bucketing mode the variations at 0% are loaded just to check if it matches one in cache at selection time.

@@ -46,7 +46,7 @@ data class VariationGroup(val campaignId: String, val variationGroupId: String,
     }
 
     companion object {
-        fun parse(campaignId: String, campaignType: String, variationGroupsObj: JSONObject, bucketing: Boolean): VariationGroup? {
+        fun parse(campaignId: String, campaignType: String, slug: String, variationGroupsObj: JSONObject, bucketing: Boolean): VariationGroup? {
             return try {
                 val variationGroupId =
                     variationGroupsObj.getString(if (bucketing) "id" else "variationGroupId")
@@ -55,7 +55,7 @@ data class VariationGroup(val campaignId: String, val variationGroupId: String,
                 if (!bucketing) {
                     // api
                     variationGroupsObj.optJSONObject("variation")?.let { variationObj ->
-                        Variation.parse(bucketing, campaignId, campaignType, variationGroupId, variationObj)?.let { variation ->
+                        Variation.parse(bucketing, campaignId, campaignType, slug, variationGroupId, variationObj)?.let { variation ->
                             variations[variation.variationId] = variation
                         }
                     }
@@ -63,7 +63,7 @@ data class VariationGroup(val campaignId: String, val variationGroupId: String,
                     //bucketing
                     variationGroupsObj.optJSONArray("variations")?.let { variationArr ->
                         for (variationObj in variationArr) {
-                            Variation.parse(bucketing, campaignId, campaignType, variationGroupId, variationObj)?.let { variation ->
+                            Variation.parse(bucketing, campaignId, campaignType, slug, variationGroupId, variationObj)?.let { variation ->
                                 variations[variation.variationId] = variation
                             }
                         }

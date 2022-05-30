@@ -14,7 +14,7 @@ data class Modifications(
 
     companion object {
 
-        fun parse(campaignId: String, campaignType : String, variationGroupId: String, variationId: String, isReference: Boolean, modificationsObj: JSONObject): Modifications? {
+        fun parse(campaignId: String, campaignType : String, slug: String, variationGroupId: String, variationId: String, isReference: Boolean, modificationsObj: JSONObject): Modifications? {
             return try {
                 val type = modificationsObj.getString("type")
                 val values: HashMap<String, Modification> = HashMap()
@@ -22,7 +22,7 @@ data class Modifications(
                 for (key in valueObj.keys()) {
                     val value = if (valueObj.isNull(key)) null else valueObj[key]
                     if (value is Boolean || value is Number || value is String || value is JSONObject || value is JSONArray || value == null)
-                        values[key] = Modification(key, campaignId, variationGroupId, variationId, isReference, value, campaignType)
+                        values[key] = Modification(key, campaignId, variationGroupId, variationId, isReference, value, campaignType, slug)
                     else
                         FlagshipLogManager.log(FlagshipLogManager.Tag.PARSING, LogManager.Level.ERROR, FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR)
                 }

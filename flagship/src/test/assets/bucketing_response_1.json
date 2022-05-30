@@ -234,6 +234,7 @@
     {
       "id": "brjjpk7734cg0sl5llll",
       "type": "ab",
+      "slug": "campaignSlug",
       "variationGroups": [
         {
           "id": "brjjpk7734cg0sl5mmmm",
