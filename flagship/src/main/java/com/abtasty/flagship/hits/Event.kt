@@ -31,12 +31,13 @@ open class Event(val category: EventCategory, val action : String) : Hit<Event>(
     }
 
     /**
-     * Specifies a value for this event. must be non-negative. (optional)
+     * Specifies a value for this event. must be non-negative Integer. (optional)
      *
      * @param value value of the event
      */
-    fun withEventValue(value: Number): Event {
-        data.put(FlagshipConstants.HitKeyMap.EVENT_VALUE, value)
+    fun withEventValue(value: Int): Event {
+        if (value > 0)
+            data.put(FlagshipConstants.HitKeyMap.EVENT_VALUE, value)
         return this
     }
 
