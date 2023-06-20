@@ -12,9 +12,11 @@ buildscript {
      */
 
     ext {
-        kotlin_version = "1.6.10"
+        //kotlin_version = '1.6.21'
+        kotlin_version = '1.8.20'
         artifactory_artifact_id = "flagship-android"
         artifactory_repo = "flagship-android"
+//        artifactory_group_id = "io.github.flagship-io"
         artifactory_group_id = "com.abtasty"
         artifactory_user_org = "abtasty"
         artifactory_variant = System.getProperty("variant", "");
@@ -33,7 +35,7 @@ buildscript {
     if (flagship_version_name != null)
         rootProject.ext.flagship_version_name = flagship_version_name
     else
-        rootProject.ext.flagship_version_name = "3.0.4"
+        rootProject.ext.flagship_version_name = "3.0.5"
 
     if (flagship_version_code != null)
         rootProject.ext.flagship_version_code = flagship_version_code
@@ -63,7 +65,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.24.18"
         classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.16"
@@ -74,7 +76,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://abtasty.jfrog.io/artifactory/flagship-android' }
+//        maven { url 'https://abtasty.jfrog.io/artifactory/flagship-android' }
+//        maven { url 'https://maven.pkg.github.com/flagship-io/flagship-android' }
     }
 }
 

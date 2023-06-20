@@ -138,7 +138,7 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
 
     override fun sendConsentRequest() {
         val trackingManager: TrackingManager = configManager.trackingManager
-            trackingManager.sendHit(visitor.toDTO(), Consent(hasConsented()))
+        trackingManager.sendHit(visitor.toDTO(), Consent(hasConsented()))
     }
 
     override fun <T> sendHit(hit: Hit<T>) {
