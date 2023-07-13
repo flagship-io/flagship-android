@@ -1,108 +1,3 @@
-//apply plugin: 'maven-publish'
-//apply plugin: 'org.jetbrains.dokka-android'
-//apply plugin: "com.jfrog.artifactory"
-//
-////./gradlew clean artifactoryPublish
-//artifactoryPublish.skip = true
-//
-//artifactory {
-//    contextUrl = 'https://abtasty.jfrog.io/artifactory/'
-//    publish {
-//        repository {
-//            repoKey = artifactory_artifact_id
-//            username = artifactory_user
-//            password = artifactory_key
-//            maven = true
-//        }
-//        defaults {
-//            publishArtifacts = true
-//            publishPom = true
-//        }
-//    }
-//}
-//
-//task releaseAllVariantsToArtifactory {
-//    doLast {
-//        exec {
-//            workingDir rootProject.projectDir
-//            commandLine 'sh', "./gradlew", ":flagship:assembleRelease"
-//        }
-//        exec {
-//            workingDir rootProject.projectDir
-//            commandLine 'sh', "./gradlew", ":flagship:artifactoryPublish"
-//        }
-//        exec {
-//            workingDir rootProject.projectDir
-//            commandLine 'sh', "./gradlew", "flagship:artifactoryPublish", "-Dvariant=compat"
-//        }
-//    }
-//}
-//
-//task releaseAllVariantsToMavenLocal {
-//    doLast {
-//        exec {
-//            workingDir rootProject.projectDir
-//            commandLine 'sh', "./gradlew", ":flagship:assembleRelease"
-//        }
-//        exec {
-//            workingDir rootProject.projectDir
-//            commandLine 'sh', "./gradlew", ":flagship:publishToMavenLocal"
-//        }
-//        exec {
-//            workingDir rootProject.projectDir
-//            commandLine 'sh', "./gradlew", ":flagship:publishToMavenLocal", "-Dvariant=compat"
-//        }
-//    }
-//}
-//
-//project(':flagship') {
-//    artifactoryPublish.dependsOn('assembleRelease')
-//    publishing {
-//        publications {
-//            aar(MavenPublication) {
-//                groupId = artifactory_group_id
-//                artifactId = artifactory_artifact_id
-//                version = flagship_version_name
-//                artifact "$buildDir/outputs/aar/" + artifactory_artifact_id + "-" + flagship_version_name + ".aar"
-//                pom.withXml {
-//                    def dependenciesNode = asNode().appendNode('dependencies')
-//                    configurations.implementation.allDependencies.each { dependency ->
-//                        if (dependency.name != "unspecified") {
-//                            def dependencyNode = dependenciesNode.appendNode('dependency')
-//                            dependencyNode.appendNode('groupId', dependency.group)
-//                            dependencyNode.appendNode('artifactId', dependency.name)
-//                            dependencyNode.appendNode('version', dependency.version)
-//                        }
-//                    }
-//                    if (artifactory_variant == 'compat') {
-//                        configurations.compatImplementation.allDependencies.each { dependency ->
-//                            if (dependency.name != "unspecified") {
-//                                def dependencyNode = dependenciesNode.appendNode('dependency')
-//                                dependencyNode.appendNode('groupId', dependency.group)
-//                                dependencyNode.appendNode('artifactId', dependency.name)
-//                                dependencyNode.appendNode('version', dependency.version)
-//                            }
-//                        }
-//                    } else {
-//                        configurations.commonImplementation.allDependencies.each { dependency ->
-//                            if (dependency.name != "unspecified") {
-//                                def dependencyNode = dependenciesNode.appendNode('dependency')
-//                                dependencyNode.appendNode('groupId', dependency.group)
-//                                dependencyNode.appendNode('artifactId', dependency.name)
-//                                dependencyNode.appendNode('version', dependency.version)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    artifactoryPublish {
-//        publications(publishing.publications.aar)
-//    }
-//}
-
 //////////////////////////////////////// Github
 //apply plugin: 'maven-publish'
 //
@@ -177,11 +72,11 @@ project(':flagship') {
                 artifact "$buildDir/outputs/aar/" + artifactory_artifact_id + "-" + flagship_version_name + ".aar"
                 pom {
                     name = artifactory_artifact_id
-                    description = 'PUBLISH_DESCRIPTION'
+                    description = 'Visit https://developers.flagship.io/ to get started with Flagship.'
                     url = 'https://github.com/flagship-io/flagship-android'
                     licenses {
                         license {
-                            name = 'Apache License'
+                            name = 'Apache License 2.0'
                             url = 'https://github.com/flagship-io/flagship-android/blob/master/LICENSE'
                         }
                     }
@@ -209,6 +104,7 @@ project(':flagship') {
                         }
                     }
                     if (artifactory_variant == 'compat') {
+                        print("VARIANT = " + artifactory_variant)
                         configurations.compatImplementation.allDependencies.each { dependency ->
                             if (dependency.name != "unspecified") {
                                 def dependencyNode = dependenciesNode.appendNode('dependency')
@@ -233,14 +129,11 @@ project(':flagship') {
 
         repositories {
             maven {
-                def propsFile = rootProject.file('keystore.properties')
-                def props = new Properties()
-                props.load(new FileInputStream(propsFile))
                 name = "OSSRH"
                 url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
                 credentials {
-                    username = props['ossrhUsername']
-                    password = props['ossrhPassword']
+                    username = ossrhUsername
+                    password = ossrhPassword
                 }
             }
         }
@@ -248,6 +141,5 @@ project(':flagship') {
 }
 
 signing {
-    useGpgCmd()
     sign publishing.publications.maven
 }

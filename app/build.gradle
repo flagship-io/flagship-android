@@ -25,7 +25,7 @@ android {
     defaultConfig {
 
         applicationId "com.abtasty.flagshipqa"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
@@ -45,13 +45,10 @@ android {
         }
     }
     compileOptions {
-//        sourceCompatibility "1.8"
-//        targetCompatibility "1.8"
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-//        jvmTarget = '1.8'
         jvmTarget = '1.8'
     }
 
@@ -83,7 +80,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.10"
 
     implementation project(path: ':flagship')                   //Use local project
-//    implementation 'com.abtasty:flagship-android:3.0.5'         //Use remote maven repository
+//    implementation 'com.abtasty:flagship-android:3.0.4'         //Use remote maven repository
 //    implementation 'io.github.flagship-io:flagship-android:3.0.5'
 
     testImplementation 'junit:junit:4.13.2'
