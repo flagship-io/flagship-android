@@ -104,7 +104,6 @@ project(':flagship') {
                         }
                     }
                     if (artifactory_variant == 'compat') {
-                        print("VARIANT = " + artifactory_variant)
                         configurations.compatImplementation.allDependencies.each { dependency ->
                             if (dependency.name != "unspecified") {
                                 def dependencyNode = dependenciesNode.appendNode('dependency')

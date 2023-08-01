@@ -12,11 +12,9 @@ buildscript {
      */
 
     ext {
-        //kotlin_version = '1.6.21'
         kotlin_version = '1.8.20'
         artifactory_artifact_id = "flagship-android"
         artifactory_repo = "flagship-android"
-//        artifactory_group_id = "io.github.flagship-io"
         artifactory_group_id = "com.abtasty"
         artifactory_user_org = "abtasty"
         artifactory_variant = System.getProperty("variant", "");
@@ -76,8 +74,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-//        maven { url 'https://abtasty.jfrog.io/artifactory/flagship-android' }
-//        maven { url 'https://maven.pkg.github.com/flagship-io/flagship-android' }
     }
 }
 
