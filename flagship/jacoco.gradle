@@ -22,9 +22,9 @@ project.afterEvaluate {
             description = "Generate Jacoco coverage reports on the ${variantName.capitalize()} build."
 
             reports {
-                html.enabled = true
-                xml.enabled = true
-                csv.enabled = true
+//                html.enabled = true
+//                xml.enabled = true
+//                csv.enabled = true
             }
 
             def excludes = [

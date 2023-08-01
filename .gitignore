@@ -27,7 +27,6 @@ app/common/
 app/keystore.properties
 */keystore.proprerties
 projectFilesBackup/*
-keystore.properties
-*.apk
 flagship/.old_git
 flagship/coverage-error.log
+github.properties
