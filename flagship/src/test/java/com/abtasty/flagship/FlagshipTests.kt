@@ -549,15 +549,16 @@ class FlagshipTests {
             override fun onLog(level: Level, tag: String, message: String) {
                 System.out.println(" ===> $tag $message")
                 when (true) {
-                    tag == "FLAG_USER_EXPOSED" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "TRACKING" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAG_VALUE" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAG_METADATA" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "UPDATE_CONTEXT" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "AUTHENTICATE" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "UNAUTHENTICATE" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "CONSENT" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAGS_FETCH" && message.contains("deactivated") -> logLatch.countDown()
+                    ((tag == "FLAG_USER_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "TRACKING") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_VALUE") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_METADATA") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "UPDATE_CONTEXT") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "AUTHENTICATE") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "UNAUTHENTICATE") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "CONSENT") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAGS_FETCH") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    else -> {}
                 }
             }
         }))
@@ -586,30 +587,33 @@ class FlagshipTests {
         val visitor = Flagship.newVisitor("visitor", Visitor.Instance.NEW_INSTANCE).build()
         assert(visitor.getModification("target", "default", true) == "default") //2
         assert(visitor.getModificationInfo("target") == null) //1
-        val readyLatch = CountDownLatch(1)
+        val bucketingLatch = CountDownLatch(1)
         val logLatch = CountDownLatch(9)
         assert(Flagship.getStatus() == Flagship.Status.NOT_INITIALIZED)
-        FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(CAMPAIGNS_URL.format(_ENV_ID_))
+        FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(BUCKETING_URL.format(_ENV_ID_))
             .returnResponse { request, i ->
-                FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "api_panic_response.json", 200)
+                bucketingLatch.countDown()
+                Thread.sleep(200)
+                FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "bucketing_response_1.json", 200)
             }
             .build())
         Flagship.start(getApplication(),_ENV_ID_, _API_KEY_, FlagshipConfig.Bucketing().withStatusListener { status ->
             if (status == Flagship.Status.READY)
-                readyLatch.countDown()
+                bucketingLatch.countDown()
         }.withLogManager(object : LogManager() {
             override fun onLog(level: Level, tag: String, message: String) {
                 System.out.println(" ===> $tag $message")
                 when (true) {
-                    tag == "FLAG_USER_EXPOSED" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "TRACKING" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAG_VALUE" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAG_METADATA" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "UPDATE_CONTEXT" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "AUTHENTICATE" && message.contains("ignored") -> logLatch.countDown()
-                    tag == "UNAUTHENTICATE" && message.contains("ignored") -> logLatch.countDown()
-                    tag == "CONSENT" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAGS_FETCH" && message.contains("deactivated") -> logLatch.countDown()
+                    ((tag == "FLAG_USER_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "TRACKING") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_VALUE") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_METADATA") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "UPDATE_CONTEXT") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "AUTHENTICATE") && (message.contains("ignored"))) -> logLatch.countDown()
+                    ((tag == "UNAUTHENTICATE") && (message.contains("ignored"))) -> logLatch.countDown()
+                    ((tag == "CONSENT") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAGS_FETCH") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    else -> {}
                 }
             }
         }))
@@ -625,7 +629,7 @@ class FlagshipTests {
         visitor.setConsent(true)//0
         visitor.authenticate("logged")//1
         visitor.unauthenticate() //1
-        readyLatch.await(1000, TimeUnit.MILLISECONDS)
+        logLatch.await(1000, TimeUnit.MILLISECONDS)
         assertEquals(1L, logLatch.count)
     }
 
@@ -682,15 +686,16 @@ class FlagshipTests {
             override fun onLog(level: Level, tag: String, message: String) {
                 System.out.println(" ===> $tag $message")
                 when (true) {
-                    tag == "FLAG_USER_EXPOSED" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "TRACKING" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAG_VALUE" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAG_METADATA" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "UPDATE_CONTEXT" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "AUTHENTICATE" && message.contains("ignored") -> logLatch.countDown()
-                    tag == "UNAUTHENTICATE" && message.contains("ignored") -> logLatch.countDown()
-                    tag == "CONSENT" && message.contains("deactivated") -> logLatch.countDown()
-                    tag == "FLAGS_FETCH" && message.contains("deactivated") -> logLatch.countDown()
+                    ((tag == "FLAG_USER_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "TRACKING") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_VALUE") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_METADATA") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "UPDATE_CONTEXT") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "AUTHENTICATE") && (message.contains("ignored"))) -> logLatch.countDown()
+                    ((tag == "UNAUTHENTICATE") && (message.contains("ignored"))) -> logLatch.countDown()
+                    ((tag == "CONSENT") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAGS_FETCH") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    else -> {}
                 }
             }
         }))
