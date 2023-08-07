@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     name: Run Unit Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, '#ci-auto') == false
     steps:
       - uses: actions/checkout@v2
@@ -22,8 +22,8 @@ jobs:
           echo "FLAGSHIP_VERSION_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Upload Test Report
         run: bash <(curl -s https://codecov.io/bash) -f "flagship/build/reports/jacoco/testCommonDebugUnitTestCoverage/testCommonDebugUnitTestCoverage.xml"
-      - name: Build and Publish
-        env:
-          ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
-          ARTIFACTORY_KEY: ${{ secrets.ARTIFACTORY_KEY }}
-        run: bash ./gradlew clean :flagship:releaseAllVariantsToArtifactory
+#      - name: Build and Publish
+#        env:
+#          ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+#          ARTIFACTORY_KEY: ${{ secrets.ARTIFACTORY_KEY }}
+#        run: bash ./gradlew clean :flagship:releaseAllVariantsToArtifactory

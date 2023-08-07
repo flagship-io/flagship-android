@@ -122,10 +122,9 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
     fun checkParamError(): String {
         return when (true) {
             env_id.value.isNullOrEmpty() -> getStringResource(R.string.fragment_config_error_env_id)
-            api_key.value.isNullOrEmpty() ->
-                getStringResource(R.string.fragment_config_error_api_key)
-            (timeout.value ?: -1) <= 0 -> getStringResource(R.string.fragment_config_error_timeout)
-            visitorContext.value?.isNotEmpty() -> {
+            api_key.value.isNullOrEmpty() -> getStringResource(R.string.fragment_config_error_api_key)
+            ((timeout.value ?: -1) <= 0) -> getStringResource(R.string.fragment_config_error_timeout)
+            (visitorContext.value?.isNotEmpty()) -> {
                 return try {
                     JSONObject(visitorContext.value ?: "")
                     ""
