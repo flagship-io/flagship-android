@@ -22,8 +22,15 @@ jobs:
           echo "FLAGSHIP_VERSION_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Upload Test Report
         run: bash <(curl -s https://codecov.io/bash) -f "flagship/build/reports/jacoco/testCommonDebugUnitTestCoverage/testCommonDebugUnitTestCoverage.xml"
-#      - name: Build and Publish
-#        env:
-#          ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
-#          ARTIFACTORY_KEY: ${{ secrets.ARTIFACTORY_KEY }}
-#        run: bash ./gradlew clean :flagship:releaseAllVariantsToArtifactory
+      - name: Build and Publish
+        env:
+          SONATYPE_SIGNING_KEY: ${{ secrets.SONATYPE_SIGNING_KEY }}
+          SONATYPE_SIGNING_PWD: ${{ secrets.SONATYPE_SIGNING_PWD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_REPOSITORY: ${{ secrets.SONATYPE_REPOSITORY }}
+        run: |
+          bash ./gradlew clean
+          bash ./gradlew flagship:assembleRelease
+          bash ./gradlew publishToSonatype closeSonatypeStagingRepository
+          bash ./gradlew publishToSonatype -Dvariant=compat closeSonatypeStagingRepository
