@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
-apply from: 'flagship-publishing.gradle'
 apply from: 'jacoco.gradle'
+
 
 android {
     publishNonDefault true
@@ -111,3 +111,4 @@ repositories {
     mavenCentral()
 }
 
+apply from: 'flagship-publishing.gradle'
