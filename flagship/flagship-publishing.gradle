@@ -79,10 +79,7 @@ project(':flagship') {
 }
 
 signing {
-<<<<<<< HEAD
-=======
     if (sonatype_signing_key && sonatype_signing_pwd)
         useInMemoryPgpKeys(sonatype_signing_key, sonatype_signing_pwd)
->>>>>>> dcaac656f7de02036ecc9e2c9313e5a76fa8b4f9
     sign publishing.publications.maven
 }
