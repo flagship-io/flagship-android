@@ -11,6 +11,7 @@ import com.abtasty.flagship.main.Flagship.getStatus
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
 import com.abtasty.flagship.visitor.VisitorDelegateDTO
@@ -44,22 +45,48 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
     }
 
 
-    override fun getCampaignsModifications(visitorDelegateDTO : VisitorDelegateDTO): HashMap<String, Modification>? {
-        val campaignsModifications: HashMap<String, Modification> = HashMap()
+//    override fun getCampaignsModifications(visitorDelegateDTO : VisitorDelegateDTO): HashMap<String, Modification>? {
+//        val campaignsModifications: HashMap<String, Modification> = HashMap()
+//        try {
+//            sendCampaignRequest(visitorDelegateDTO)?.let { campaigns ->
+//                for ((_, _, variationGroups) in campaigns) {
+//                    for (variationGroup in variationGroups) {
+//                        for (variation in variationGroup?.variations!!.values) {
+//                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId); //save for cache
+//                            variation.getModificationsValues()?.let { modificationsValues ->
+//                                campaignsModifications.putAll(modificationsValues)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            return campaignsModifications
+//        } catch (e: Exception) {
+//            FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")
+//        }
+//        return null
+//    }
+
+    override fun getCampaignFlags(visitorDelegateDTO : VisitorDelegateDTO): HashMap<String, _Flag>? {
+        val campaignsFlags: HashMap<String, _Flag> = HashMap()
         try {
             sendCampaignRequest(visitorDelegateDTO)?.let { campaigns ->
-                for ((_, _, variationGroups) in campaigns) {
+                for ((_, variationGroups) in campaigns) {
                     for (variationGroup in variationGroups) {
                         for (variation in variationGroup?.variations!!.values) {
-                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId); //save for cache
-                            variation.getModificationsValues()?.let { modificationsValues ->
-                                campaignsModifications.putAll(modificationsValues)
+//                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId); //save for cache
+                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationMetadata.variationGroupId, variation.variationMetadata.variationId); //save for cache
+//                            variation.getModificationsValues()?.let { modificationsValues ->
+//                                campaignsModifications.putAll(modificationsValues)
+//                            }
+                            variation.flags?.let { flags ->
+                                campaignsFlags.putAll(flags)
                             }
                         }
                     }
                 }
             }
-            return campaignsModifications
+            return campaignsFlags
         } catch (e: Exception) {
             FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")
         }

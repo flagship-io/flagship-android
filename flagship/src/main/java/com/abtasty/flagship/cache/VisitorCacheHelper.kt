@@ -1,6 +1,11 @@
 package com.abtasty.flagship.cache
 
+import com.abtasty.flagship.model.CampaignMetadata
+import com.abtasty.flagship.model.FlagMetadata
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model.VariationGroupMetadata
+import com.abtasty.flagship.model.VariationMetadata
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.model.iterator
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
@@ -41,17 +46,25 @@ class VisitorCacheHelper: CacheHelper() {
                                 visitorDelegate.activatedVariations.add(campaignJSON.getString("variationId"))
                             campaignJSON.optJSONObject("flags")?.let { flagJSON ->
                                 for (k in flagJSON.keys()) {
-                                    val modification = Modification(
-                                        k,
-                                        campaignJSON.getString("campaignId"),
-                                        campaignJSON.getString("variationGroupId"),
-                                        campaignJSON.getString("variationId"),
-                                        campaignJSON.getBoolean("isReference"),
-                                        flagJSON.get(k),
-                                        campaignJSON.getString("type"),
-                                        campaignJSON.optString("slug", "")
+                                    val metadata = FlagMetadata(
+                                        VariationMetadata(
+                                            campaignJSON.getString("variationId"),
+                                            campaignJSON.optString("variationName"),
+                                            campaignJSON.getBoolean("isReference"),
+                                            campaignJSON.optInt("allocation", 0),
+                                            VariationGroupMetadata(
+                                                campaignJSON.getString("variationGroupId"),
+                                                campaignJSON.optString("variationGroupName"),
+                                                CampaignMetadata(
+                                                    campaignJSON.getString("campaignId"),
+                                                    campaignJSON.optString("campaignName"),
+                                                    campaignJSON.getString("type"),
+                                                    campaignJSON.optString("slug")
+                                                )
+                                            )
+                                        )
                                     )
-                                    visitorDelegate.modifications[k] = modification
+                                    visitorDelegate.flags[k] = _Flag(k, flagJSON.get(k), metadata)
                                 }
                             }
                         }
@@ -75,37 +88,46 @@ class VisitorCacheHelper: CacheHelper() {
                 .put("anonymousId", visitorDelegateDTO.anonymousId)
                 .put("consent", visitorDelegateDTO.hasConsented)
                 .put("context", visitorDelegateDTO.contextToJson())
-                .put("campaigns", modificationsToCacheJSON(visitorDelegateDTO))
+                .put("campaigns", flagsToCacheJSON(visitorDelegateDTO))
                 .put("assignmentsHistory", assignationHistoryToCacheJSON(visitorDelegateDTO))
             return JSONObject()
                 .put("version", _VISITOR_CACHE_VERSION_)
                 .put("data", data)
         }
 
-        private fun modificationsToCacheJSON(visitorDelegateDTO: VisitorDelegateDTO): JSONArray {
+        private fun flagsToCacheJSON(visitorDelegateDTO: VisitorDelegateDTO): JSONArray {
 
             val campaigns = JSONArray()
-            for (m in visitorDelegateDTO.modifications) {
+            for ((key, flag) in visitorDelegateDTO.flags) {
                 var isCampaignSet = false
                 for (i in 0 until campaigns.length()) {
                     val campaign = campaigns.getJSONObject(i)
-                    if (campaign.optString("campaignId") == m.value.campaignId && campaign.optString("variationGroupId") == m.value.variationGroupId &&
-                        campaign.optString("variationId") == m.value.variationId
+                    if (campaign.optString("campaignId") == flag.metadata.campaignId && campaign.optString(
+                            "variationGroupId"
+                        ) == flag.metadata.variationGroupId &&
+                        campaign.optString("variationId") == flag.metadata.variationId
                     ) {
                         isCampaignSet = true
-                        campaign.optJSONObject("flags")?.put(m.value.key, m.value.value ?: JSONObject.NULL)
+                        campaign.optJSONObject("flags")?.put(key, flag.value ?: JSONObject.NULL)
                     }
                 }
                 if (!isCampaignSet) {
-                    campaigns.put(JSONObject()
-                        .put("campaignId", m.value.campaignId)
-                        .put("variationGroupId", m.value.variationGroupId)
-                        .put("variationId", m.value.variationId)
-                        .put("isReference", m.value.isReference)
-                        .put("type", m.value.campaignType)
-                        .put("slug", m.value.slug)
-                        .put("activated", visitorDelegateDTO.activatedVariations.contains(m.value.variationId))
-                        .put("flags", JSONObject().put(m.value.key, m.value.value ?: JSONObject.NULL))
+                    campaigns.put(
+                        JSONObject()
+                            .put("campaignId", flag.metadata.campaignId)
+                            .put("campaignName", flag.metadata.campaignName)
+                            .put("variationGroupId", flag.metadata.variationGroupId)
+                            .put("variationGroupName", flag.metadata.variationGroupName)
+                            .put("variationId", flag.metadata.variationId)
+                            .put("variationName", flag.metadata.variationName)
+                            .put("isReference", flag.metadata.isReference)
+                            .put("type", flag.metadata.campaignType)
+                            .put("slug", flag.metadata.slug)
+                            .put(
+                                "activated",
+                                visitorDelegateDTO.activatedVariations.contains(flag.metadata.variationId)
+                            )
+                            .put("flags", JSONObject().put(key, flag.value ?: JSONObject.NULL))
                     )
                 }
             }
@@ -114,11 +136,6 @@ class VisitorCacheHelper: CacheHelper() {
 
         @Suppress("unchecked_cast")
         private fun assignationHistoryToCacheJSON(visitorDelegateDTO: VisitorDelegateDTO): JSONObject {
-//            val assignationsJSON = JSONObject()
-//            for ((key, value) in visitorDelegateDTO.assignmentsHistory) {
-//                assignationsJSON.put(key, value)
-//            }
-//            return assignationsJSON
             return JSONObject(visitorDelegateDTO.assignmentsHistory as Map<Any?, Any?>)
         }
 

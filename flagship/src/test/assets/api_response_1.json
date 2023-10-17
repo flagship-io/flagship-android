@@ -45,9 +45,14 @@
     },
     {
       "id": "c04bed3m649g0h999999",
+      "name": "my_release_campaign",
+      "type": "ab",
+      "slug": "my_release_slug",
       "variationGroupId": "c04bed3m649g0hAAAAAA",
+      "variationGroupName": "my_release_variation_group_name",
       "variation": {
         "id": "c04bed3m649g0hBBBBBB",
+        "name": "my_release_variation_name",
         "modifications": {
           "type": "FLAG",
           "value": {

@@ -357,10 +357,25 @@ class FlagshipTests {
 
         assert(visitor.getModification("wrong", "value") == "value")
         assert(visitor.getModification("isref", 8) == 8)
-        assert(visitor.delegate.modifications.size == 8)
+        assert(visitor.delegate.flags.size == 8)
         assert(visitor.getModification("wrong_json", JSONObject()).toString() == JSONObject().toString())
         Assert.assertNull(visitor.getModification("null", null))
         assert(visitor.getModification("featureEnabled", true) == false)
+
+        val release = visitor.getFlag("release", -1)
+        assertEquals(100, release.value( false))
+        assertTrue(release.exists())
+        assertEquals("c04bed3m649g0h999999", release.metadata().campaignId)
+        assertEquals("c04bed3m649g0hAAAAAA", release.metadata().variationGroupId)
+        assertEquals("c04bed3m649g0hBBBBBB", release.metadata().variationId)
+        assertEquals("my_release_campaign", release.metadata().campaignName)
+        assertEquals("my_release_variation_group_name", release.metadata().variationGroupName)
+        assertEquals("my_release_variation_name", release.metadata().variationName)
+        assertEquals(false, release.metadata().isReference)
+        assertEquals("ab", release.metadata().campaignType)
+        assertEquals("my_release_slug", release.metadata().slug)
+        assertEquals(true, release.metadata().exists())
+        assertEquals(9, release.metadata().toJson().length())
 
         //activations
         var activationLatch = CountDownLatch(1)
@@ -480,7 +495,7 @@ class FlagshipTests {
         runBlocking {
             visitor.synchronizeModifications().join()
         }
-        assert(visitor.delegate.modifications.size == 1)
+        assert(visitor.delegate.flags.size == 1)
         assert(visitor.getModification("featureEnabled", true) == false)
         visitor.updateContext(
             hashMapOf(
@@ -549,7 +564,7 @@ class FlagshipTests {
             override fun onLog(level: Level, tag: String, message: String) {
                 System.out.println(" ===> $tag $message")
                 when (true) {
-                    ((tag == "FLAG_USER_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_VISITOR_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "TRACKING") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "FLAG_VALUE") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "FLAG_METADATA") && (message.contains("deactivated"))) -> logLatch.countDown()
@@ -604,7 +619,7 @@ class FlagshipTests {
             override fun onLog(level: Level, tag: String, message: String) {
                 System.out.println(" ===> $tag $message")
                 when (true) {
-                    ((tag == "FLAG_USER_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_VISITOR_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "TRACKING") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "FLAG_VALUE") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "FLAG_METADATA") && (message.contains("deactivated"))) -> logLatch.countDown()
@@ -686,7 +701,7 @@ class FlagshipTests {
             override fun onLog(level: Level, tag: String, message: String) {
                 System.out.println(" ===> $tag $message")
                 when (true) {
-                    ((tag == "FLAG_USER_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
+                    ((tag == "FLAG_VISITOR_EXPOSED") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "TRACKING") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "FLAG_VALUE") && (message.contains("deactivated"))) -> logLatch.countDown()
                     ((tag == "FLAG_METADATA") && (message.contains("deactivated"))) -> logLatch.countDown()
@@ -1484,17 +1499,22 @@ class FlagshipTests {
         assertEquals("brjjpk7734cg0sl5llll", rank_plus.metadata().campaignId)
         assertEquals("brjjpk7734cg0sl5mmmm", rank_plus.metadata().variationGroupId)
         assertEquals("brjjpk7734cg0sl5oooo", rank_plus.metadata().variationId)
+        assertEquals("my_campaign_name", rank_plus.metadata().campaignName)
+        assertEquals("my_variation_group_name", rank_plus.metadata().variationGroupName)
+        assertEquals("my_variation_name_1", rank_plus.metadata().variationName)
         assertEquals(false, rank_plus.metadata().isReference)
         assertEquals("ab", rank_plus.metadata().campaignType)
         assertEquals(true, rank_plus.metadata().exists())
-        assertEquals(6, rank_plus.metadata().toJson().length())
-
+        assertEquals(9, rank_plus.metadata().toJson().length())
         val do_not_exists = visitor.getFlag("do_not_exists", "a")
         assertEquals("a", do_not_exists.value( false))
         assertFalse(do_not_exists.exists())
         assertEquals("", do_not_exists.metadata().campaignId)
         assertEquals("", do_not_exists.metadata().variationGroupId)
         assertEquals("", do_not_exists.metadata().variationId)
+        assertEquals("", do_not_exists.metadata().campaignName)
+        assertEquals("", do_not_exists.metadata().variationGroupName)
+        assertEquals("", do_not_exists.metadata().variationName)
         assertEquals(false, do_not_exists.metadata().isReference)
         assertEquals("", do_not_exists.metadata().campaignType)
         assertEquals(false, do_not_exists.metadata().exists())

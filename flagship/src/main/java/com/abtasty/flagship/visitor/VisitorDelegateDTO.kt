@@ -10,7 +10,7 @@ open class VisitorDelegateDTO(val visitorDelegate: VisitorDelegate) {
     var visitorId = visitorDelegate.visitorId
     var anonymousId = visitorDelegate.anonymousId
     var context = HashMap(visitorDelegate.getContext())
-    var modifications = HashMap(visitorDelegate.modifications)
+    var flags = HashMap(visitorDelegate.flags)
     var activatedVariations = ConcurrentLinkedQueue(visitorDelegate.activatedVariations)
     var hasConsented = visitorDelegate.hasConsented
     var isAuthenticated = visitorDelegate.isAuthenticated
@@ -25,7 +25,7 @@ open class VisitorDelegateDTO(val visitorDelegate: VisitorDelegate) {
         json.put("isAuthenticated", isAuthenticated)
         json.put("hasConsented", hasConsented)
         json.put("context", contextToJson())
-        json.put("modifications", modificationsToJson())
+        json.put("modifications", flagsToJson())
 //        json.put("activatedVariations", activatedVariationToJsonArray(activatedVariations))
         json.put("activatedVariations", JSONArray(activatedVariations))
         json.put("assignmentsHistory", JSONObject(assignmentsHistory as Map<Any?, Any?>))
@@ -40,13 +40,13 @@ open class VisitorDelegateDTO(val visitorDelegate: VisitorDelegate) {
         return contextJson
     }
 
-    private fun modificationsToJson(): JSONObject {
-        val modificationJson = JSONObject()
-        for ((flag, modification) in this.modifications) {
-            val value: Any? = modification.value
-            modificationJson.put(flag, value ?: JSONObject.NULL)
+    private fun flagsToJson(): JSONObject {
+        val flagJson = JSONObject()
+        for ((k, flag) in this.flags) {
+            val value: Any? = flag.value
+            flagJson.put(k, value ?: JSONObject.NULL)
         }
-        return modificationJson
+        return flagJson
     }
 
     fun getVariationGroupAssignment(variationGroupId: String): String? {

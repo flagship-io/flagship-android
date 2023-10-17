@@ -7,7 +7,6 @@ import com.abtasty.flagship.model.Flag
 import com.abtasty.flagship.utils.FlagshipContext
 import kotlinx.coroutines.Deferred
 import org.json.JSONObject
-import java.time.Instant
 import java.util.*
 
 /**
@@ -153,8 +152,8 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
     @Synchronized
     @Deprecated("Use getFlag(\"flagkey\").metadata instead.", ReplaceWith("getFlag(s).metadata"), DeprecationLevel.WARNING)
     fun getModificationInfo(key: String): JSONObject? {
-        val json = delegate.getStrategy().getFlag(key, null).metadata().toJson()
-        return if (json.length() == 0) null else json
+        val metadata = delegate.getStrategy().getFlag(key, null).metadata()
+        return if (metadata.exists()) metadata.toJson() else null
     }
 
     /**
@@ -163,7 +162,7 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
      * @param key key which identify the modification to activate.
      */
     @Synchronized
-    @Deprecated("Use getFlag(\"flagkey\").userExposed() instead.", ReplaceWith("getFlag(s).useExposed()"), DeprecationLevel.WARNING)
+    @Deprecated("Use getFlag(\"flagkey\").visitorExposed() instead.", ReplaceWith("getFlag(s).visitorExposed()"), DeprecationLevel.WARNING)
     fun activateModification(key: String) {
         delegate.getStrategy().getFlag(key, null).userExposed()
     }

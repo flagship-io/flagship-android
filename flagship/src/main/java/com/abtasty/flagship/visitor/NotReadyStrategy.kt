@@ -2,7 +2,9 @@ package com.abtasty.flagship.visitor
 
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.model.FlagMetadata
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipLogManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -15,19 +17,33 @@ class NotReadyStrategy(val visitorDelegate: VisitorDelegate) : DefaultStrategy(v
         return Flagship.coroutineScope().async {  } //do nothing
     }
 
-    override fun <T : Any?> getFlagValue(key: String, defaultValue: T?): T? {
-        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VALUE, "Flag.value()")
+//    override fun <T : Any?> getFlagValue(key: String, defaultValue: T?): T? {
+//        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VALUE, "Flag.value()")
+//        return defaultValue
+//    }
+//
+//
+//    override fun <T : Any?> getFlagMetadata(key: String, defaultValue: T?): Modification? {
+//        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_METADATA, "Flag.metadata()")
+//        return null
+//    }
+//
+//    override fun <T : Any?> exposeFlag(key: String, defaultValue: T?) {
+//        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, "Flag.userExposed()")
+//    }
+
+    override fun <T> getVisitorFlagValue(key: String, defaultValue: T?): T? {
+        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VALUE, "Flag[$key].value()")
         return defaultValue
     }
 
-
-    override fun <T : Any?> getFlagMetadata(key: String, defaultValue: T?): Modification? {
-        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_METADATA, "Flag.metadata()")
+    override fun <T> getVisitorFlagMetadata(key: String, defaultValue: T?): FlagMetadata? {
+        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_METADATA, "Flag[$key].metadata()")
         return null
     }
 
-    override fun <T : Any?> exposeFlag(key: String, defaultValue: T?) {
-        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, "Flag.userExposed()")
+    override fun <T> sendVisitorExposition(key: String, defaultValue: T?) {
+        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VISITOR_EXPOSED, "Flag[$key].visitorExposed()")
     }
 
     override fun <T> sendHit(hit: Hit<T>) {

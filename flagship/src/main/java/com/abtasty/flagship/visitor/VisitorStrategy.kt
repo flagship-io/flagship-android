@@ -1,7 +1,9 @@
 package com.abtasty.flagship.visitor
 
 import com.abtasty.flagship.main.Flagship.getStatus
+import com.abtasty.flagship.model.FlagMetadata
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
@@ -56,9 +58,13 @@ abstract class VisitorStrategy(var visitor: VisitorDelegate) : IVisitor {
 
     abstract fun flushHitCache()
 
-    abstract fun <T : Any?> getFlagMetadata(key : String, defaultValue: T?) : Modification?
+//    abstract fun <T : Any?> getFlagMetadata(key : String, defaultValue: T?) : Modification?
+//
+//    abstract fun <T : Any?> getFlagValue(key: String, defaultValue: T?) : T?
+//
+//    abstract fun <T : Any?> exposeFlag(key : String, defaultValue: T?)
 
-    abstract fun <T : Any?> getFlagValue(key: String, defaultValue: T?) : T?
-
-    abstract fun <T : Any?> exposeFlag(key : String, defaultValue: T?)
+    abstract fun <T : Any?> getVisitorFlagValue(key: String, defaultValue: T?): T?
+    abstract fun <T : Any?> getVisitorFlagMetadata(key: String, defaultValue: T?): FlagMetadata?
+    abstract fun <T : Any?> sendVisitorExposition(key: String, defaultValue: T?)
 }

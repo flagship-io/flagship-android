@@ -29,7 +29,7 @@ class FlagshipConstants {
             val FLAG_MISSING_ERROR = "Flag not found."
 
             val FLAG_VALUE_ERROR = "Default value will be returned for flag '%s': "
-            val FLAG_USER_EXPOSITION_ERROR = "User exposition for Flag '%s' wont be sent: "
+            val FLAG_USER_EXPOSITION_ERROR = "Visitor exposition for Flag '%s' wont be sent: "
             val FLAG_METADATA_ERROR = "Empty metadata will be returned for Flag '%s': "
 
             val HIT_INVALID_DATA_ERROR = "'%s' hit invalid format error. \n %s"

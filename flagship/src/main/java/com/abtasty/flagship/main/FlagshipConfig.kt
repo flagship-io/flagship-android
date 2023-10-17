@@ -115,16 +115,6 @@ abstract class FlagshipConfig<T>(internal var decisionMode: Flagship.DecisionMod
         return this as T
     }
 
-//    /**
-//     * Specify the Android application context in order to automatically fill device information for each Visitor Context.
-//     */
-//    @Suppress("UNCHECKED_CAST")
-//    fun withApplicationContext(applicationContext : Context) : T {
-//        deviceContext.clear()
-//        deviceContext.putAll(FlagshipContext.loadAndroidContext(applicationContext))
-//        return this as T
-//    }
-
     fun build(): FlagshipConfig<T> {
         return this
     }

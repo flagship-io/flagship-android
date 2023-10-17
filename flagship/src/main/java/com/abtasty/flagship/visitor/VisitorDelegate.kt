@@ -3,6 +3,7 @@ package com.abtasty.flagship.visitor
 import com.abtasty.flagship.main.ConfigManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
@@ -10,6 +11,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ConcurrentMap
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 /**
@@ -21,7 +23,8 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
     var visitorId: String
     var anonymousId: String? = null
     var visitorContext: ConcurrentMap<String, Any> = ConcurrentHashMap()
-    var modifications: ConcurrentMap<String, Modification> = ConcurrentHashMap()
+//    var modifications: ConcurrentMap<String, Modification> = ConcurrentHashMap()
+    var flags: ConcurrentMap<String, _Flag> = ConcurrentHashMap()
     var activatedVariations = ConcurrentLinkedQueue<String>()
     var hasConsented: Boolean
     var isAuthenticated: Boolean
@@ -80,11 +83,16 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
         return hasConsented
     }
 
-    internal fun updateModifications(modifications: HashMap<String, Modification>?) {
-        if (modifications != null) {
-            this.modifications.clear()
-            this.modifications.putAll(modifications)
-        }
+//    internal fun updateModifications(modifications: HashMap<String, Modification>?) {
+//        if (modifications != null) {
+//            this.modifications.clear()
+//            this.modifications.putAll(modifications)
+//        }
+//    }
+
+    internal fun updateFlags(flags: HashMap<String, _Flag>) {
+        this.flags.clear()
+        this.flags.putAll(flags)
     }
 
     override fun toString(): String {

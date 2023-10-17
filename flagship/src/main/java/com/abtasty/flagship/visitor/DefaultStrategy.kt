@@ -10,7 +10,9 @@ import com.abtasty.flagship.hits.Consent
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Flag
+import com.abtasty.flagship.model.FlagMetadata
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipContext
 import com.abtasty.flagship.utils.FlagshipLogManager
@@ -60,8 +62,9 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
         return Flagship.coroutineScope().async {
             decisionManager?.let {
                 val visitorDTO = visitor.toDTO()
-                decisionManager.getCampaignsModifications(visitorDTO)?.let { campaigns ->
-                    visitor.updateModifications(campaigns)
+                decisionManager.getCampaignFlags(visitorDTO)?.let { flags ->
+//                    visitor.updateModifications(campaigns)
+                    visitor.updateFlags(flags)
                     visitor.logVisitor(FlagshipLogManager.Tag.FLAGS_FETCH)
                     visitor.getStrategy().cacheVisitor()
                 }
@@ -74,67 +77,121 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
         trackingManager.sendContextRequest(visitor.toDTO())
     }
 
-    @Throws(
-        FlagshipConstants.Exceptions.Companion.FlagTypeException::class,
-        FlagshipConstants.Exceptions.Companion.FlagException::class,
-        FlagshipConstants.Exceptions.Companion.FlagNotFoundException::class
-    )
-    fun <T : Any?> getModification(key: String, defaultValue: T?): Modification {
-        val visitorModifications = visitor.modifications.toMap()
-        try {
-            val modification = visitorModifications[key]
-            if (modification != null) {
-                val castValue = (modification.value ?: defaultValue) as T
+//    @Throws(
+//        FlagshipConstants.Exceptions.Companion.FlagTypeException::class,
+//        FlagshipConstants.Exceptions.Companion.FlagException::class,
+//        FlagshipConstants.Exceptions.Companion.FlagNotFoundException::class
+//    )
+//    fun <T : Any?> getModification(key: String, defaultValue: T?): Modification {
+//        val visitorModifications = visitor.modifications.toMap()
+//        try {
+//            val modification = visitorModifications[key]
+//            if (modification != null) {
+//                val castValue = (modification.value ?: defaultValue) as T
+//                if (defaultValue == null || castValue == null || castValue.javaClass == defaultValue.javaClass)
+//                    return modification
+//                else
+//                    throw FlagshipConstants.Exceptions.Companion.FlagTypeException()
+//            } else
+//                throw FlagshipConstants.Exceptions.Companion.FlagNotFoundException()
+//        } catch (e: Exception) {
+//            when (e) {
+//                is FlagshipConstants.Exceptions.Companion.FlagTypeException -> throw e
+//                is FlagshipConstants.Exceptions.Companion.FlagNotFoundException -> throw e
+//                else -> throw FlagshipConstants.Exceptions.Companion.FlagException()
+//            }
+//        }
+//    }
+
+    fun getVisitorFlag(key: String, defaultValue: Any?) : _Flag {
+        visitor.flags[key]?.let { flag ->
+            try {
+                val castValue = (flag.value ?: defaultValue)
+                System.out.println("CastValue = " + (castValue))
+                System.out.println("FlagValue = " + (flag.value))
+                System.out.println("DefaultValue = " + (defaultValue))
+                System.out.println("castValue type ${castValue?.javaClass} / defaultValue type ${defaultValue?.javaClass}")
                 if (defaultValue == null || castValue == null || castValue.javaClass == defaultValue.javaClass)
-                    return modification
+                    return flag
                 else
                     throw FlagshipConstants.Exceptions.Companion.FlagTypeException()
-            } else
-                throw FlagshipConstants.Exceptions.Companion.FlagNotFoundException()
-        } catch (e: Exception) {
-            when (e) {
-                is FlagshipConstants.Exceptions.Companion.FlagTypeException -> throw e
-                is FlagshipConstants.Exceptions.Companion.FlagNotFoundException -> throw e
-                else -> throw FlagshipConstants.Exceptions.Companion.FlagException()
+            } catch (e: Exception) {
+                throw e
             }
         }
+        throw FlagshipConstants.Exceptions.Companion.FlagNotFoundException()
     }
 
 
     @Suppress("unchecked_cast")
-    override fun <T : Any?> getFlagValue(key: String, defaultValue: T?) : T? {
+    override fun <T> getVisitorFlagValue(key: String, defaultValue: T?): T? {
         try {
-            val modification = getModification(key, defaultValue)
-            return (modification.value ?: defaultValue) as T
-        } catch (e : Exception) {
-            logFlagError(FlagshipLogManager.Tag.FLAG_VALUE, e, FlagshipConstants.Errors.FLAG_VALUE_ERROR.format(key))
+            val flag = getVisitorFlag(key, defaultValue)
+            return (flag.value ?: defaultValue) as T
+        } catch (e: Exception) {
+            logFlagError(
+                FlagshipLogManager.Tag.FLAG_VALUE,
+                e,
+                FlagshipConstants.Errors.FLAG_VALUE_ERROR.format(key)
+            )
         }
         return defaultValue
     }
 
-    override fun <T : Any?> exposeFlag(key: String, defaultValue: T?) {
+    override fun <T> getVisitorFlagMetadata(key: String, defaultValue: T?): FlagMetadata? {
         try {
-            val modification = getModification(key, defaultValue)
-            if (!visitor.activatedVariations.contains(modification.variationId))
-                visitor.activatedVariations.add(modification.variationId)
-            sendHit(Activate(modification))
-        } catch (e: Exception) {
-            logFlagError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, e, FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key))
-        }
-    }
-
-    override fun <T : Any?> getFlagMetadata(key: String, defaultValue: T?) : Modification? {
-        try {
-            return getModification(key, defaultValue)
+            return getVisitorFlag(key, defaultValue).metadata
         } catch (e: Exception) {
             logFlagError(FlagshipLogManager.Tag.FLAG_METADATA, e, FlagshipConstants.Errors.FLAG_METADATA_ERROR.format(key))
         }
         return null
     }
 
-    override fun <T : Any?> getFlag(key: String, defaultValue : T): Flag<T> {
+    override fun <T> sendVisitorExposition(key: String, defaultValue: T?) {
+        try {
+            val flag = getVisitorFlag(key, defaultValue)
+            if (!visitor.activatedVariations.contains(flag.metadata.variationId))
+                visitor.activatedVariations.add(flag.metadata.variationId)
+            sendHit(Activate(flag.metadata))
+        } catch (e: Exception) {
+            logFlagError(FlagshipLogManager.Tag.FLAG_VISITOR_EXPOSED, e, FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key))
+        }
+    }
+
+    override fun <T> getFlag(key: String, defaultValue: T): Flag<T> {
         return Flag(visitor, key, defaultValue)
     }
+
+    //    @Suppress("unchecked_cast")
+//    override fun <T : Any?> getFlagValue(key: String, defaultValue: T?) : T? {
+//        try {
+//            val modification = getModification(key, defaultValue)
+//            return (modification.value ?: defaultValue) as T
+//        } catch (e : Exception) {
+//            logFlagError(FlagshipLogManager.Tag.FLAG_VALUE, e, FlagshipConstants.Errors.FLAG_VALUE_ERROR.format(key))
+//        }
+//        return defaultValue
+//    }
+
+//    override fun <T : Any?> exposeFlag(key: String, defaultValue: T?) {
+//        try {
+//            val modification = getModification(key, defaultValue)
+//            if (!visitor.activatedVariations.contains(modification.variationId))
+//                visitor.activatedVariations.add(modification.variationId)
+//            sendHit(Activate(modification))
+//        } catch (e: Exception) {
+//            logFlagError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, e, FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key))
+//        }
+//    }
+
+//    override fun <T : Any?> getFlagMetadata(key: String, defaultValue: T?) : Modification? {
+//        try {
+//            return getModification(key, defaultValue)
+//        } catch (e: Exception) {
+//            logFlagError(FlagshipLogManager.Tag.FLAG_METADATA, e, FlagshipConstants.Errors.FLAG_METADATA_ERROR.format(key))
+//        }
+//        return null
+//    }
 
     override fun sendConsentRequest() {
         val trackingManager: TrackingManager = configManager.trackingManager
