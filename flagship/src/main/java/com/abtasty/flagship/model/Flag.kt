@@ -34,7 +34,7 @@ class Flag<T : Any?>(
     }
 
     /**
-     * Return the campaign information metadata or an Empty flag metadat object if the flag doesn't exist.
+     * Return the campaign information metadata or an Empty flag metadata object if the flag doesn't exist.
      *
      */
     fun metadata(): FlagMetadata {
