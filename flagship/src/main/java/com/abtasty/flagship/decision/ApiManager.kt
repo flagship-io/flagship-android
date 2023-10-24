@@ -3,7 +3,7 @@ package com.abtasty.flagship.decision
 import com.abtasty.flagship.BuildConfig
 import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.CAMPAIGNS
-import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.CONTEXT_PARAM
+//import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.CONTEXT_PARAM
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.DECISION_API
 import com.abtasty.flagship.api.ResponseCompat
 import com.abtasty.flagship.main.Flagship
@@ -35,37 +35,15 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
         json.put("visitorId", visitorDelegateDTO.visitorId)
         json.put("anonymousId", visitorDelegateDTO.anonymousId)
         json.put("trigger_hit", false)
+        json.put("visitor_consent", visitorDelegateDTO.hasConsented)
         json.put("context", visitorDelegateDTO.contextToJson())
         val response: ResponseCompat = HttpManager.sendHttpRequest(HttpManager.RequestType.POST,
-            DECISION_API + flagshipConfig.envId + CAMPAIGNS + if (!visitorDelegateDTO.hasConsented) CONTEXT_PARAM else "", headers, json.toString())
+            DECISION_API + flagshipConfig.envId + CAMPAIGNS, headers, json.toString())
         logResponse(response)
         val results = if (response.code < 400) parseCampaignsResponse(response.content) else null
         updateFlagshipStatus(if (panic) Flagship.Status.PANIC else Flagship.Status.READY)
         return results
     }
-
-
-//    override fun getCampaignsModifications(visitorDelegateDTO : VisitorDelegateDTO): HashMap<String, Modification>? {
-//        val campaignsModifications: HashMap<String, Modification> = HashMap()
-//        try {
-//            sendCampaignRequest(visitorDelegateDTO)?.let { campaigns ->
-//                for ((_, _, variationGroups) in campaigns) {
-//                    for (variationGroup in variationGroups) {
-//                        for (variation in variationGroup?.variations!!.values) {
-//                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId); //save for cache
-//                            variation.getModificationsValues()?.let { modificationsValues ->
-//                                campaignsModifications.putAll(modificationsValues)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            return campaignsModifications
-//        } catch (e: Exception) {
-//            FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")
-//        }
-//        return null
-//    }
 
     override fun getCampaignFlags(visitorDelegateDTO : VisitorDelegateDTO): HashMap<String, _Flag>? {
         val campaignsFlags: HashMap<String, _Flag> = HashMap()
@@ -74,11 +52,7 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
                 for ((_, variationGroups) in campaigns) {
                     for (variationGroup in variationGroups) {
                         for (variation in variationGroup?.variations!!.values) {
-//                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId); //save for cache
                             visitorDelegateDTO.addNewAssignmentToHistory(variation.variationMetadata.variationGroupId, variation.variationMetadata.variationId); //save for cache
-//                            variation.getModificationsValues()?.let { modificationsValues ->
-//                                campaignsModifications.putAll(modificationsValues)
-//                            }
                             variation.flags?.let { flags ->
                                 campaignsFlags.putAll(flags)
                             }

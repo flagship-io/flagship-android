@@ -47,7 +47,6 @@ class FlagshipTests {
     private val BUCKETING_URL = "https://cdn.flagship.io/%s/bucketing.json"
     private val ACTIVATION_URL = "https://decision.flagship.io/v2/activate"
     private val CONTEXT_URL = "https://decision.flagship.io/v2/%s/events"
-    private val CONSENT_PARAM = "&sendContextEvent=false"
     private val ARIANE_URL = "https://ariane.abtasty.com/"
     private val _ENV_ID_ = "_ENV_ID_"
     private val _API_KEY_ = "_API_KEY_"
@@ -651,19 +650,24 @@ class FlagshipTests {
     @Test
     fun test_visitor_strategy_no_consent() {
 
-        var urlConsent = 0
-        var urlNoConsent = 0
+        var consent = 0
+        var noConsent = 0
         val consentLatch = CountDownLatch(5)
         val logLatch = CountDownLatch(10)
         FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(CAMPAIGNS_URL.format(_ENV_ID_))
-            .returnResponse { request, i ->
-                urlConsent += 1
-                FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "api_response_1.json", 200)
+            .verifyRequest { request, nbCall ->
+                val json = HttpCompat.requestJson(request)
+                try {
+                    if (!json.getBoolean("visitor_consent"))
+                        noConsent += 1
+                    if (json.getBoolean("visitor_consent"))
+                        consent += 1
+                } catch (e : Exception) {
+
+                }
+
             }
-            .build())
-        FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(CAMPAIGNS_URL.format(_ENV_ID_)+CONSENT_PARAM)
             .returnResponse { request, i ->
-                urlNoConsent += 1
                 FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "api_response_1.json", 200)
             }
             .build())
@@ -682,13 +686,7 @@ class FlagshipTests {
                     assert(json.getString("ea") == "fs_consent")
                     assert(json.getString("el").contains("android:"))
                     assert(json.getString("vid") == "visitor")
-//                    when (i) {
-//                        1 -> assert(json.getString("el").contains("android:false"))
-//                        2 -> assert(json.getString("el").contains("android:true"))
-//                        3 -> assert(json.getString("el").contains("android:false"))
-//                    }
                     val label = json.getString("el")
-//                    assert(label == "android:false" || label == "android:true")
                     if (label == "android:false")
                         consentFalseLatch.countDown()
                     if (label == "android:true")
@@ -734,8 +732,8 @@ class FlagshipTests {
         runBlocking {
             visitor.synchronizeModifications().join()
         }
-        assert(urlConsent == 1)
-        assert(urlNoConsent == 2)
+        assert(consent == 1)
+        assert(noConsent == 2)
         consentLatch.await(500, TimeUnit.MILLISECONDS)
         if (!consentTrueLatch.await(500, TimeUnit.MILLISECONDS))
             fail()

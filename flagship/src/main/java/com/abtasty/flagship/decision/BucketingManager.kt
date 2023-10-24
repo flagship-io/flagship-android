@@ -116,9 +116,6 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
                         val variation = variationGroup.selectVariation(visitorDelegateDTO)
                         if (variation != null) {
                             visitorDelegateDTO.addNewAssignmentToHistory(variation.variationMetadata.variationGroupId, variation.variationMetadata.variationId)
-//                            val modificationsValues = variation.getModificationsValues()
-//                            if (modificationsValues != null)
-//                                campaignsModifications.putAll(modificationsValues)
                             variation.flags?.let { flags ->
                                 campaignsFlags.putAll(flags)
                             }
