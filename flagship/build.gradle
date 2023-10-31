@@ -1,23 +1,31 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-parcelize'
-apply plugin: 'kotlin-kapt'
-apply from: 'jacoco.gradle'
+//apply plugin: 'com.android.library'
+//apply plugin: 'kotlin-android'
+//apply plugin: 'kotlin-parcelize'
+//apply plugin: 'kotlin-kapt'
+//apply from: 'jacoco.gradle'
 
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-parcelize'
+    id 'kotlin-kapt'
+//    id 'jacoco.gradle'
+    id 'com.google.devtools.ksp'
+}
+
+//apply from: 'jacoco.gradle'
 
 android {
     publishNonDefault true
-    compileSdkVersion 33
+    compileSdk 34
 
     defaultConfig {
         minSdkVersion 21
-        compileSdkVersion 33
-        targetSdkVersion 33
+        compileSdk 34
+        targetSdkVersion 34
 
-        kapt {
-            arguments {
-                arg("room.schemaLocation", "$projectDir/schemas".toString())
-            }
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
         }
     }
 
@@ -40,14 +48,17 @@ android {
             resValue("integer", "ABTastyVersionCode", "${flagship_version_code}")
             resValue("string", "ABTastyVersion", "${flagship_version_name}")
         }
-        jacoco {
-            version = '0.8.7'
-        }
+//        jacoco {
+//            version = '0.8.11'
+//        }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_19
+        targetCompatibility = JavaVersion.VERSION_19
+    }
+    kotlinOptions {
+        jvmTarget = '19'
     }
 
     android.libraryVariants.all { variant ->
@@ -87,13 +98,13 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'org.robolectric:robolectric:4.10'
-    testImplementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+    testImplementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    testCompatImplementation  'org.conscrypt:conscrypt-openjdk-uber:2.5.2'
+    testCompatImplementation 'org.conscrypt:conscrypt-openjdk-uber:2.5.2'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
-    implementation 'androidx.room:room-runtime:2.5.1'
+    implementation 'androidx.room:room-runtime:2.6.0'
 
     commonImplementation 'com.squareup.okhttp3:okhttp:4.9.3'
 
@@ -101,8 +112,8 @@ dependencies {
     compatImplementation 'com.squareup.okhttp3:okhttp:3.12.12'
     compatImplementation 'org.conscrypt:conscrypt-android:2.5.1'
 
-    annotationProcessor("androidx.room:room-compiler:2.5.1")
-    kapt 'androidx.room:room-compiler:2.5.1'
+    annotationProcessor("androidx.room:room-compiler:2.6.0")
+    ksp 'androidx.room:room-compiler:2.6.0'
 }
 
 

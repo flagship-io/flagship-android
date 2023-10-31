@@ -1,7 +1,6 @@
 package com.abtasty.flagship.visitor
 
 import com.abtasty.flagship.api.TrackingManager
-import com.abtasty.flagship.cache.CacheHelper
 import com.abtasty.flagship.cache.HitCacheHelper
 import com.abtasty.flagship.cache.VisitorCacheHelper
 import com.abtasty.flagship.decision.DecisionManager
@@ -9,9 +8,9 @@ import com.abtasty.flagship.hits.Activate
 import com.abtasty.flagship.hits.Consent
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.model.ExposedFlag
 import com.abtasty.flagship.model.Flag
 import com.abtasty.flagship.model.FlagMetadata
-import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipContext
@@ -63,7 +62,6 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
             decisionManager?.let {
                 val visitorDTO = visitor.toDTO()
                 decisionManager.getCampaignFlags(visitorDTO)?.let { flags ->
-//                    visitor.updateModifications(campaigns)
                     visitor.updateFlags(flags)
                     visitor.logVisitor(FlagshipLogManager.Tag.FLAGS_FETCH)
                     visitor.getStrategy().cacheVisitor()
@@ -107,10 +105,6 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
         visitor.flags[key]?.let { flag ->
             try {
                 val castValue = (flag.value ?: defaultValue)
-                System.out.println("CastValue = " + (castValue))
-                System.out.println("FlagValue = " + (flag.value))
-                System.out.println("DefaultValue = " + (defaultValue))
-                System.out.println("castValue type ${castValue?.javaClass} / defaultValue type ${defaultValue?.javaClass}")
                 if (defaultValue == null || castValue == null || castValue.javaClass == defaultValue.javaClass)
                     return flag
                 else
@@ -152,46 +146,48 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
             val flag = getVisitorFlag(key, defaultValue)
             if (!visitor.activatedVariations.contains(flag.metadata.variationId))
                 visitor.activatedVariations.add(flag.metadata.variationId)
-            sendHit(Activate(flag.metadata))
+//            sendHit(Activate(flag.metadata))
+            val trackingManager: TrackingManager = configManager.trackingManager
+            val activationResult =
+                trackingManager.sendHit(visitor.toDTO(), Activate(flag.metadata))
+            activationResult?.invokeOnCompletion { it ->
+                runBlocking {
+                    if (it == null) {
+                        try {
+//                            System.out.println("#DV => " + activation_result.await())
+                            if (activationResult.await())
+                                Flagship.getConfig().onVisitorExposed?.invoke(
+                                    VisitorExposed(
+                                        visitor.visitorId,
+                                        visitor.anonymousId,
+                                        HashMap(visitor.visitorContext),
+                                        visitor.isAuthenticated,
+                                        visitor.hasConsented
+                                    ),
+                                    ExposedFlag(flag.key, flag.value, defaultValue, flag.metadata)
+                                )
+                        } catch (e: Exception) {
+                            FlagshipLogManager.log(
+                                FlagshipLogManager.Tag.TRACKING,
+                                LogManager.Level.ERROR,
+                                e.stackTraceToString()
+                            )
+                        }
+                    }
+                }
+            }
         } catch (e: Exception) {
-            logFlagError(FlagshipLogManager.Tag.FLAG_VISITOR_EXPOSED, e, FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key))
+            logFlagError(
+                FlagshipLogManager.Tag.FLAG_VISITOR_EXPOSED,
+                e,
+                FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key)
+            )
         }
     }
 
     override fun <T> getFlag(key: String, defaultValue: T): Flag<T> {
         return Flag(visitor, key, defaultValue)
     }
-
-    //    @Suppress("unchecked_cast")
-//    override fun <T : Any?> getFlagValue(key: String, defaultValue: T?) : T? {
-//        try {
-//            val modification = getModification(key, defaultValue)
-//            return (modification.value ?: defaultValue) as T
-//        } catch (e : Exception) {
-//            logFlagError(FlagshipLogManager.Tag.FLAG_VALUE, e, FlagshipConstants.Errors.FLAG_VALUE_ERROR.format(key))
-//        }
-//        return defaultValue
-//    }
-
-//    override fun <T : Any?> exposeFlag(key: String, defaultValue: T?) {
-//        try {
-//            val modification = getModification(key, defaultValue)
-//            if (!visitor.activatedVariations.contains(modification.variationId))
-//                visitor.activatedVariations.add(modification.variationId)
-//            sendHit(Activate(modification))
-//        } catch (e: Exception) {
-//            logFlagError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, e, FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key))
-//        }
-//    }
-
-//    override fun <T : Any?> getFlagMetadata(key: String, defaultValue: T?) : Modification? {
-//        try {
-//            return getModification(key, defaultValue)
-//        } catch (e: Exception) {
-//            logFlagError(FlagshipLogManager.Tag.FLAG_METADATA, e, FlagshipConstants.Errors.FLAG_METADATA_ERROR.format(key))
-//        }
-//        return null
-//    }
 
     override fun sendConsentRequest() {
         val trackingManager: TrackingManager = configManager.trackingManager
@@ -287,7 +283,12 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
                     cancel()
                 }
             }
-            val isSuccess = lookupLatch.await(flagshipConfig.cacheManager.visitorCacheLookupTimeout, flagshipConfig.cacheManager.timeoutUnit)
+            val isSuccess = withContext(Dispatchers.IO) {
+                lookupLatch.await(
+                    flagshipConfig.cacheManager.visitorCacheLookupTimeout,
+                    flagshipConfig.cacheManager.timeoutUnit
+                )
+            }
             if (!isSuccess) {
                 coroutine.cancelAndJoin()
                 logCacheError(FlagshipConstants.Errors.CACHE_IMPL_TIMEOUT.format("lookupVisitor", visitorDelegateDTO.visitorId))

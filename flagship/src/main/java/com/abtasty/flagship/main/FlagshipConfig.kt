@@ -2,8 +2,10 @@ package com.abtasty.flagship.main
 
 import com.abtasty.flagship.cache.CacheManager
 import com.abtasty.flagship.cache.DefaultCacheManager
+import com.abtasty.flagship.model.ExposedFlag
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.visitor.VisitorExposed
 import java.util.concurrent.TimeUnit
 
 /**
@@ -20,6 +22,7 @@ abstract class FlagshipConfig<T>(internal var decisionMode: Flagship.DecisionMod
     internal var pollingUnit: TimeUnit = TimeUnit.SECONDS
     internal var statusListener: ((Flagship.Status) -> Unit)? = null
     internal var cacheManager : CacheManager = DefaultCacheManager()
+    internal var onVisitorExposed : ((VisitorExposed, ExposedFlag<*>) -> (Unit))? = null
 
     /**
      * Specify the environment id provided by Flagship, to use.
@@ -112,6 +115,17 @@ abstract class FlagshipConfig<T>(internal var decisionMode: Flagship.DecisionMod
     @Suppress("UNCHECKED_CAST")
     fun withCacheManager(customCacheManager: CacheManager): T {
         this.cacheManager = customCacheManager
+        return this as T
+    }
+
+    /**
+     * Provide a code block to execute each time a Visitor is exposed to a flag. This is useful when you need to send this information to a third-party tool.
+     *
+     * @param onVisitorExposed lambda code block to execute. (VisitorExposed, ExposedFlag<*>) -> (Void)
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun withOnVisitorExposed(onVisitorExposed: ((VisitorExposed, ExposedFlag<*>) -> (Unit))): T {
+        this.onVisitorExposed = onVisitorExposed
         return this as T
     }
 

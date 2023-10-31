@@ -25,7 +25,7 @@ open class VisitorDelegateDTO(val visitorDelegate: VisitorDelegate) {
         json.put("isAuthenticated", isAuthenticated)
         json.put("hasConsented", hasConsented)
         json.put("context", contextToJson())
-        json.put("modifications", flagsToJson())
+        json.put("flags", flagsToJson())
 //        json.put("activatedVariations", activatedVariationToJsonArray(activatedVariations))
         json.put("activatedVariations", JSONArray(activatedVariations))
         json.put("assignmentsHistory", JSONObject(assignmentsHistory as Map<Any?, Any?>))

@@ -14,11 +14,13 @@ import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.start
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.main.FlagshipConfig.Bucketing
+import com.abtasty.flagship.model.ExposedFlag
 import com.abtasty.flagship.utils.ETargetingComp
 import com.abtasty.flagship.utils.FlagshipContext
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
 import com.abtasty.flagship.visitor.Visitor
+import com.abtasty.flagship.visitor.VisitorExposed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -69,6 +71,7 @@ class FlagshipTests {
         FlagshipTestsHelper.interceptor().clearRules()
         Flagship.reset()
         Thread.sleep(50)
+        System.out.println("__TEAR DOWN__")
     }
 
     private fun overrideClient() {
@@ -1448,20 +1451,27 @@ class FlagshipTests {
     @Test
     fun flags() {
 
+//        Flagship.reset()
+//        Thread.sleep(500)
         val activateLatch = CountDownLatch(10)
 
-            FlagshipTestsHelper.interceptor()
-                .addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(ARIANE_URL)
-                    .returnResponse { request, i ->
-                        FlagshipTestsHelper.response("", 200)
-                    }
-                    .build())
+        FlagshipTestsHelper.interceptor()
+            .addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(ARIANE_URL)
+                .returnResponse { request, i ->
+                    FlagshipTestsHelper.response("", 200)
+                }
+                .build())
 
-        FlagshipTestsHelper.interceptor().addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(BUCKETING_URL.format(_ENV_ID_))
-            .returnResponse { request, i ->
-                FlagshipTestsHelper.responseFromAssets(ApplicationProvider.getApplicationContext(), "bucketing_response_1.json", 200)
-            }
-            .build())
+        FlagshipTestsHelper.interceptor()
+            .addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(BUCKETING_URL.format(_ENV_ID_))
+                .returnResponse { request, i ->
+                    FlagshipTestsHelper.responseFromAssets(
+                        ApplicationProvider.getApplicationContext(),
+                        "bucketing_response_1.json",
+                        200
+                    )
+                }
+                .build())
 
 
         val readyLatch = CountDownLatch(1)
@@ -1487,12 +1497,11 @@ class FlagshipTests {
         runBlocking {
             visitor.fetchFlags().await()
         }
-
         assertEquals(81111, rank.value(true)) // activate
         val rank_plus = visitor.getFlag("rank_plus", "a")
         val rank_plus2 = visitor.getFlag("rank_plus", null)
-        assertEquals("a", rank_plus.value(false))
-        assertNull(rank_plus2.value(false))
+        assertEquals("a", rank_plus.value(false)) // no activate
+        assertNull(rank_plus2.value(false)) // no activate
         assertTrue(rank_plus.exists())
         assertEquals("brjjpk7734cg0sl5llll", rank_plus.metadata().campaignId)
         assertEquals("brjjpk7734cg0sl5mmmm", rank_plus.metadata().variationGroupId)
@@ -1505,7 +1514,7 @@ class FlagshipTests {
         assertEquals(true, rank_plus.metadata().exists())
         assertEquals(9, rank_plus.metadata().toJson().length())
         val do_not_exists = visitor.getFlag("do_not_exists", "a")
-        assertEquals("a", do_not_exists.value( false))
+        assertEquals("a", do_not_exists.value( false)) // no activate
         assertFalse(do_not_exists.exists())
         assertEquals("", do_not_exists.metadata().campaignId)
         assertEquals("", do_not_exists.metadata().variationGroupId)
@@ -1520,15 +1529,13 @@ class FlagshipTests {
 
         assertEquals("a", visitor.getFlag("rank", "a").value(true)) // no activate
         assertEquals(81111, visitor.getFlag("rank", null).value(true)) // activate
-
         assertNull(visitor.getFlag("null", null).value(true)) // no activate
-
         visitor.getFlag("rank", null).userExposed() // activate
         visitor.getFlag("rank", "null").userExposed() // no activate
         visitor.getFlag("rank_plus", "null").userExposed() // activate
         visitor.getFlag("do_not_exists", "null").userExposed() // no activate
 
-        Thread.sleep(1500)
+        Thread.sleep(500)
         assertEquals(6, activateLatch.count)
 
         //testing slug
@@ -1536,8 +1543,6 @@ class FlagshipTests {
         assertEquals("", visitor.getFlag("visitorIdColor", "#00000000").metadata().slug)
         assertEquals("campaignSlug", visitor.getFlag("rank_plus", "#00000000").metadata().slug)
         assertEquals("", visitor.getFlag("eflzjefl", "#00000000").metadata().slug)
-
-//        System.out.println("=> " + visitor.getFlag("rank_plus", null).value(true))
 
     }
 
@@ -1623,5 +1628,110 @@ class FlagshipTests {
         assertNotNull(lastModified)
         assertEquals(date2, lastModified)
         assertEquals(4, JSONObject(content).getJSONArray("campaigns").length())
+    }
+
+    @Test
+    public fun visitor_exposed() {
+
+        FlagshipTestsHelper.interceptor()
+            .addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(ARIANE_URL)
+                .returnResponse { request, i -> FlagshipTestsHelper.response("", 500) }
+                .build())
+
+        FlagshipTestsHelper.interceptor()
+            .addRule(
+                FlagshipTestsHelper.HttpInterceptor.Rule.Builder(ACTIVATION_URL.format(_ENV_ID_))
+                    .returnResponse { request, i ->
+                        FlagshipTestsHelper.response("", 200)
+                    }
+                    .build()
+            )
+
+        FlagshipTestsHelper.interceptor()
+            .addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(CONTEXT_URL.format(_ENV_ID_))
+                .returnResponse { request, i ->
+                    FlagshipTestsHelper.response("", 500)
+                }
+                .build())
+        FlagshipTestsHelper.interceptor()
+            .addRule(
+                FlagshipTestsHelper.HttpInterceptor.Rule.Builder(CAMPAIGNS_URL.format(_ENV_ID_))
+                    .returnResponse(
+                        FlagshipTestsHelper.responseFromAssets(
+                            ApplicationProvider.getApplicationContext(),
+                            "api_response_1.json",
+                            200
+                        )
+                    )
+                    .build()
+            )
+
+        val exposedLatch = CountDownLatch(10)
+        Flagship.start(
+            getApplication(),
+            _ENV_ID_,
+            _API_KEY_,
+            FlagshipConfig.DecisionApi().withOnVisitorExposed { visitorExposed : VisitorExposed, exposedFlag: ExposedFlag<*> ->
+                System.out.println("#VE ==> ${exposedLatch.count.toInt() }")
+                if (exposedLatch.count.toInt() == 10) {
+                    assertEquals(visitorExposed.visitorId, "visitor_1234")
+                    assertNull(visitorExposed.anonymousId)
+                    assertEquals(visitorExposed.hasConsented, true)
+                    assertTrue(visitorExposed.context.containsKey("plan") && visitorExposed.context["plan"] == "vip")
+                    assertEquals(exposedFlag.key, "featureEnabled")
+                    assertEquals(exposedFlag.defaultValue, true)
+                    assertEquals(exposedFlag.value, false)
+                    assertEquals(exposedFlag.metadata.exists(), true)
+                    assertEquals(exposedFlag.metadata.campaignId, "bmsorfe4jaeg0g000000")
+                    assertEquals(exposedFlag.metadata.variationGroupId, "bmsorfe4jaeg0g1111111")
+                    assertEquals(exposedFlag.metadata.variationId, "bmsorfe4jaeg0g222222")
+                    exposedLatch.countDown()
+                } else if (exposedLatch.count.toInt() == 9) {
+                    assertEquals(visitorExposed.visitorId, "visitor_5678")
+                    assertNull(visitorExposed.anonymousId)
+                    assertEquals(visitorExposed.hasConsented, true)
+                    assertTrue(visitorExposed.context.containsKey("plan") && visitorExposed.context["plan"] == "business")
+                    assertEquals(exposedFlag.key, "ab10_variation")
+                    assertEquals(exposedFlag.defaultValue, 0)
+                    assertEquals(exposedFlag.value, 7)
+                    assertEquals(exposedFlag.metadata.exists(), true)
+                    assertEquals(exposedFlag.metadata.campaignId, "c27tejc3fk9jdbFFFFFF")
+                    assertEquals(exposedFlag.metadata.variationGroupId, "c27tejc3fk9jdbGGGGGG")
+                    assertEquals(exposedFlag.metadata.variationId, "c27tfn8bcahim7HHHHHH")
+                    exposedLatch.countDown()
+                } else {
+                    exposedLatch.countDown()
+                }
+            })
+            Thread.sleep(100)
+        val visitor_1234 =
+            Flagship.newVisitor("visitor_1234").context(hashMapOf("plan" to "vip")).build()
+        val visitor_5678 =
+            Flagship.newVisitor("visitor_5678").context(hashMapOf("plan" to "business")).build()
+        runBlocking {
+            visitor_5678.fetchFlags().await()
+            visitor_1234.fetchFlags().await()
+        }
+        assertFalse(visitor_1234.getFlag("featureEnabled", true).value()!!)
+        Thread.sleep(200)
+        assertEquals(visitor_5678.getFlag("ab10_variation", 0).value()!!, 7)
+        Thread.sleep(200)
+        assertEquals(visitor_5678.getFlag("isref", 0).value()!!, 0) // Wrong type no activation
+        Thread.sleep(200)
+        assertEquals(8, exposedLatch.count.toInt())
+
+        FlagshipTestsHelper.interceptor().clearRules()
+        FlagshipTestsHelper.interceptor()
+            .addRule(
+                FlagshipTestsHelper.HttpInterceptor.Rule.Builder(ACTIVATION_URL.format(_ENV_ID_))
+                    .returnResponse { request, i ->
+                        FlagshipTestsHelper.response("", 500)
+                    }
+                    .build()
+            )
+        assertEquals(visitor_1234.getFlag("target", "string").value()!!, "is")
+        Thread.sleep(200)
+        assertEquals(8, exposedLatch.count.toInt())
+//        Thread.sleep(20000)
     }
 }

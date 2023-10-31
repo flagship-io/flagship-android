@@ -3,10 +3,25 @@ package com.abtasty.flagship.model
 import com.abtasty.flagship.visitor.VisitorDelegate
 
 /**
+ * Class representing an internal Flagship flag.
+ */
+open class _Flag(open val key: String, open val value: Any?, open val metadata: FlagMetadata)
+
+/**
+ * Class representing a Flagship flag that has been exposed to a visitor.
+ */
+class ExposedFlag<T : Any?>(
+    override val key: String,
+    override val value: T?,
+    val defaultValue: T?,
+    override val metadata: FlagMetadata
+) : _Flag(key, value, metadata) {
+
+}
+
+/**
  * Class representing a Flagship flag.
  */
-data class _Flag(val key: String, val value: Any?, val metadata: FlagMetadata)
-
 class Flag<T : Any?>(
     val visitor: VisitorDelegate,
     val key: String,
@@ -56,7 +71,8 @@ class Flag<T : Any?>(
      * on your campaign reporting.
      */
     fun visitorExposed() {
-        visitor.getStrategy().sendVisitorExposition(key, defaultValue)
+        if (exists())
+            visitor.getStrategy().sendVisitorExposition(key, defaultValue)
     }
 
     override fun toString(): String {

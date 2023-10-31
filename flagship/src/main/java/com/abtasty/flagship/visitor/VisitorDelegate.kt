@@ -23,7 +23,6 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
     var visitorId: String
     var anonymousId: String? = null
     var visitorContext: ConcurrentMap<String, Any> = ConcurrentHashMap()
-//    var modifications: ConcurrentMap<String, Modification> = ConcurrentHashMap()
     var flags: ConcurrentMap<String, _Flag> = ConcurrentHashMap()
     var activatedVariations = ConcurrentLinkedQueue<String>()
     var hasConsented: Boolean
