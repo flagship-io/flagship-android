@@ -2,17 +2,15 @@ package com.abtasty.flagship.visitor
 
 import com.abtasty.flagship.main.ConfigManager
 import com.abtasty.flagship.main.Flagship
-import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.model._Flag
+import com.abtasty.flagship.utils.EVisitorFlagsUpdateStatus
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ConcurrentMap
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * Delegate for Visitor
@@ -28,6 +26,7 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
     var hasConsented: Boolean
     var isAuthenticated: Boolean
     var assignmentsHistory: ConcurrentMap<String, String> = ConcurrentHashMap()
+    var flagFetchingStatus: EVisitorFlagsUpdateStatus? = null
 
     init {
         this.visitorId = if (visitorId == null || visitorId.isEmpty()) generateUUID() else visitorId
@@ -40,6 +39,7 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
 //        if (!this.hasConsented)
         getStrategy().sendConsentRequest() //Send anyway
         logVisitor(FlagshipLogManager.Tag.VISITOR)
+        flagFetchingStatus = EVisitorFlagsUpdateStatus.CREATED
     }
 
     internal fun getStrategy(): VisitorStrategy {
@@ -81,13 +81,6 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
     internal fun hasConsented(): Boolean {
         return hasConsented
     }
-
-//    internal fun updateModifications(modifications: HashMap<String, Modification>?) {
-//        if (modifications != null) {
-//            this.modifications.clear()
-//            this.modifications.putAll(modifications)
-//        }
-//    }
 
     internal fun updateFlags(flags: HashMap<String, _Flag>) {
         this.flags.clear()
