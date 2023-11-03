@@ -169,6 +169,7 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
     }
 
     override fun <T> getFlag(key: String, defaultValue: T): Flag<T> {
+        checkOutDatedFlags()
         return Flag(visitor, key, defaultValue)
     }
 
@@ -184,12 +185,13 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
 
     override fun authenticate(visitorId: String) {
         if (visitor.configManager.isDecisionMode(Flagship.DecisionMode.DECISION_API)) {
-            val diff = visitor.visitorId != visitorId
+            val changed = visitor.visitorId != visitorId
             if (visitor.anonymousId == null)
                 visitor.anonymousId = visitor.visitorId
             visitor.visitorId = visitorId
             visitor.isAuthenticated = true // todo CHECK IF OK
-            visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.AUTHENTICATED
+            if (changed)
+                visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.AUTHENTICATED
         } else {
             FlagshipLogManager.log(FlagshipLogManager.Tag.AUTHENTICATE, LogManager.Level.ERROR,
                 String.format(FlagshipConstants.Errors.AUTHENTICATION_BUCKETING_ERROR, "authenticate"))
@@ -334,6 +336,20 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
             } catch (e: Exception) {
                 logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("flushHits", visitorDTO.visitorId), e)
             }
+        }
+    }
+
+    private fun checkOutDatedFlags() {
+        if (visitor.flagFetchingStatus != EVisitorFlagsUpdateStatus.FLAGS_FETCHED) {
+            val warningString : String = when (visitor.flagFetchingStatus) {
+                EVisitorFlagsUpdateStatus.CONTEXT_UPDATED -> FlagshipConstants.Warnings.FLAGS_CONTEXT_UPDATED
+                EVisitorFlagsUpdateStatus.AUTHENTICATED -> FlagshipConstants.Warnings.FLAGS_AUTHENTICATED
+                EVisitorFlagsUpdateStatus.UNAUTHENTICATED -> FlagshipConstants.Warnings.FLAGS_UNAUTHENTICATED
+                else -> {
+                    FlagshipConstants.Warnings.FLAGS_CREATED
+                }
+            }
+            FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.WARNING, warningString.format(visitor.visitorId))
         }
     }
 }

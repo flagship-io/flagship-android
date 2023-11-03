@@ -15,7 +15,9 @@ import com.abtasty.flagship.main.Flagship.start
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.main.FlagshipConfig.Bucketing
 import com.abtasty.flagship.model.ExposedFlag
+import com.abtasty.flagship.model.Flag
 import com.abtasty.flagship.utils.ETargetingComp
+import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipContext
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
@@ -25,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.internal.wait
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.After
@@ -1733,5 +1736,83 @@ class FlagshipTests {
         Thread.sleep(200)
         assertEquals(8, exposedLatch.count.toInt())
 //        Thread.sleep(20000)
+    }
+    @Test
+    fun testFlagsOutDatedWarning() {
+        FlagshipTestsHelper.interceptor()
+            .addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(ARIANE_URL)
+                .returnResponse { request, i -> FlagshipTestsHelper.response("", 200) }
+                .build())
+
+        FlagshipTestsHelper.interceptor()
+            .addRule(
+                FlagshipTestsHelper.HttpInterceptor.Rule.Builder(ACTIVATION_URL.format(_ENV_ID_))
+                    .returnResponse { request, i ->
+                        FlagshipTestsHelper.response("", 200)
+                    }
+                    .build()
+            )
+
+        FlagshipTestsHelper.interceptor()
+            .addRule(FlagshipTestsHelper.HttpInterceptor.Rule.Builder(CONTEXT_URL.format(_ENV_ID_))
+                .returnResponse { request, i ->
+                    FlagshipTestsHelper.response("", 200)
+                }
+                .build())
+        FlagshipTestsHelper.interceptor()
+            .addRule(
+                FlagshipTestsHelper.HttpInterceptor.Rule.Builder(CAMPAIGNS_URL.format(_ENV_ID_))
+                    .returnResponse(
+                        FlagshipTestsHelper.responseFromAssets(
+                            ApplicationProvider.getApplicationContext(),
+                            "api_response_1.json",
+                            200
+                        )
+                    )
+                    .build()
+            )
+        val warningList = ArrayList<String>()
+        Flagship.start(getApplication(), "MY_ENV_ID", "MY_API_KEY", FlagshipConfig.DecisionApi()
+            .withLogLevel(LogManager.Level.WARNING)
+            .withLogManager(object : LogManager() {
+                override fun onLog(level: Level, tag: String, message: String) {
+                    if (level == Level.WARNING)
+                        warningList.add(message)
+                }
+            }))
+        Thread.sleep(100)
+        runBlocking {
+            val visitor = Flagship.newVisitor("visitor_abcd")
+                .build()
+            visitor.getFlag("one", 1) // 1W created
+            visitor.fetchFlags().await()
+            visitor.getFlag("one", 1) // 0W Updated
+            visitor.authenticate("visitor_abcd")
+            visitor.getFlag("one", 1) // 0W same visitor
+            visitor.authenticate("visitor_1234")
+            visitor.getFlag("one", 1) // 1W authenticated
+            visitor.unauthenticate()
+            visitor.getFlag("one", 1) // 1W unauthenticated
+            visitor.authenticate("visitor_5678")
+            visitor.fetchFlags().await()
+            visitor.getFlag("one", 1) // 0W uptodate
+            visitor.updateContext("age", 33)
+            visitor.getFlag("one", 1) // 1W context
+            visitor.getFlag("one", 1) // 1W context
+            visitor.fetchFlags().await()
+            visitor.updateContext("age", 33)
+            visitor.getFlag("one", 1) // 0W same context
+            visitor.updateContext("age", 34)
+            visitor.getFlag("one", 1) // 1W context
+            visitor.fetchFlags().await()
+            visitor.getFlag("one", 1) // 0W Uptodate
+        }
+        assertEquals(6, warningList.size)
+        assertEquals(FlagshipConstants.Warnings.FLAGS_CREATED.format("visitor_abcd"), warningList[0])
+        assertEquals(FlagshipConstants.Warnings.FLAGS_AUTHENTICATED.format("visitor_1234"), warningList[1])
+        assertEquals(FlagshipConstants.Warnings.FLAGS_UNAUTHENTICATED.format("visitor_abcd"), warningList[2])
+        assertEquals(FlagshipConstants.Warnings.FLAGS_CONTEXT_UPDATED.format("visitor_5678"), warningList[3])
+        assertEquals(FlagshipConstants.Warnings.FLAGS_CONTEXT_UPDATED.format("visitor_5678"), warningList[4])
+        assertEquals(FlagshipConstants.Warnings.FLAGS_CONTEXT_UPDATED.format("visitor_5678"), warningList[5])
     }
 }
