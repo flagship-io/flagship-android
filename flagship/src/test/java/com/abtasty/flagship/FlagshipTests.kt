@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.internal.wait
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.After
