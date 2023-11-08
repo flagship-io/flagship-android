@@ -30,7 +30,8 @@ class VisitorCacheHelper: CacheHelper() {
                 val visitorDelegate = visitorDelegateDTO.visitorDelegate
                 if (dataObject.getString("visitorId") == visitorDelegate.visitorId) { // todo think anonymous
                     visitorDelegate.visitorId = dataObject.optString("visitorId")
-                    visitorDelegate.anonymousId = dataObject.optString("anonymousId", null)
+                    if (dataObject.has("anonymousId"))
+                        visitorDelegate.anonymousId = dataObject.getString("anonymousId")
                     visitorDelegate.hasConsented = dataObject.optBoolean("consent", true)
                     dataObject.optJSONObject("context")?.let {
                         for (k in it.keys()) {

@@ -29,20 +29,6 @@ class PanicStrategy(val visitorDelegate: VisitorDelegate) : DefaultStrategy(visi
 
     // Call default strategy fetchFlags
 
-//    override fun <T : Any?> getFlagValue(key: String, defaultValue: T?): T? {
-//        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VALUE, "Flag.value()")
-//        return defaultValue
-//    }
-//
-//    override fun <T : Any?> getFlagMetadata(key: String, defaultValue: T?): Modification? {
-//        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_METADATA, "Flag.metadata()")
-//        return null
-//    }
-//
-//    override fun  <T : Any?> exposeFlag(key: String, defaultValue: T?) {
-//        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, "Flag.userExposed()")
-//    }
-
     override fun <T> getVisitorFlagValue(key: String, defaultValue: T?): T? {
         logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VALUE, "Flag[$key].value()")
         return defaultValue

@@ -17,8 +17,8 @@ buildscript {
         if (!maven_variant.isEmpty()) {
             maven_artifact_id = maven_artifact_id + '-' + maven_variant
         }
-        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "3.0.6"
-        flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 16
+        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "3.1.0"
+        flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 17
         sonatype_signing_key = System.getenv('SONATYPE_SIGNING_KEY')
         sonatype_signing_pwd = System.getenv('SONATYPE_SIGNING_PWD')
         sonatype_username = System.getenv('SONATYPE_USERNAME') ?: ossrhUsername
