@@ -14,12 +14,14 @@ import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
 import com.abtasty.flagship.visitor.VisitorDelegateDTO
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 class TrackingManager {
 
-    private fun sendActivation(visitor: VisitorDelegateDTO, hit: Activate) {
+    private fun sendActivation(visitor: VisitorDelegateDTO, hit: Activate): Deferred<Boolean> {
         val headers: HashMap<String, String> = HashMap()
         headers["x-sdk-client"] = "android"
         headers["x-sdk-version"] = BuildConfig.FLAGSHIP_VERSION_NAME
@@ -34,12 +36,14 @@ class TrackingManager {
             data.put(FlagshipConstants.HitKeyMap.VISITOR_ID, visitor.anonymousId)
             data.put(FlagshipConstants.HitKeyMap.ANONYMOUS_ID, JSONObject.NULL)
         }
-        sendTracking(visitor, hit.type.name,  DECISION_API + ACTIVATION, headers, data)
+        return sendTracking(visitor, hit.type.name,  DECISION_API + ACTIVATION, headers, data)
     }
 
-    fun sendHit(visitor: VisitorDelegateDTO, hit: Hit<*>) {
+    fun sendHit(visitor: VisitorDelegateDTO, hit: Hit<*>): Deferred<Boolean>? {
 
-        if (hit is Activate) sendActivation(visitor, hit) else {
+        if (hit is Activate)
+            return sendActivation(visitor, hit)
+        else {
             if (hit.checkData()) {
                 val data = hit.data
                 if (visitor.visitorId.isNotEmpty() && visitor.anonymousId != null) {
@@ -52,11 +56,12 @@ class TrackingManager {
                     data.put(FlagshipConstants.HitKeyMap.VISITOR_ID, visitor.anonymousId)
                     data.put(FlagshipConstants.HitKeyMap.CUSTOM_VISITOR_ID, JSONObject.NULL)
                 }
-                sendTracking(visitor, hit.type.name, ARIANE, null, data)
+                return sendTracking(visitor, hit.type.name, ARIANE, null, data)
             } else FlagshipLogManager.log(FlagshipLogManager.Tag.TRACKING, LogManager.Level.ERROR,
                 String.format(FlagshipConstants.Errors.HIT_INVALID_DATA_ERROR, hit.type, hit)
             )
         }
+        return null
     }
 
     fun sendContextRequest(visitor: VisitorDelegateDTO) {
@@ -79,16 +84,32 @@ class TrackingManager {
         }
     }
 
-    private fun sendTracking(visitorDTO: VisitorDelegateDTO, type: String, endPoint : String, headers: HashMap<String, String>? = null, data : JSONObject, time : Long = -1) {
-        Flagship.coroutineScope().launch {
-            val response = HttpManager.sendAsyncHttpRequest(HttpManager.RequestType.POST,
-                endPoint, headers, data.toString()).await()
-            val tag = if (type == FlagshipLogManager.Tag.ACTIVATE.name) FlagshipLogManager.Tag.ACTIVATE else FlagshipLogManager.Tag.TRACKING
+    private fun sendTracking(
+        visitorDTO: VisitorDelegateDTO,
+        type: String,
+        endPoint: String,
+        headers: HashMap<String, String>? = null,
+        data: JSONObject,
+        time: Long = -1
+    ): Deferred<Boolean> {
+        return Flagship.coroutineScope().async {
+            val response = HttpManager.sendAsyncHttpRequest(
+                HttpManager.RequestType.POST,
+                endPoint, headers, data.toString()
+            ).await()
+            val tag =
+                if (type == FlagshipLogManager.Tag.ACTIVATE.name) FlagshipLogManager.Tag.ACTIVATE else FlagshipLogManager.Tag.TRACKING
             logHit(tag, response, response?.requestContent)
             if (response == null || response.code !in 200..204) {
                 val json = HitCacheHelper.fromHit(visitorDTO, type, data, time)
-                visitorDTO.visitorStrategy.cacheHit(visitorDTO.visitorId, json)
-            }
+                try {
+                    visitorDTO.visitorStrategy.cacheHit(visitorDTO.visitorId, json)
+                } catch (e: Exception) {
+                    FlagshipLogManager.exception(e)
+                }
+                false
+            } else
+                true
         }
     }
 

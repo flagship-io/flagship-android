@@ -29,7 +29,7 @@ class FlagshipConstants {
             val FLAG_MISSING_ERROR = "Flag not found."
 
             val FLAG_VALUE_ERROR = "Default value will be returned for flag '%s': "
-            val FLAG_USER_EXPOSITION_ERROR = "User exposition for Flag '%s' wont be sent: "
+            val FLAG_USER_EXPOSITION_ERROR = "Visitor exposition for Flag '%s' wont be sent: "
             val FLAG_METADATA_ERROR = "Empty metadata will be returned for Flag '%s': "
 
             val HIT_INVALID_DATA_ERROR = "'%s' hit invalid format error. \n %s"
@@ -75,6 +75,16 @@ class FlagshipConstants {
                 "Panic mode is enabled : all features are disabled except 'fetchFlags()'."
             val CONTEXT_VALUE_OVERRIDING =
                 "key '%s' is overriding a predefined flagship value"
+
+            val FLAGS_CREATED = "Visitor '%s' has been created without calling `fetchFlags()` method afterwards, the value of the flag `flagKey` may be outdated."
+
+            val FLAGS_CONTEXT_UPDATED = "Visitor context for visitor '%s' has been updated without calling `fetchFlags()` method afterwards, the value of the flag `flagKey` may be outdated."
+
+            val FLAGS_AUTHENTICATED = "Visitor '%s' has been authenticated without calling `fetchFlags()` method afterwards, the value of the flag `flagKey` may be outdated."
+
+            val FLAGS_UNAUTHENTICATED = "Visitor '%s' has been unauthenticated without calling `fetchFlags()` method afterwards, the value of the flag `flagKey` may be outdated."
+
+
         }
     }
 

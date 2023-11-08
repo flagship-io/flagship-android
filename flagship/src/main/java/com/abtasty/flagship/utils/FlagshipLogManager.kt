@@ -27,7 +27,7 @@ class FlagshipLogManager(level: Level = Level.ALL)  : LogManager(level) {
         FLAGS_FETCH("FLAGS_FETCH"),
         FLAG_VALUE("FLAG_VALUE"),
         FLAG_METADATA("FLAG_METADATA"),
-        FLAG_USER_EXPOSED("FLAG_USER_EXPOSED"),
+        FLAG_VISITOR_EXPOSED("FLAG_VISITOR_EXPOSED"),
         ACTIVATE("ACTIVATE"),
         TRACKING("HIT"),
         AUTHENTICATE("AUTHENTICATE"),

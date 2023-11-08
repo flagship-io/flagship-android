@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.visitor.VisitorDelegate
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
@@ -34,39 +35,41 @@ class ModificationViewModel(val appContext: Application) : AndroidViewModel(appC
     }
 
     fun loadModification() {
-        var visitorModification : ConcurrentMap<String, Modification> = ConcurrentHashMap()
+        var visitorFlags: ConcurrentMap<String, _Flag> = ConcurrentHashMap()
         try {
-            visitorModification = readInstanceProperty<VisitorDelegate>(Flagship.getVisitor()!!,
-                    "delegate").modifications
-        } catch (e : Exception) {
-
+            visitorFlags = readInstanceProperty<VisitorDelegate>(
+                Flagship.getVisitor()!!,
+                "delegate"
+            ).flags
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         val json = JSONObject("{}")
-        for (e in visitorModification) {
-            if (e.value.value == null)
-                json.put(e.key, JSONObject.NULL)
+        for ((key, flag) in visitorFlags) {
+            if (flag.value == null)
+                json.put(key, JSONObject.NULL)
             else
-                json.put(e.key, e.value.value)
+                json.put(key, flag.value)
         }
         modifications.value = json.toString(4)
     }
 
-    fun getModification(key: String, default: String, type: String) {
-        value.value = when (type) {
-            "String" -> Flagship.getVisitor()?.getModification(key, default)
-            "Boolean" -> Flagship.getVisitor()?.getModification(key, default.toLowerCase().toBoolean())
+    fun getTypedValue(type: String, default : String) : Any {
+        return when (type) {
+            "String" -> default
+            "Boolean" -> default.toLowerCase().toBoolean()
             "Number" -> {
                 try {
-                    Flagship.getVisitor()?.getModification(key, default.toInt())
+                    default.toInt()
                 } catch (e: NumberFormatException) {
                     try {
-                        Flagship.getVisitor()?.getModification(key, default.toDouble())
+                        default.toDouble()
                     } catch (e: NumberFormatException) {
                         try {
-                            Flagship.getVisitor()?.getModification(key, default.toFloat())
+                            default.toFloat()
                         } catch (e: NumberFormatException) {
                             try {
-                                Flagship.getVisitor()?.getModification(key, default.toLong())
+                                default.toLong()
                             } catch (e: NumberFormatException) {
                                 -1
                             }
@@ -75,15 +78,26 @@ class ModificationViewModel(val appContext: Application) : AndroidViewModel(appC
                 }
             }
             "Json" -> {
-                Flagship.getVisitor()?.getModification(key, JSONObject()).toString();
+                JSONObject()
             }
+
             else -> "unknown"
         }
-        info.value = Flagship.getVisitor()?.getModificationInfo(key) ?: JSONObject()
     }
 
-    fun activate(key : String) {
-        Flagship.getVisitor()?.activateModification(key)
+    fun getModification(key: String, default: String, type: String) {
+        Flagship.getVisitor()?.let { visitor ->
+            value.value = visitor.getModification(key, getTypedValue(type, default))
+            info.value = visitor.getFlag(key, getTypedValue(type, default)).metadata().toJson()
+        }
+
+    }
+
+    fun activate(key: String, default: String, type: String) {
+//        Flagship.getVisitor()?.activateModification(key)
+        Flagship.getVisitor()?.let { visitor ->
+            visitor.getFlag(key, getTypedValue(type, default)).visitorExposed()
+        }
         Toast.makeText(appContext, "Activation sent", Toast.LENGTH_SHORT).show();
     }
 }

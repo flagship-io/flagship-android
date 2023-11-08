@@ -1,7 +1,6 @@
 package com.abtasty.flagship.visitor
 
 import com.abtasty.flagship.api.TrackingManager
-import com.abtasty.flagship.cache.CacheHelper
 import com.abtasty.flagship.cache.HitCacheHelper
 import com.abtasty.flagship.cache.VisitorCacheHelper
 import com.abtasty.flagship.decision.DecisionManager
@@ -9,8 +8,11 @@ import com.abtasty.flagship.hits.Activate
 import com.abtasty.flagship.hits.Consent
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.model.ExposedFlag
 import com.abtasty.flagship.model.Flag
-import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model.FlagMetadata
+import com.abtasty.flagship.model._Flag
+import com.abtasty.flagship.utils.EVisitorFlagsUpdateStatus
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipContext
 import com.abtasty.flagship.utils.FlagshipLogManager
@@ -31,6 +33,7 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
 
     override fun <T> updateContext(key: String, value: T) {
 
+        val copyBefore = HashMap(visitor.visitorContext)
         when (true) {
             (!(value is String || value is Number || value is Boolean)) ->
                 FlagshipLogManager.log(FlagshipLogManager.Tag.UPDATE_CONTEXT,
@@ -43,16 +46,24 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
                     String.format(FlagshipConstants.Errors.CONTEXT_RESERVED_KEY_ERROR, key))
             else -> visitor.visitorContext[key] = value
         }
+        if (copyBefore != HashMap(visitor.visitorContext))
+            visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.CONTEXT_UPDATED
     }
 
     override fun <T> updateContext(flagshipContext: FlagshipContext<T>, value: T) {
+        val copyBefore = HashMap(visitor.visitorContext)
         if (flagshipContext.verify(value)) visitor.visitorContext[flagshipContext.key] =
             value
+        if (copyBefore != HashMap(visitor.visitorContext))
+            visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.CONTEXT_UPDATED
     }
 
     override fun clearContext() {
+        val copyBefore = HashMap(visitor.visitorContext)
         visitor.visitorContext.clear()
         visitor.loadContext(null)
+        if (copyBefore != HashMap(visitor.visitorContext))
+            visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.CONTEXT_UPDATED
     }
 
     override fun fetchFlags(): Deferred<Unit> {
@@ -60,10 +71,11 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
         return Flagship.coroutineScope().async {
             decisionManager?.let {
                 val visitorDTO = visitor.toDTO()
-                decisionManager.getCampaignsModifications(visitorDTO)?.let { campaigns ->
-                    visitor.updateModifications(campaigns)
+                decisionManager.getCampaignFlags(visitorDTO)?.let { flags ->
+                    visitor.updateFlags(flags)
                     visitor.logVisitor(FlagshipLogManager.Tag.FLAGS_FETCH)
                     visitor.getStrategy().cacheVisitor()
+                    visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.FLAGS_FETCHED
                 }
             }
         }
@@ -74,65 +86,90 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
         trackingManager.sendContextRequest(visitor.toDTO())
     }
 
-    @Throws(
-        FlagshipConstants.Exceptions.Companion.FlagTypeException::class,
-        FlagshipConstants.Exceptions.Companion.FlagException::class,
-        FlagshipConstants.Exceptions.Companion.FlagNotFoundException::class
-    )
-    fun <T : Any?> getModification(key: String, defaultValue: T?): Modification {
-        val visitorModifications = visitor.modifications.toMap()
-        try {
-            val modification = visitorModifications[key]
-            if (modification != null) {
-                val castValue = (modification.value ?: defaultValue) as T
+    fun getVisitorFlag(key: String, defaultValue: Any?) : _Flag {
+        visitor.flags[key]?.let { flag ->
+            try {
+                val castValue = (flag.value ?: defaultValue)
                 if (defaultValue == null || castValue == null || castValue.javaClass == defaultValue.javaClass)
-                    return modification
+                    return flag
                 else
                     throw FlagshipConstants.Exceptions.Companion.FlagTypeException()
-            } else
-                throw FlagshipConstants.Exceptions.Companion.FlagNotFoundException()
-        } catch (e: Exception) {
-            when (e) {
-                is FlagshipConstants.Exceptions.Companion.FlagTypeException -> throw e
-                is FlagshipConstants.Exceptions.Companion.FlagNotFoundException -> throw e
-                else -> throw FlagshipConstants.Exceptions.Companion.FlagException()
+            } catch (e: Exception) {
+                throw e
             }
         }
+        throw FlagshipConstants.Exceptions.Companion.FlagNotFoundException()
     }
 
 
     @Suppress("unchecked_cast")
-    override fun <T : Any?> getFlagValue(key: String, defaultValue: T?) : T? {
+    override fun <T> getVisitorFlagValue(key: String, defaultValue: T?): T? {
         try {
-            val modification = getModification(key, defaultValue)
-            return (modification.value ?: defaultValue) as T
-        } catch (e : Exception) {
-            logFlagError(FlagshipLogManager.Tag.FLAG_VALUE, e, FlagshipConstants.Errors.FLAG_VALUE_ERROR.format(key))
+            val flag = getVisitorFlag(key, defaultValue)
+            return (flag.value ?: defaultValue) as T
+        } catch (e: Exception) {
+            logFlagError(
+                FlagshipLogManager.Tag.FLAG_VALUE,
+                e,
+                FlagshipConstants.Errors.FLAG_VALUE_ERROR.format(key)
+            )
         }
         return defaultValue
     }
 
-    override fun <T : Any?> exposeFlag(key: String, defaultValue: T?) {
+    override fun <T> getVisitorFlagMetadata(key: String, defaultValue: T?): FlagMetadata? {
         try {
-            val modification = getModification(key, defaultValue)
-            if (!visitor.activatedVariations.contains(modification.variationId))
-                visitor.activatedVariations.add(modification.variationId)
-            sendHit(Activate(modification))
-        } catch (e: Exception) {
-            logFlagError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, e, FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key))
-        }
-    }
-
-    override fun <T : Any?> getFlagMetadata(key: String, defaultValue: T?) : Modification? {
-        try {
-            return getModification(key, defaultValue)
+            return getVisitorFlag(key, defaultValue).metadata
         } catch (e: Exception) {
             logFlagError(FlagshipLogManager.Tag.FLAG_METADATA, e, FlagshipConstants.Errors.FLAG_METADATA_ERROR.format(key))
         }
         return null
     }
 
-    override fun <T : Any?> getFlag(key: String, defaultValue : T): Flag<T> {
+    override fun <T> sendVisitorExposition(key: String, defaultValue: T?) {
+        try {
+            val flag = getVisitorFlag(key, defaultValue)
+            if (!visitor.activatedVariations.contains(flag.metadata.variationId))
+                visitor.activatedVariations.add(flag.metadata.variationId)
+            val trackingManager: TrackingManager = configManager.trackingManager
+            val activationResult =
+                trackingManager.sendHit(visitor.toDTO(), Activate(flag.metadata))
+            activationResult?.invokeOnCompletion { it ->
+                runBlocking {
+                    if (it == null) {
+                        try {
+                            if (activationResult.await())
+                                Flagship.getConfig().onVisitorExposed?.invoke(
+                                    VisitorExposed(
+                                        visitor.visitorId,
+                                        visitor.anonymousId,
+                                        HashMap(visitor.visitorContext),
+                                        visitor.isAuthenticated,
+                                        visitor.hasConsented
+                                    ),
+                                    ExposedFlag(flag.key, flag.value, defaultValue, flag.metadata)
+                                )
+                        } catch (e: Exception) {
+                            FlagshipLogManager.log(
+                                FlagshipLogManager.Tag.TRACKING,
+                                LogManager.Level.ERROR,
+                                e.stackTraceToString()
+                            )
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            logFlagError(
+                FlagshipLogManager.Tag.FLAG_VISITOR_EXPOSED,
+                e,
+                FlagshipConstants.Errors.FLAG_USER_EXPOSITION_ERROR.format(key)
+            )
+        }
+    }
+
+    override fun <T> getFlag(key: String, defaultValue: T): Flag<T> {
+        checkOutDatedFlags()
         return Flag(visitor, key, defaultValue)
     }
 
@@ -148,10 +185,13 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
 
     override fun authenticate(visitorId: String) {
         if (visitor.configManager.isDecisionMode(Flagship.DecisionMode.DECISION_API)) {
+            val changed = visitor.visitorId != visitorId
             if (visitor.anonymousId == null)
                 visitor.anonymousId = visitor.visitorId
             visitor.visitorId = visitorId
             visitor.isAuthenticated = true // todo CHECK IF OK
+            if (changed)
+                visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.AUTHENTICATED
         } else {
             FlagshipLogManager.log(FlagshipLogManager.Tag.AUTHENTICATE, LogManager.Level.ERROR,
                 String.format(FlagshipConstants.Errors.AUTHENTICATION_BUCKETING_ERROR, "authenticate"))
@@ -164,6 +204,7 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
                 visitor.visitorId = visitor.anonymousId ?: "" //todo is needed to generate
                 visitor.anonymousId = null
                 visitor.isAuthenticated = false // todo CHECK IF OK
+                visitor.flagFetchingStatus = EVisitorFlagsUpdateStatus.UNAUTHENTICATED
             }
         } else {
             FlagshipLogManager.log(FlagshipLogManager.Tag.UNAUTHENTICATE, LogManager.Level.ERROR,
@@ -230,7 +271,12 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
                     cancel()
                 }
             }
-            val isSuccess = lookupLatch.await(flagshipConfig.cacheManager.visitorCacheLookupTimeout, flagshipConfig.cacheManager.timeoutUnit)
+            val isSuccess = withContext(Dispatchers.IO) {
+                lookupLatch.await(
+                    flagshipConfig.cacheManager.visitorCacheLookupTimeout,
+                    flagshipConfig.cacheManager.timeoutUnit
+                )
+            }
             if (!isSuccess) {
                 coroutine.cancelAndJoin()
                 logCacheError(FlagshipConstants.Errors.CACHE_IMPL_TIMEOUT.format("lookupVisitor", visitorDelegateDTO.visitorId))
@@ -290,6 +336,20 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
             } catch (e: Exception) {
                 logCacheException(FlagshipConstants.Errors.CACHE_IMPL_ERROR.format("flushHits", visitorDTO.visitorId), e)
             }
+        }
+    }
+
+    private fun checkOutDatedFlags() {
+        if (visitor.flagFetchingStatus != EVisitorFlagsUpdateStatus.FLAGS_FETCHED) {
+            val warningString : String = when (visitor.flagFetchingStatus) {
+                EVisitorFlagsUpdateStatus.CONTEXT_UPDATED -> FlagshipConstants.Warnings.FLAGS_CONTEXT_UPDATED
+                EVisitorFlagsUpdateStatus.AUTHENTICATED -> FlagshipConstants.Warnings.FLAGS_AUTHENTICATED
+                EVisitorFlagsUpdateStatus.UNAUTHENTICATED -> FlagshipConstants.Warnings.FLAGS_UNAUTHENTICATED
+                else -> {
+                    FlagshipConstants.Warnings.FLAGS_CREATED
+                }
+            }
+            FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.WARNING, warningString.format(visitor.visitorId))
         }
     }
 }

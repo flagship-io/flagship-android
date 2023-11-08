@@ -1,6 +1,9 @@
 package com.abtasty.flagship.cache
 
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.abtasty.flagship.database.DefaultDatabase
 import com.abtasty.flagship.database.Hit
 import com.abtasty.flagship.database.Visitor
@@ -17,16 +20,28 @@ import org.json.JSONObject
 class DefaultCacheManager : CacheManager() {
 
     private val db: DefaultDatabase by lazy {
-        Room.databaseBuilder(Flagship.application, DefaultDatabase::class.java, "flagship-cache").build()
+        Room.databaseBuilder(Flagship.application, DefaultDatabase::class.java, "flagship-cache")
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    super.onOpen(db)
+                    db.execSQL("CREATE TEMP TABLE IF NOT EXISTS room_table_modification_log(table_id INTEGER PRIMARY KEY, invalidated INTEGER NOT NULL DEFAULT 0)")
+                }
+            })
+            .build()
     }
 
-    override var visitorCacheImplementation: IVisitorCacheImplementation? = object : IVisitorCacheImplementation {
+    override var visitorCacheImplementation: IVisitorCacheImplementation? =
+        object : IVisitorCacheImplementation {
 
-        override fun cacheVisitor(visitorId: String, data: JSONObject) {
-            db.visitorDao().upsert(Visitor(visitorId, data.toString()))
-            FlagshipLogManager.log(FlagshipLogManager.Tag.DEFAULT_CACHE_MANAGER, LogManager.Level.INFO,
-                FlagshipConstants.Info.DEFAULT_CACHE_MANAGER_CACHE_VISITOR.format(visitorId, data.toString(4)))
-        }
+            override fun cacheVisitor(visitorId: String, data: JSONObject) {
+                db.visitorDao().upsert(Visitor(visitorId, data.toString()))
+                FlagshipLogManager.log(
+                    FlagshipLogManager.Tag.DEFAULT_CACHE_MANAGER, LogManager.Level.INFO,
+                    FlagshipConstants.Info.DEFAULT_CACHE_MANAGER_CACHE_VISITOR.format(
+                        visitorId,
+                        data.toString(4)
+                    ))
+            }
 
         override fun lookupVisitor(visitorId: String): JSONObject {
             var result = JSONObject()
