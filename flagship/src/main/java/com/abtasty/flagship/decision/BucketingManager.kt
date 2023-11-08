@@ -8,6 +8,7 @@ import com.abtasty.flagship.main.Flagship.getStatus
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.model.Modification
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipConstants.Errors.Companion.BUCKETING_POLLING_ERROR
 import com.abtasty.flagship.utils.FlagshipLogManager
@@ -106,25 +107,25 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
         executor = null
     }
 
-    override fun getCampaignsModifications(visitorDelegateDTO: VisitorDelegateDTO): HashMap<String, Modification>? {
-        val campaignsModifications: HashMap<String, Modification> = HashMap()
+    override fun getCampaignFlags(visitorDelegateDTO: VisitorDelegateDTO): HashMap<String, _Flag>? {
+        val campaignsFlags: HashMap<String, _Flag> = HashMap()
         try {
-            for ((_, _, variationGroups) in campaigns) {
+            for ((_, variationGroups) in campaigns) {
                 for (variationGroup in variationGroups) {
                     if (variationGroup!!.isTargetingValid(HashMap(visitorDelegateDTO.context))) {
                         val variation = variationGroup.selectVariation(visitorDelegateDTO)
                         if (variation != null) {
-                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationGroupId, variation.variationId)
-                            val modificationsValues = variation.getModificationsValues()
-                            if (modificationsValues != null)
-                                campaignsModifications.putAll(modificationsValues)
+                            visitorDelegateDTO.addNewAssignmentToHistory(variation.variationMetadata.variationGroupId, variation.variationMetadata.variationId)
+                            variation.flags?.let { flags ->
+                                campaignsFlags.putAll(flags)
+                            }
                             break
                         }
                     }
                 }
             }
             visitorDelegateDTO.visitorStrategy.sendContextRequest()
-            return campaignsModifications
+            return campaignsFlags
         } catch (e: Exception) {
             FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")
         }

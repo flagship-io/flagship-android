@@ -62,7 +62,9 @@ class ModificationFragment : Fragment() {
         })
 
         binding.activate.setOnClickListener {
-            modificationViewModel.activate(binding.editTextKey.text.toString())
+            modificationViewModel.activate( binding.editTextKey.text.toString(),
+                binding.editTextDefault.text.toString(),
+                binding.spinner.selectedItem.toString())
         }
 
         return binding.root
