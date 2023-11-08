@@ -20,10 +20,6 @@ data class Variation(
             variationGroupMetadata: VariationGroupMetadata
         ): Variation? {
             return try {
-//                val variationId = variationObj.getString("id")
-//                val isReference = variationObj.optBoolean("reference", false)
-//                val modifications: Modifications? = Modifications.parse(campaignId, campaignType, slug, variationGroupId,
-//                    variationId, isReference, variationObj.getJSONObject("modifications"))
                 val variationMetadata = VariationMetadata(
                     variationObj.getString("id"),
                     variationObj.optString("name", ""),
@@ -33,7 +29,6 @@ data class Variation(
                 )
                 val flags =
                     parse_flags(variationObj.getJSONObject("modifications"), variationMetadata)
-//                val allocation = variationObj.optInt("allocation", if (bucketingMode) 0 else 100)
                 //In Api mode always 100%, in bucketing mode the variations at 0% are loaded just to check if it matches one in cache at selection time.
                 Variation(flags, variationMetadata)
             } catch (e: Exception) {
@@ -57,7 +52,6 @@ data class Variation(
                     val value = if (valueObj.isNull(key)) null else valueObj[key]
                     if (value is Boolean || value is Number || value is String || value is JSONObject || value is JSONArray || value == null)
                         flags[key] = _Flag(key, value, FlagMetadata(variationMetadata))
-//                        flags[key] = Modification(key, campaignId, variationGroupId, variationId, isReference, value, campaignType, slug)
                     else
                         FlagshipLogManager.log(
                             FlagshipLogManager.Tag.PARSING,
@@ -76,10 +70,6 @@ data class Variation(
             }
         }
     }
-
-//    fun getModificationsValues(): HashMap<String, Modification>? {
-//        return modifications?.values
-//    }
 
     override fun toString(): String {
         return "Variation(campaignId='${variationMetadata.campaignId}', variationGroupId='${variationMetadata.variationGroupId}', " +
