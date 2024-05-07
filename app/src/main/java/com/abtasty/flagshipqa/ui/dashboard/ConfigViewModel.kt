@@ -87,6 +87,14 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
                     ready()
                 }
             }
+            flagshipConfig.withOnVisitorExposed { visitorExposed, exposedFlag ->
+                System.out.println("[OnVisitorExposed] : " + visitorExposed.visitorId + " \n"
+                        + "key: " + exposedFlag.key + "\n"
+                        + "value: " + exposedFlag.value + "\n"
+                        + "Campaign name: " + exposedFlag.metadata.campaignName + "\n"
+                        + "variation name: " + exposedFlag.metadata.variationName
+                )
+            }
             Flagship.start(getApplication(), env_id.value!!, api_key.value!!, flagshipConfig.build())
         }
     }

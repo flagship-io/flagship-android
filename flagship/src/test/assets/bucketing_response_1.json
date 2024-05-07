@@ -234,10 +234,12 @@
     {
       "id": "brjjpk7734cg0sl5llll",
       "type": "ab",
+      "name": "my_campaign_name",
       "slug": "campaignSlug",
       "variationGroups": [
         {
           "id": "brjjpk7734cg0sl5mmmm",
+          "name": "my_variation_group_name",
           "targeting": {
             "targetingGroups": [
               {
@@ -254,6 +256,7 @@
           "variations": [
             {
               "id": "brjjpk7734cg0sl5nnnn",
+              "name": "my_variation_name_0",
               "modifications": {
                 "type": "JSON",
                 "value": {
@@ -266,6 +269,7 @@
             },
             {
               "id": "brjjpk7734cg0sl5oooo",
+              "name": "my_variation_name_1",
               "modifications": {
                 "type": "JSON",
                 "value": {
@@ -277,6 +281,7 @@
             },
             {
               "id": "brjjpk7734cg0sl5pppp",
+              "name": "my_variation_name_2",
               "modifications": {
                 "type": "JSON",
                 "value": {
@@ -288,6 +293,7 @@
             },
             {
               "id": "brjjpk7734cg0sl5qqqq",
+              "name": "my_variation_name_3",
               "modifications": {
                 "type": "JSON",
                 "value": {

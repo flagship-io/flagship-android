@@ -1,0 +1,72 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "153c86145807fbdbf19c1317e3551b74",
+    "entities": [
+      {
+        "tableName": "visitors",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`visitorId` TEXT NOT NULL, `data` TEXT NOT NULL, PRIMARY KEY(`visitorId`))",
+        "fields": [
+          {
+            "fieldPath": "visitorId",
+            "columnName": "visitorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "data",
+            "columnName": "data",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "visitorId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "hits",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`visitorId` TEXT NOT NULL, `data` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "visitorId",
+            "columnName": "visitorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "data",
+            "columnName": "data",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '153c86145807fbdbf19c1317e3551b74')"
+    ]
+  }
+}

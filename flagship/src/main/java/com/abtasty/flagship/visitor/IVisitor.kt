@@ -65,7 +65,7 @@ interface IVisitor {
      * This function will return a flag object containing the current value returned by Flagship and the associated campaign information.
      * If the key is not found an empty Flag object with the default value will be returned.
      *
-     * @param key          key associated to the modification.
+     * @param key          key associated to the flag.
      * @param defaultValue fallback default value to use.
      */
     fun <T : Any?> getFlag(key: String, defaultValue : T) : Flag<T>

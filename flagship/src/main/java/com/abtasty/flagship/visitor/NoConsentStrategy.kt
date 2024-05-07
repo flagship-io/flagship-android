@@ -1,6 +1,8 @@
 package com.abtasty.flagship.visitor
 
 import com.abtasty.flagship.hits.Hit
+import com.abtasty.flagship.model.FlagMetadata
+import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
@@ -21,8 +23,8 @@ class NoConsentStrategy(val visitorDelegate: VisitorDelegate) : DefaultStrategy(
         FlagshipLogManager.log(tag!!, LogManager.Level.ERROR, String.format(FlagshipConstants.Errors.METHOD_DEACTIVATED_CONSENT_ERROR, methodName, visitorId))
     }
 
-    override fun <T : Any?> exposeFlag(key: String, defaultValue : T?) {
-        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_USER_EXPOSED, visitorDelegate.visitorId, "Flag.userExposed()")
+    override fun <T : Any?> sendVisitorExposition(key: String, defaultValue : T?) {
+        logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VISITOR_EXPOSED, visitorDelegate.visitorId, "Flag[$key].visitorExposed()")
     }
 
     override fun <T> sendHit(hit: Hit<T>) {
