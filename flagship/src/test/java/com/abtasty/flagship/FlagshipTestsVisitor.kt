@@ -23,6 +23,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test;
+import org.robolectric.RuntimeEnvironment
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -650,6 +651,13 @@ class FlagshipTestsVisitor : AFlagshipTest() {
         ).intercept(
             ACTIVATION_URL,
             FlagshipTestsHelper.response("", 200)
+        ).intercept(
+            ACCOUNT_SETTINGS.format(_ENV_ID_),
+            FlagshipTestsHelper.responseFromAssets(
+                RuntimeEnvironment.getApplication(),
+                "account_settings_no_eai.json",
+                200
+            )
         )
 
         runBlocking {
