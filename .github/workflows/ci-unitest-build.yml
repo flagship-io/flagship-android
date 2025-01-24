@@ -29,7 +29,7 @@ jobs:
         with:
           gradle-version: 8.7
       - name: Clean
-        run: ./gradlew clean
+        run: ./gradlew :flagship:clean
       - name: Build with Gradle
         run: ./gradlew :flagship:assembleDebug
 
@@ -50,13 +50,13 @@ jobs:
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor -i --debug
         #>>>>>>>>>
       - name: Test FlagshipTestsVisitor
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor.test_xp_continuity -i --debug
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor.test_xp_continuity -i --stacktrace
       - name: Test FlagshipTestsVisitorStrategy
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy -i --debug
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy -i --stacktrace
       - name: Test FlagshipTestsTrackingManager
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager -i --debug
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager -i --stacktrace
       - name: Test FlagshipTestsTrackingManager
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsHits -i --debug
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsHits -i --stacktrace
 
 #      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous -i
