@@ -355,7 +355,9 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
             if (invalidHits.isNotEmpty())
                 trackingManager.deleteHits(invalidHits)
             println("A 44444444444")
-            return successHits.ifEmpty { null }
+            val result = successHits.ifEmpty { null }
+            println("A 5555555555 : " + result+toString() )
+            return result
         } catch (e: Exception) {
             FlagshipLogManager.exception(FlagshipException(e))
             println("A EEEEEEEEEEEE")
