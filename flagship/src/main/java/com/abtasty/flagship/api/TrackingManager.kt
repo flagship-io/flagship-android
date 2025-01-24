@@ -174,19 +174,14 @@ class TrackingManager() : OnConfigChangedListener, TrackingManagerStrategyInterf
         this.flagshipConfig = config
         this.trackingManagerConfig = config.trackingManagerConfig
         this.cacheManager = config.cacheManager
-        println("C 111111111")
         runBlocking(Dispatchers.Default) {
-            println("C 111111111*")
             getStrategy().lookupPool().await() //new
-            println("C 111111111**")
         }
-        println("C 2222222222")
         if (this.trackingManagerConfig!!.disablePolling) {
             this.clearPool()
         } else {
             this.startPollingLoop()
         }
-        println("C 3333333")
     }
 
     internal fun startPollingLoop() {
@@ -317,7 +312,6 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
     override fun addHits(hits: ArrayList<Hit<*>>, new: Boolean): ArrayList<Hit<*>>? {
 
         return try {
-            println("A 1111111111111")
             val successHits = ArrayList<Hit<*>>()
             val invalidHits = ArrayList<Hit<*>>()
             for (h in hits) {
@@ -353,17 +347,11 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                     invalidHits.add(h)
                 }
             }
-            println("A 33333333333")
             if (invalidHits.isNotEmpty())
                 trackingManager.deleteHits(invalidHits)
-            println("A 44444444444")
-            val result = successHits.ifEmpty { null }
-            println("A 5555555555 : " + result)
-            return result
+            return successHits.ifEmpty { null }
         } catch (e: Exception) {
-            println("A EEEEEEEEEEEE 0")
             FlagshipLogManager.exception(FlagshipException(e))
-            println("A EEEEEEEEEEEE")
             null
         }
     }
@@ -415,26 +403,17 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
     override fun lookupPool(): Deferred<ArrayList<Hit<*>>?> {
         return Flagship.coroutineScope().async {
             try {
-                println("P 00000000")
                 ensureActive()
-                println("P 00000000'")
                 withTimeout(
                     trackingManager.cacheManager?.hitsCacheLookupTimeout ?: CacheManager.DEFAULT_HIT_TIMEOUT
                 ) {
-                    println("P 11111111")
-                    val ret = (trackingManager.cacheManager as? IHitCacheImplementation)?.let { iHitCacheImplementation ->
+                    (trackingManager.cacheManager as? IHitCacheImplementation)?.let { iHitCacheImplementation ->
                         val hitsJson = iHitCacheImplementation.lookupHits()
-                        println("P 11111111'")
-                        val ret2 = addHits(HitCacheHelper.hitsFromJSONCache(hitsJson), false)
-                        println("P 11111111''")
-                        ret2
+                        addHits(HitCacheHelper.hitsFromJSONCache(hitsJson), false)
                     }
-                    println("P 2222222")
-                    ret
                 }
             } catch (e: Exception) {
                 FlagshipLogManager.exception(FlagshipException(e))
-                println("P 4444444444")
                 null
             }
         }
@@ -471,33 +450,22 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
     override fun polling(): Deferred<Pair<Pair<ResponseCompat?, Batch>?, Pair<ResponseCompat?, ArrayList<Activate>>?>?> {
 
         return try {
-            println("-1 L 000000000")
-            println("-1 L 000000000 = " + Flagship.coroutineScope().toString())
             Flagship.coroutineScope().async {
                 try {
-                    println("-2 L 000000000")
                     ensureActive()
                     val resultsHits = sendHitsBatch()
                     val resultsActivate = sendActivateBatch()
-                    println("L 000000000")
                     val t0 = resultsHits?.await()
-                    println("L 00000001")
                     val t1 = resultsActivate?.await()
-                    println("L 00000002")
                     val result = Pair(t0, t1)
-                    println("L 11111111")
                     result
                 } catch (e: Exception) {
-                    println("L EEEEEEEEEE 0")
                     FlagshipLogManager.exception(FlagshipException(e))
-                    println("L EEEEEEEEEE 1")
                     null
                 }
             }
         } catch (e: Exception) {
-            println("-1 L E XXXXXXXXXX")
             e.printStackTrace()
-            println("-1 L E XXXXXXXXXX 2")
             CoroutineScope(Dispatchers.Default).async { null }
         }
     }

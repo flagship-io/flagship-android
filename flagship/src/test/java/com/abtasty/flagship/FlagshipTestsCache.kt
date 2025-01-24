@@ -440,7 +440,6 @@ class FlagshipTestsCache : AFlagshipTest() {
 //                    .withPollingIntervals(1, TimeUnit.SECONDS)
                     .withFlagshipStatusListener { newStatus: Flagship.FlagshipStatus -> if (newStatus === Flagship.FlagshipStatus.INITIALIZED) readyLatch.countDown() }).await()
 
-            println("HERE HEHEHE")
         }
 
         if (!readyLatch.await(2, TimeUnit.SECONDS))

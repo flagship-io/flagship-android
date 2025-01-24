@@ -1547,7 +1547,7 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
             val visitorA = Flagship.newVisitor("visitor-A", true)
                 .context(hashMapOf(Pair("testing_tracking_manager", true)))
                 .isAuthenticated(false)
-                .build()
+                .build() // 1 consent
 
             delay(100)
 
@@ -1590,7 +1590,7 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
             visitorA.sendHit(Screen("Screen 22"))
             visitorA.sendHit(Screen("Screen 33"))
 
-            delay(200)
+            delay(1000)
 
             assertEquals(1, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.size ?: 0)
             FlagshipTestsHelper.interceptor().getJsonFromRequestCall(ARIANE_URL, 1)?.let { json ->
