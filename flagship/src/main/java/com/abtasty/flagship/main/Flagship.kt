@@ -122,6 +122,7 @@ object Flagship {
                     FlagshipConstants.Errors.INITIALIZATION_PARAM_ERROR
                 )
             }
+            println("1111111111111")
             readinessLatch.countDown()
         }
 
