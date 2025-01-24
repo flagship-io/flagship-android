@@ -176,6 +176,7 @@ class TrackingManager() : OnConfigChangedListener, TrackingManagerStrategyInterf
         runBlocking(Dispatchers.Default) {
             println("C 111111111*")
             getStrategy().lookupPool().await() //new
+            println("C 111111111**")
         }
         println("C 2222222222")
         if (this.trackingManagerConfig!!.disablePolling) {
@@ -405,17 +406,23 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
     override fun lookupPool(): Deferred<ArrayList<Hit<*>>?> {
         return Flagship.coroutineScope().async {
             try {
+                println("P 00000000")
                 ensureActive()
+                println("P 00000000'")
                 withTimeout(
                     trackingManager.cacheManager?.hitsCacheLookupTimeout ?: CacheManager.DEFAULT_HIT_TIMEOUT
                 ) {
-                    (trackingManager.cacheManager as? IHitCacheImplementation)?.let { iHitCacheImplementation ->
+                    println("P 11111111")
+                    val ret = (trackingManager.cacheManager as? IHitCacheImplementation)?.let { iHitCacheImplementation ->
                         val hitsJson = iHitCacheImplementation.lookupHits()
                         addHits(HitCacheHelper.hitsFromJSONCache(hitsJson), false)
                     }
+                    println("P 2222222")
+                    ret
                 }
             } catch (e: Exception) {
                 FlagshipLogManager.exception(FlagshipException(e))
+                println("P 4444444444")
                 null
             }
         }
