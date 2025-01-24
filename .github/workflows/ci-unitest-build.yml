@@ -45,14 +45,21 @@ jobs:
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsEAI -i --stacktrace
 #      - name: Test FlagshipTestsFlags
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsFlags -i --stacktrace
+      #>>>>>>>>>
+#      - name: Test FlagshipTestsVisitor
+#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor -i --debug
+        #>>>>>>>>>
       - name: Test FlagshipTestsVisitor
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor -i
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor.test_xp_continuity -i --debug
       - name: Test FlagshipTestsVisitorStrategy
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy -i
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy -i --debug
       - name: Test FlagshipTestsTrackingManager
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager -i
-      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous -i
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager -i --debug
+      - name: Test FlagshipTestsTrackingManager
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsHits -i --debug
+
+#      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous
+#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous -i
 
 #      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous_fail
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous_fail --debug
