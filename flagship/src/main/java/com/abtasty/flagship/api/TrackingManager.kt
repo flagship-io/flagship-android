@@ -415,7 +415,10 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                     println("P 11111111")
                     val ret = (trackingManager.cacheManager as? IHitCacheImplementation)?.let { iHitCacheImplementation ->
                         val hitsJson = iHitCacheImplementation.lookupHits()
-                        addHits(HitCacheHelper.hitsFromJSONCache(hitsJson), false)
+                        println("P 11111111'")
+                        val ret2 = addHits(HitCacheHelper.hitsFromJSONCache(hitsJson), false)
+                        println("P 11111111''")
+                        ret2
                     }
                     println("P 2222222")
                     ret
