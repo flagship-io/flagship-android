@@ -3,11 +3,11 @@ package com.abtasty.flagship.decision
 import android.content.Context
 import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.IFlagshipEndpoints.Companion.BUCKETING
+import com.abtasty.flagship.hits.TroubleShooting
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.Flagship.getStatus
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.model.Campaign
-import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipConstants.Errors.Companion.BUCKETING_POLLING_ERROR
@@ -26,15 +26,27 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
     private val LAST_MODIFIED_DECISION_FILE = "LAST_MODIFIED_DECISION_FILE"
 
     private var executor: ScheduledExecutorService? = null
+    internal var lastBucketingTimestamp = 0L
     private var lastModified: String? = null
-    private var decisionFile: String? = null
+    internal var decisionFile: String? = null
     private var campaigns: ArrayList<Campaign> = ArrayList()
 
-    override fun init(listener : ((Flagship.Status) -> Unit)?) {
+    override fun init(listener : ((Flagship.FlagshipStatus) -> Unit)?) {
         super.init(listener)
-        if (getStatus().lessThan(Flagship.Status.READY)) statusListener?.invoke(Flagship.Status.POLLING)
+        if (getStatus().lessThan(Flagship.FlagshipStatus.INITIALIZED)) statusListener?.invoke(Flagship.FlagshipStatus.INITIALIZING)
         startPolling()
     }
+
+//    override fun parseTroubleShooting(json: JSONObject) {
+//        try {
+//            val troubleshootingJson = json.getJSONObject("accountSettings")
+//                .getJSONObject("troubleshooting")
+//            super.parseTroubleShootingJson(troubleshootingJson)
+//        } catch (e: Exception) {
+//            flagshipConfig.troubleShootingStartTimestamp = -1
+//            flagshipConfig.troubleShootingEndTimestamp = -1
+//        }
+//    }
 
     fun startPolling() {
         if (executor == null) {
@@ -53,7 +65,7 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
             if (time == 0L)
                 executor!!.execute(runnable)
             else
-                executor!!.scheduleAtFixedRate(runnable, 0, time, unit)
+                executor!!.scheduleWithFixedDelay(runnable, 0, time, unit)
         }
     }
 
@@ -63,7 +75,7 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
             if (lastModified == null) lastModified = loadLastModifiedDecisionFile()
             if (decisionFile == null) decisionFile = loadDecisionFile()
             if (lastModified != null) headers["If-Modified-Since"] = lastModified!!
-            try {
+            val response = try {
                 HttpManager.sendHttpRequest(HttpManager.RequestType.GET, String.format(BUCKETING, flagshipConfig.envId), headers, null)
             } catch (e: Exception) {
                 FlagshipLogManager.log(FlagshipLogManager.Tag.BUCKETING, LogManager.Level.ERROR, BUCKETING_POLLING_ERROR.format(e.message ?: ""))
@@ -73,9 +85,13 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
                         JSONObject(decisionFile).toString(4)))
                 }
                 null
-            }?.let { response ->
+            }
+            response?.let {
+                lastResponse = response
+                lastResponseTimestamp = System.currentTimeMillis()
                 logResponse(response)
                 if (response.code < 300) {
+                    lastBucketingTimestamp = System.currentTimeMillis()
                     decisionFile = response.content
                     lastModified = response.headers?.get("Last-Modified")
                     if (lastModified != null && decisionFile != null) {
@@ -85,14 +101,23 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
                 }
             }
             parseDecisionFile()
+            sendTroubleshootingHit(TroubleShooting.Factory.SDK_BUCKETING_FILE.build(null, response))
         } catch (e: Exception) {
             FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")
         }
-        updateFlagshipStatus(if (panic) Flagship.Status.PANIC else Flagship.Status.READY)
+        updateFlagshipStatus(if (panic) Flagship.FlagshipStatus.PANIC else Flagship.FlagshipStatus.INITIALIZED)
+        readyLatch?.countDown()
     }
 
     private fun parseDecisionFile() {
         decisionFile?.let { content ->
+           JSONObject(content).optJSONObject("accountSettings") ?.let {
+                flagshipConfig.eaiCollectEnabled = it.optBoolean("eaiCollectEnabled")
+                flagshipConfig.eaiActivationEnabled = it.optBoolean("eaiActivationEnabled")
+                flagshipConfig.oneVisitorOneTestEnabled = it.optBoolean("enabled1V1T")
+                flagshipConfig.xpcEnabled = it.optBoolean("enabledXPC")
+               super.parseTroubleShootingJson(it)
+            }
             parseCampaignsResponse(content)?.let { campaigns ->
                 this.campaigns = campaigns
             }
@@ -124,7 +149,8 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
                     }
                 }
             }
-            visitorDelegateDTO.visitorStrategy.sendContextRequest()
+            if (visitorDelegateDTO.hasContextChanged)
+                visitorDelegateDTO.visitorStrategy.sendContextRequest()
             return campaignsFlags
         } catch (e: Exception) {
             FlagshipLogManager.log(FlagshipLogManager.Tag.FLAGS_FETCH, LogManager.Level.ERROR, FlagshipLogManager.exceptionToString(e) ?: "")

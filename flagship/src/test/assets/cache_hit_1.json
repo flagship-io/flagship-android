@@ -1,0 +1,18 @@
+{
+  "version": 3,
+  "data": {
+    "id": "62ad39d7-2217-406c-8e7b-3fc6a65f0275",
+    "timestamp": 1637606882234,
+    "visitorId": "visitor_id",
+    "anonymousId": null,
+    "type": "SCREENVIEW",
+    "content": {
+      "t": "SCREENVIEW",
+      "dl": "Screen_1",
+      "qt": 46688,
+      "cuid": null,
+      "vid": "5678",
+      "ds": "APP"
+    }
+  }
+}

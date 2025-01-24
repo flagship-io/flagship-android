@@ -45,7 +45,7 @@ class ContextViewModel(val appContext: Application) : AndroidViewModel(appContex
         val context = getVisitorContext(error)
         Flagship.getVisitor()?.clearContext()
         Flagship.getVisitor()?.updateContext(context)
-        Flagship.getVisitor()?.synchronizeModifications()?.invokeOnCompletion {
+        Flagship.getVisitor()?.fetchFlags()?.invokeOnCompletion {
             Handler(Looper.getMainLooper()).post {
                 success(appContext.resources.getString(R.string.fragment_context_success))
             }

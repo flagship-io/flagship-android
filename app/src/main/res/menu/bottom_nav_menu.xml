@@ -25,5 +25,4 @@
         android:id="@+id/navigation_events"
         android:icon="@drawable/ic_baseline_events"
         android:title="@string/title_events" />
-
 </menu>

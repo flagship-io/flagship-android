@@ -1,6 +1,8 @@
 package com.abtasty.flagship.cache
 
+import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.CampaignMetadata
+import com.abtasty.flagship.model.Flag
 import com.abtasty.flagship.model.FlagMetadata
 import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.model.VariationGroupMetadata
@@ -10,6 +12,7 @@ import com.abtasty.flagship.model.iterator
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.utils.Utils
 import com.abtasty.flagship.visitor.VisitorDelegateDTO
 import org.json.JSONArray
 import org.json.JSONObject
@@ -35,7 +38,9 @@ class VisitorCacheHelper: CacheHelper() {
                     visitorDelegate.hasConsented = dataObject.optBoolean("consent", true)
                     dataObject.optJSONObject("context")?.let {
                         for (k in it.keys()) {
-                            visitorDelegate.visitorContext[k] = it.get(k)
+                            if (!(k=="eai::eas" && !Flagship.configManager.flagshipConfig.eaiActivationEnabled)) {
+                                visitorDelegate.visitorContext[k] = it.get(k)
+                            }
                         }
                     }
                     dataObject.optJSONArray("campaigns")?.let { array ->
@@ -74,6 +79,18 @@ class VisitorCacheHelper: CacheHelper() {
                         for (k in assignmentsJson.keys())
                             visitorDelegate.assignmentsHistory[k] = assignmentsJson.getString(k)
                     }
+                    dataObject.optJSONArray("activatedVariations")?.let { activationsArray ->
+                        visitorDelegate.activatedVariations.addAll(
+                            Utils.jsonArrayToArrayList<String>(activationsArray)
+                        )
+                    }
+
+                    visitorDelegate.eaiScored = dataObject.optBoolean("eaiScored")
+
+                    dataObject.optString("eaiSegment").takeIf { it.isNotEmpty()}?.let { eaiSegment->
+                        visitorDelegate.eaiSegment = eaiSegment
+                        visitorDelegate.eaiScored = true
+                    }
                 }
             }
         };
@@ -91,6 +108,12 @@ class VisitorCacheHelper: CacheHelper() {
                 .put("context", visitorDelegateDTO.contextToJson())
                 .put("campaigns", flagsToCacheJSON(visitorDelegateDTO))
                 .put("assignmentsHistory", assignationHistoryToCacheJSON(visitorDelegateDTO))
+                .put(
+                    "activatedVariations",
+                    Utils.arrayListToJSONArray(ArrayList(visitorDelegateDTO.activatedVariations.toList()))
+                )
+                .put("eaiScored", visitorDelegateDTO.eaiScored)
+                .put("eaiSegment", visitorDelegateDTO.eaiSegment)
             return JSONObject()
                 .put("version", _VISITOR_CACHE_VERSION_)
                 .put("data", data)

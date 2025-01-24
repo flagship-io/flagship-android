@@ -60,7 +60,7 @@ class VisitorViewModel(val appContext: Application) : AndroidViewModel(appContex
 //            updateIds()
 //        }
 
-        Flagship.getVisitor()?.synchronizeModifications()?.invokeOnCompletion {
+        Flagship.getVisitor()?.fetchFlags()?.invokeOnCompletion {
 
             GlobalScope.launch {
                 withContext(Dispatchers.Main) {

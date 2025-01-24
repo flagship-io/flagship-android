@@ -2,6 +2,7 @@ package com.abtasty.flagship.utils
 
 import android.annotation.SuppressLint
 import android.util.Log
+import com.abtasty.flagship.hits.TroubleShooting
 import com.abtasty.flagship.main.Flagship
 import java.io.IOException
 import java.io.PrintWriter
@@ -30,12 +31,18 @@ class FlagshipLogManager(level: Level = Level.ALL)  : LogManager(level) {
         FLAG_VISITOR_EXPOSED("FLAG_VISITOR_EXPOSED"),
         ACTIVATE("ACTIVATE"),
         TRACKING("HIT"),
+        TRACKING_MANAGER("TRACKING_MANAGER"),
         AUTHENTICATE("AUTHENTICATE"),
         UNAUTHENTICATE("UNAUTHENTICATE"),
         CONSENT("CONSENT"),
         EXCEPTION("EXCEPTION"),
         CACHE("CACHE"),
-        DEFAULT_CACHE_MANAGER("DEFAULT_CACHE_MANAGER");
+        DEFAULT_CACHE_MANAGER("DEFAULT_CACHE_MANAGER"),
+        GET_FLAG("GET_FLAG"),
+        GET_FLAGS("GET_FLAGS"),
+        EAI_COLLECT("EAI_COLLECT"),
+        EAI_SERVING("EAI_SERVING"),
+        ACCOUNT("ACCOUNT");
 
     }
 
@@ -48,7 +55,8 @@ class FlagshipLogManager(level: Level = Level.ALL)  : LogManager(level) {
             logManager?.newLog(level, tag.name, message)
         }
 
-        fun exception(e: Exception) {
+        fun exception(e: FlagshipConstants.Exceptions.Companion.FlagshipException) {
+            Flagship.configManager.decisionManager?.sendTroubleshootingHit(TroubleShooting.Factory.ERROR_CATCHED.build(e.visitorDelegate, e))
             val logManager: LogManager? = Flagship.getConfig().logManager
             logManager?.onException(e)
         }

@@ -1,6 +1,7 @@
 package com.abtasty.flagship.hits
 
 import com.abtasty.flagship.utils.FlagshipConstants
+import org.json.JSONObject
 
 
 /**
@@ -11,13 +12,15 @@ import com.abtasty.flagship.utils.FlagshipConstants
  * @param productSku specifies the item code or SKU.
  *
  */
-class Item(transactionId : String, productName : String, productSku : String) : Hit<Item>(Companion.Type.ITEM) {
+class Item: Hit<Item> {
 
-    init {
-        this.data.put(FlagshipConstants.HitKeyMap.TRANSACTION_ID, transactionId);
-        this.data.put(FlagshipConstants.HitKeyMap.ITEM_NAME, productName);
-        this.data.put(FlagshipConstants.HitKeyMap.ITEM_CODE, productSku);
+    constructor(transactionId : String, productName : String, productSku : String): super(Companion.Type.ITEM) {
+        this.data.put(FlagshipConstants.HitKeyMap.TRANSACTION_ID, transactionId)
+        this.data.put(FlagshipConstants.HitKeyMap.ITEM_NAME, productName)
+        this.data.put(FlagshipConstants.HitKeyMap.ITEM_CODE, productSku)
     }
+
+    internal constructor(jsonObject: JSONObject): super(Companion.Type.ITEM, jsonObject)
 
 
     /**
@@ -50,14 +53,13 @@ class Item(transactionId : String, productName : String, productSku : String) : 
         return this
     }
 
-    override fun checkData(): Boolean {
-        return try {
-            data.getString(FlagshipConstants.HitKeyMap.TRANSACTION_ID)
-            data.getString(FlagshipConstants.HitKeyMap.ITEM_NAME)
-            data.getString(FlagshipConstants.HitKeyMap.ITEM_CODE)
-            true
-        } catch (e: Exception) {
-            false
+    override fun checkHitValidity(): Boolean {
+        return when(true) {
+            (!super.checkHitValidity()) -> false
+            (data.optString(FlagshipConstants.HitKeyMap.TRANSACTION_ID).isEmpty()) -> false
+            (data.optString(FlagshipConstants.HitKeyMap.ITEM_NAME).isEmpty()) -> false
+            (data.optString(FlagshipConstants.HitKeyMap.ITEM_CODE).isEmpty()) -> false
+            else -> true
         }
     }
 }

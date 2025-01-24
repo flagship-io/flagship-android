@@ -8,22 +8,27 @@ import androidx.room.Query
 @Dao
 interface HitDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(hit: Hit) : Long
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(hits: ArrayList<Hit>) : List<Long>
 
-    @Query("SELECT * FROM hits WHERE visitorId LIKE :visitorId LIMIT 100")
-    fun get(visitorId : String) : List<Hit>
+    @Query("SELECT * FROM hits WHERE id IN (:ids)")
+    fun get(ids : List<String>) : List<Hit>
 
-    fun pop(visitorId: String) : List<Hit> {
-        val result = get(visitorId)
+    @Query("SELECT * FROM hits")
+    fun getAll() : List<Hit>
+
+    fun popAll() : List<Hit> {
+        val result = getAll()
         val ids = result.map { r -> r.id }
-        delete(visitorId, ids)
         return result
     }
 
     @Query("DELETE FROM hits WHERE visitorId LIKE :visitorId")
     fun delete(visitorId: String)
 
-    @Query("DELETE FROM hits WHERE visitorId LIKE :visitorId AND id IN (:ids)")
-    fun delete(visitorId: String, ids: List<Long>)
+    @Query("DELETE FROM hits WHERE id IN (:ids)")
+    fun delete(ids: List<String>)
+
+    @Query("DELETE FROM hits")
+    fun delete()
 }
