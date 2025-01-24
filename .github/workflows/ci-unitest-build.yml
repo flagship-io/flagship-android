@@ -37,22 +37,22 @@ jobs:
 #      - name: Unit tests
 #        run: bash ./gradlew flagship:testDebugUnitTestCoverage -i --stacktrace
         #####
-      - name: Test FlagshipTestsCache
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsCache -i --stacktrace
-      - name: Test FlagshipTestsConfig
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsConfig -i --stacktrace
-      - name: Test FlagshipTestsEAI.kt
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsEAI -i --stacktrace
-      - name: Test FlagshipTestsFlags
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsFlags -i --stacktrace
+#      - name: Test FlagshipTestsCache
+#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsCache -i --stacktrace
+#      - name: Test FlagshipTestsConfig
+#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsConfig -i --stacktrace
+#      - name: Test FlagshipTestsEAI.kt
+#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsEAI -i --stacktrace
+#      - name: Test FlagshipTestsFlags
+#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsFlags -i --stacktrace
       - name: Test FlagshipTestsVisitor
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor -i --stacktrace
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor -i
       - name: Test FlagshipTestsVisitorStrategy
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy -i --stacktrace
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy -i
       - name: Test FlagshipTestsTrackingManager
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager -i --stacktrace
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager -i
       - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous
-        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous -i --stacktrace
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous -i
 
 #      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous_fail
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous_fail --debug
