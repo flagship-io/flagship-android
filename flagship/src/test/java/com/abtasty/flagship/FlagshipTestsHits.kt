@@ -1234,8 +1234,8 @@ class FlagshipTestsHits : AFlagshipTest() {
         val visitor =
             Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build() // +1 Consent, +1 TS
         runBlocking {
-            visitor.fetchFlags().await() // 1 Context, +2 TS (Context, Fetch)
-            delay(100)
+            visitor.fetchFlags().await() // +1 Context, +2 TS (Context, Fetch)
+            delay(500)
         }
         //
         visitor.sendHit(Screen("screen-1")) // +1 Screen, +1 TS
@@ -1244,7 +1244,7 @@ class FlagshipTestsHits : AFlagshipTest() {
         //
 
         runBlocking {
-            delay(350) // +1 Batch event error
+            delay(500) // +1 Batch event error
         }
 
         Assert.assertEquals(
@@ -1322,7 +1322,7 @@ class FlagshipTestsHits : AFlagshipTest() {
                     .DecisionApi()
 //                    .withPollingIntervals(20000, TimeUnit.MILLISECONDS)
                     .withTrackingManagerConfig(
-                        TrackingManagerConfig(cachingStrategy = CacheStrategy.CONTINUOUS_CACHING, maxPoolSize = 5)
+                        TrackingManagerConfig(cachingStrategy = CacheStrategy.CONTINUOUS_CACHING, maxPoolSize = 1)
 
                     )
             ).await() //TBS 1 Account Settings

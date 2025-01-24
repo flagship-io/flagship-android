@@ -774,13 +774,9 @@ class NoPollingStrategy(val trackingManager: TrackingManager) : AbstractCacheStr
 
     override fun addHits(hits: ArrayList<Hit<*>>, new: Boolean): ArrayList<Hit<*>>? {
         val results = super.addHits(hits, new)
-        println("A2 000000000000")
         runBlocking {
-            println("A2 000000000 '")
             polling().await()
-            println("A2 000000000 ''")
         }
-        println("A3 111111111111")
         return results
     }
 

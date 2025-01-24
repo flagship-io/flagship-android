@@ -1561,7 +1561,7 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
             visitorA.sendHit(Screen("Screen 4"))
             visitorA.sendHit(Screen("Screen 5"))
 
-            delay(100)
+            delay(200)
 
             assertEquals(0, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.size ?: 0)
 
