@@ -34,7 +34,7 @@ object Flagship {
 //        return flagshipCoroutineScope
 //    }
     internal fun coroutineScope(): CoroutineScope {
-        return  CoroutineScope(supervisorJob + Dispatchers.Default)
+        return  CoroutineScope(supervisorJob + Dispatchers.IO)
     }
 
     internal fun mainCoroutineScope(): CoroutineScope {
