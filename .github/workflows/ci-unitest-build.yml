@@ -34,27 +34,25 @@ jobs:
         run: ./gradlew :flagship:assembleDebug
 
 
-      - name: Unit tests
-        run: bash ./gradlew flagship:testDebugUnitTestCoverage -i --stacktrace
-#      - name: Generate report
-#        run: bash ./gradlew flagship:createDebugUnitTestCoverageReport
+#      - name: Unit tests
+#        run: bash ./gradlew flagship:testDebugUnitTestCoverage -i --stacktrace
         #####
-#      - name: Test FlagshipTestsCache
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsCache --debug
-#      - name: Test FlagshipTestsConfig
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsConfig --debug
-#      - name: Test FlagshipTestsEAI.kt
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsEAI --debug
-#      - name: Test FlagshipTestsFlags
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsFlags --debug
-#      - name: Test FlagshipTestsVisitor
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor --debug
-#      - name: Test FlagshipTestsVisitorStrategy
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy --debug
-#      - name: Test FlagshipTestsTrackingManager
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager --debug
-#      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous
-#        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous --debug
+      - name: Test FlagshipTestsCache
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsCache -i --stacktrace
+      - name: Test FlagshipTestsConfig
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsConfig -i --stacktrace
+      - name: Test FlagshipTestsEAI.kt
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsEAI -i --stacktrace
+      - name: Test FlagshipTestsFlags
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsFlags -i --stacktrace
+      - name: Test FlagshipTestsVisitor
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitor -i --stacktrace
+      - name: Test FlagshipTestsVisitorStrategy
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsVisitorStrategy -i --stacktrace
+      - name: Test FlagshipTestsTrackingManager
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager -i --stacktrace
+      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous
+        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous -i --stacktrace
 
 #      - name: Test FlagshipTestsTrackingManager.test_tracking_manager_continuous_fail
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsTrackingManager.test_tracking_manager_continuous_fail --debug
@@ -100,6 +98,10 @@ jobs:
 
 #      - name: Test FlagshipTestsHits
 #        run: bash ./gradlew :flagship:testDebugUnitTest --tests com.abtasty.flagship.FlagshipTestsHits --debug
+
+      ############################
+      #      - name: Generate report
+      #        run: bash ./gradlew flagship:createDebugUnitTestCoverageReport
 
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@v2
