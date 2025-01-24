@@ -468,13 +468,19 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
 
     override fun polling(): Deferred<Pair<Pair<ResponseCompat?, Batch>?, Pair<ResponseCompat?, ArrayList<Activate>>?>?> {
 
+        println("-1 L 000000000")
         return Flagship.coroutineScope().async {
             try {
+                println("-2 L 000000000")
                 ensureActive()
                 val resultsHits = sendHitsBatch()
                 val resultsActivate = sendActivateBatch()
                 println("L 000000000")
-                val result = Pair(resultsHits?.await(), resultsActivate?.await())
+                val t0 = resultsHits?.await()
+                println("L 00000001")
+                val t1 = resultsActivate?.await()
+                println("L 00000002")
+                val result = Pair(t0, t1)
                 println("L 11111111")
                 result
             } catch (e: Exception) {
