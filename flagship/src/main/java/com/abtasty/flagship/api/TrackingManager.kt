@@ -473,9 +473,14 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                 ensureActive()
                 val resultsHits = sendHitsBatch()
                 val resultsActivate = sendActivateBatch()
-                Pair(resultsHits?.await(), resultsActivate?.await())
+                println("L 000000000")
+                val result = Pair(resultsHits?.await(), resultsActivate?.await())
+                println("L 11111111")
+                result
             } catch (e: Exception) {
+                println("L EEEEEEEEEE 0")
                 FlagshipLogManager.exception(FlagshipException(e))
+                println("L EEEEEEEEEE 1")
                 null
             }
         }
