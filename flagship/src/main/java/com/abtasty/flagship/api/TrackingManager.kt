@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import com.abtasty.flagship.utils.FlagshipConstants.Exceptions.Companion.FlagshipException
+import kotlinx.coroutines.CoroutineScope
 
 /**
  *  This class configure the Flagship SDK Tracking Manager which gathers all visitors emitted hits in a pool and
@@ -468,28 +469,35 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
 
     override fun polling(): Deferred<Pair<Pair<ResponseCompat?, Batch>?, Pair<ResponseCompat?, ArrayList<Activate>>?>?> {
 
-        println("-1 L 000000000")
-        println("-1 L 000000000 = " + Flagship.coroutineScope().toString())
-        return Flagship.coroutineScope().async {
-            try {
-                println("-2 L 000000000")
-                ensureActive()
-                val resultsHits = sendHitsBatch()
-                val resultsActivate = sendActivateBatch()
-                println("L 000000000")
-                val t0 = resultsHits?.await()
-                println("L 00000001")
-                val t1 = resultsActivate?.await()
-                println("L 00000002")
-                val result = Pair(t0, t1)
-                println("L 11111111")
-                result
-            } catch (e: Exception) {
-                println("L EEEEEEEEEE 0")
-                FlagshipLogManager.exception(FlagshipException(e))
-                println("L EEEEEEEEEE 1")
-                null
+        return try {
+            println("-1 L 000000000")
+            println("-1 L 000000000 = " + Flagship.coroutineScope().toString())
+            Flagship.coroutineScope().async {
+                try {
+                    println("-2 L 000000000")
+                    ensureActive()
+                    val resultsHits = sendHitsBatch()
+                    val resultsActivate = sendActivateBatch()
+                    println("L 000000000")
+                    val t0 = resultsHits?.await()
+                    println("L 00000001")
+                    val t1 = resultsActivate?.await()
+                    println("L 00000002")
+                    val result = Pair(t0, t1)
+                    println("L 11111111")
+                    result
+                } catch (e: Exception) {
+                    println("L EEEEEEEEEE 0")
+                    FlagshipLogManager.exception(FlagshipException(e))
+                    println("L EEEEEEEEEE 1")
+                    null
+                }
             }
+        } catch (e: Exception) {
+            println("-1 L E XXXXXXXXXX")
+            e.printStackTrace()
+            println("-1 L E XXXXXXXXXX 2")
+            CoroutineScope(Dispatchers.Default).async { null }
         }
     }
 
