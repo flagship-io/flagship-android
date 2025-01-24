@@ -50,15 +50,22 @@ class ModificationFragment : Fragment() {
             )
         }
 
-        modificationViewModel.value.observe(viewLifecycleOwner, Observer {
-            binding.editTextResultValue.setText(it.toString())
-        })
+//        modificationViewModel.value.observe(viewLifecycleOwner, Observer {
+//            binding.editTextResultValue.setText(it?.toString() ?: "null")
+//        })
+//
+//        modificationViewModel.info.observe(viewLifecycleOwner, Observer {
+////            root.edit_text_result_campaign.setText(it.optString("campaignId", "unknown"))
+////            root.edit_text_result_group.setText(it.optString("variationGroupId", "unknown"))
+////            root.edit_text_result_variation.setText(it.optString("variationId", "unknown"))
+//            binding.editTextInfo.setText(it.toString(4))
+//        })
 
-        modificationViewModel.info.observe(viewLifecycleOwner, Observer {
-//            root.edit_text_result_campaign.setText(it.optString("campaignId", "unknown"))
-//            root.edit_text_result_group.setText(it.optString("variationGroupId", "unknown"))
-//            root.edit_text_result_variation.setText(it.optString("variationId", "unknown"))
-            binding.editTextInfo.setText(it.toString(4))
+        modificationViewModel.currentFLag.observe(viewLifecycleOwner, Observer {
+            val type = binding.spinner.selectedItem.toString()
+            val default = binding.editTextDefault.text.toString()
+            binding.editTextResultValue.setText((it?.value(modificationViewModel.getTypedValue(type, default),false) ?: "null").toString())
+            binding.editTextInfo.setText(it?.metadata()?.toJson()?.toString(4))
         })
 
         binding.activate.setOnClickListener {

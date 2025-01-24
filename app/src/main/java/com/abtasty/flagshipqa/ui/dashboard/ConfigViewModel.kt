@@ -6,14 +6,14 @@ import android.os.Bundle
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.abtasty.flagship.cache.CacheManager
-import com.abtasty.flagship.cache.IHitCacheImplementation
-import com.abtasty.flagship.cache.IVisitorCacheImplementation
+import com.abtasty.flagship.api.CacheStrategy
+import com.abtasty.flagship.api.TrackingManagerConfig
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.visitor.Visitor
 import com.abtasty.flagshipqa.R
-import org.json.JSONArray
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
@@ -71,7 +71,7 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
         pollingIntervalUnit.value = sharedPreferences.getString("pollingUnit", "MS")
     }
 
-    fun startFlagship(ready: () -> Unit, error: (message: String) -> Unit) {
+    fun startFlagship(ready: (Visitor) -> Unit, error: (message: String) -> Unit) {
         val errorStr = checkParamError()
         if (errorStr.isNotEmpty())
             error(errorStr)
@@ -81,12 +81,15 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
                 flagshipConfig.withPollingIntervals(pollingIntervalTime.value!!, getPollingIntervalUnit())
             flagshipConfig.withTimeout(timeout.value ?: 2000)
             flagshipConfig.withLogLevel(LogManager.Level.ALL)
-            flagshipConfig.withStatusListener { status ->
-                if (status == Flagship.Status.READY) {
-                    createVisitor();
-                    ready()
+            flagshipConfig.withFlagshipStatusListener { status ->
+                if (status == Flagship.FlagshipStatus.INITIALIZED || status == Flagship.FlagshipStatus.PANIC) {
+                    println("#DB STATUS INITIALIZED")
+                    val visitor = createVisitor()
+                    ready(visitor)
                 }
             }
+            flagshipConfig.withTrackingManagerConfig(TrackingManagerConfig(maxPoolSize = 5, batchTimeInterval = 20000, disablePolling = false, cachingStrategy = CacheStrategy.PERIODIC_CACHING))
+//            flagshipConfig.withTrackingManagerConfig(TrackingManagerConfig(maxPoolSize = 5, batchTimeInterval = 20000, cachingStrategy = CacheStrategy.CONTINUOUS_CACHING))
             flagshipConfig.withOnVisitorExposed { visitorExposed, exposedFlag ->
                 System.out.println("[OnVisitorExposed] : " + visitorExposed.visitorId + " \n"
                         + "key: " + exposedFlag.key + "\n"
@@ -95,7 +98,22 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
                         + "variation name: " + exposedFlag.metadata.variationName
                 )
             }
-            Flagship.start(getApplication(), env_id.value!!, api_key.value!!, flagshipConfig.build())
+            //
+            flagshipConfig.withTrackingManagerConfig(
+                TrackingManagerConfig(
+                    maxPoolSize = 5,
+                    batchTimeInterval = 10000
+                )
+            )
+            //
+            runBlocking {
+                Flagship.start(
+                    getApplication(),
+                    env_id.value!!,
+                    api_key.value!!,
+                    flagshipConfig.build()
+                ).await()
+            }
         }
     }
 
@@ -110,13 +128,13 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
         }
     }
 
-    fun createVisitor() {
+    fun createVisitor(): Visitor {
         val visitorContext = getVisitorContext()
-        Flagship.newVisitor(visitorId.value.toString())
+        val visitor = Flagship.newVisitor(visitorId.value.toString(), hasConsented.value!!)
             .isAuthenticated(isAuthenticated.value!!)
-            .hasConsented(hasConsented.value!!)
             .context(visitorContext)
             .build()
+       return visitor
     }
 
     fun getStringResource(id: Int): String {

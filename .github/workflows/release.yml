@@ -17,12 +17,15 @@ jobs:
           distribution: "oracle"
           java-version: "17"
       - name: Unit tests
-        run: bash ./gradlew clean flagship:testAllVariantsWithCoverage
+        run: bash ./gradlew clean flagship:testJacocoUnitTestCoverage
       - name: Get version
         run: |
           echo "FLAGSHIP_VERSION_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      - name: Upload Test Report
-        run: bash <(curl -s https://codecov.io/bash) -f "flagship/build/reports/jacoco/testCommonDebugUnitTestCoverage/testCommonDebugUnitTestCoverage.xml"
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files:
+            flagship/build/jacocoHtml/index.xml
       - name: Build and Publish
         env:
           SONATYPE_SIGNING_KEY: ${{ secrets.SONATYPE_SIGNING_KEY }}

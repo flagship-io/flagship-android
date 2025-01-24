@@ -301,6 +301,29 @@
                 app:layout_constraintStart_toStartOf="@+id/edit_text_interface"
                 app:layout_constraintTop_toBottomOf="@+id/edit_text_product_sku" />
 
+            <FrameLayout
+                android:id="@+id/frameLayout4"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:background="@color/colorPrimary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/button_item" />
+
+            <Button
+                android:id="@+id/button_next_activity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/background_gradient"
+                android:text="@string/next_activity"
+                android:textColor="@color/primary_white"
+                app:layout_constraintEnd_toEndOf="@+id/edit_text_interface"
+                app:layout_constraintStart_toStartOf="@+id/edit_text_interface"
+                app:layout_constraintTop_toBottomOf="@+id/frameLayout4"
+                />
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

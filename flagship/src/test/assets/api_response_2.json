@@ -1,0 +1,138 @@
+{
+  "visitorId": "Visitor-A",
+  "campaigns": [
+    {
+      "id": "cagt08da51hg078aaaaa",
+      "name": "qa tracking manager",
+      "slug": null,
+      "type": "ab",
+      "variationGroupId": "cagt08da51hg078bbbbb",
+      "variationGroupName": "Default",
+      "variation": {
+        "id": "cagt08da51hg078ccccc",
+        "name": "Variation 3",
+        "modifications": {
+          "type": "TEXT",
+          "value": {
+            "my_flag": "value3"
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "caaa7e0djnu00cqddddd",
+      "name": "Avoid flickering with NextJs SSR",
+      "slug": null,
+      "type": "ab",
+      "variationGroupId": "caaa7e0djnu00cqeeeee",
+      "variationGroupName": "Original",
+      "variation": {
+        "id": "caaa86fgqtrg23cfffff",
+        "name": "New variation",
+        "modifications": {
+          "type": "FLAG",
+          "value": {
+            "my_flag_key": "value 2"
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "c710r4k7fg302uvggggg",
+      "name": "xpc",
+      "slug": null,
+      "type": "ab",
+      "variationGroupId": "c710r4k7fg302uvhhhhh",
+      "variationGroupName": "Original",
+      "variation": {
+        "id": "c710r4k7fg302uviiiii",
+        "name": "Original",
+        "modifications": {
+          "type": "FLAG",
+          "value": {
+            "xpc1": "xpcOriginal"
+          }
+        },
+        "reference": true
+      }
+    },
+    {
+      "id": "c6dpdp982h0h3gfjjjjj",
+      "name": "Flutter QA ",
+      "slug": null,
+      "type": "ab",
+      "variationGroupId": "c6dpdp982h0h3gfkkkkk",
+      "variationGroupName": "Default",
+      "variation": {
+        "id": "c6dpdp982h0h3gflllll",
+        "name": "Original",
+        "modifications": {
+          "type": "JSON",
+          "value": {
+            "key1": "Original",
+            "key2": null,
+            "key3": null
+          }
+        },
+        "reference": true
+      }
+    },
+    {
+      "id": "c4sdu9a25dg0179mmmmm",
+      "name": "testt (cloned)",
+      "slug": null,
+      "type": "deployment",
+      "variationGroupId": "c4sdu9a25dg0179nnnnn",
+      "variationGroupName": "Deployment",
+      "variation": {
+        "id": "c4sdu9a25dg0179ooooo",
+        "name": "Deployment",
+        "modifications": {
+          "type": "FLAG",
+          "value": {}
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "bp6a7tnld0j0060ppppp",
+      "name": "NewFeatureRollout",
+      "slug": "zz",
+      "type": "deployment",
+      "variationGroupId": "bp6a7tnld0j0060qqqqq",
+      "variationGroupName": "Deployment",
+      "variation": {
+        "id": "bp6a7tnld0j0060rrrrr",
+        "name": "Variation 2",
+        "modifications": {
+          "type": "FLAG",
+          "value": {
+            "chatbox": 1.2
+          }
+        },
+        "reference": false
+      }
+    },
+    {
+      "id": "blo2dpebclcg0shsssss",
+      "name": "New Pre-Roll Ads",
+      "slug": null,
+      "type": "deployment",
+      "variationGroupId": "blo2dpebclcg0shttttt",
+      "variationGroupName": "Deployment",
+      "variation": {
+        "id": "blo2dpebclcg0shuuuuu",
+        "name": "Variation 2",
+        "modifications": {
+          "type": "FLAG",
+          "value": {
+            "preroll_algo": true
+          }
+        },
+        "reference": false
+      }
+    }
+  ]
+}

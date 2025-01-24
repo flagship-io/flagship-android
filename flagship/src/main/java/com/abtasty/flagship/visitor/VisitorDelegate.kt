@@ -1,12 +1,16 @@
 package com.abtasty.flagship.visitor
 
+import com.abtasty.flagship.hits.TroubleShooting
 import com.abtasty.flagship.main.ConfigManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model._Flag
-import com.abtasty.flagship.utils.EVisitorFlagsUpdateStatus
+import com.abtasty.flagship.utils.FetchFlagsRequiredStatusReason
+import com.abtasty.flagship.utils.FlagStatus
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.utils.OnFlagStatusChanged
+import com.abtasty.flagship.utils.Utils
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -15,37 +19,45 @@ import java.util.concurrent.ConcurrentMap
 /**
  * Delegate for Visitor
  */
-class VisitorDelegate(internal val configManager: ConfigManager, visitorId: String?, isAuthenticated: Boolean, hasConsented: Boolean,
-                      context: HashMap<String, Any>?) {
+class VisitorDelegate(
+    internal val configManager: ConfigManager, visitorId: String?, isAuthenticated: Boolean, hasConsented: Boolean,
+    context: HashMap<String, Any>?,
+    var onFlagStatusChanged: OnFlagStatusChanged? = null
+) {
 
+    lateinit var sessionId: String
     var visitorId: String
     var anonymousId: String? = null
     var visitorContext: ConcurrentMap<String, Any> = ConcurrentHashMap()
+    var hasVisitorContextChanged = true
     var flags: ConcurrentMap<String, _Flag> = ConcurrentHashMap()
     var activatedVariations = ConcurrentLinkedQueue<String>()
     var hasConsented: Boolean
     var isAuthenticated: Boolean
     var assignmentsHistory: ConcurrentMap<String, String> = ConcurrentHashMap()
-    var flagFetchingStatus: EVisitorFlagsUpdateStatus? = null
+    var flagStatus = FlagStatus.FETCH_REQUIRED
+    var fetchRequiredStatusReason: FetchFlagsRequiredStatusReason? = null
+    var eaiScored = false
+    internal var eaiSegment: String? = null
 
     init {
+        sessionId = UUID.randomUUID().toString()
+        updateFlagsStatus(FlagStatus.FETCH_REQUIRED, FetchFlagsRequiredStatusReason.FLAGS_NEVER_FETCHED)
         this.visitorId = if (visitorId == null || visitorId.isEmpty()) generateUUID() else visitorId
         this.isAuthenticated = isAuthenticated
         this.hasConsented = hasConsented
         anonymousId = if (isAuthenticated) generateUUID(true) else null
         getStrategy().lookupVisitorCache()
-        getStrategy().lookupHitCache()
         loadContext(context)
-//        if (!this.hasConsented)
-        getStrategy().sendConsentRequest() //Send anyway
+        getStrategy().sendConsentRequest()
         logVisitor(FlagshipLogManager.Tag.VISITOR)
-        flagFetchingStatus = EVisitorFlagsUpdateStatus.CREATED
     }
 
+    @PublishedApi
     internal fun getStrategy(): VisitorStrategy {
         return when(true) {
-            (Flagship.getStatus().lessThan(Flagship.Status.PANIC)) -> NotReadyStrategy(this)
-            (Flagship.getStatus() == Flagship.Status.PANIC) -> PanicStrategy(this)
+            (Flagship.getStatus().lessThan(Flagship.FlagshipStatus.PANIC)) -> NotReadyStrategy(this)
+            (Flagship.getStatus() == Flagship.FlagshipStatus.PANIC) -> PanicStrategy(this)
             (!hasConsented()) -> NoConsentStrategy(this)
             else -> DefaultStrategy(this)
         }
@@ -93,5 +105,18 @@ class VisitorDelegate(internal val configManager: ConfigManager, visitorId: Stri
 
     internal fun toDTO(): VisitorDelegateDTO {
         return VisitorDelegateDTO(this)
+    }
+
+    internal fun updateFlagsStatus(status: FlagStatus, reason: FetchFlagsRequiredStatusReason?) {
+        if (flagStatus != status || fetchRequiredStatusReason != reason) {
+            fetchRequiredStatusReason = reason
+            flagStatus = status
+            flagStatus.fetchFlagsRequiredStatusReason = fetchRequiredStatusReason
+            onFlagStatusChanged?.onFlagStatusChanged(status)
+            if (status == FlagStatus.FETCH_REQUIRED)
+                onFlagStatusChanged?.onFlagStatusFetchRequired(reason ?: FetchFlagsRequiredStatusReason.NONE)
+            if (status == FlagStatus.FETCHED)
+                onFlagStatusChanged?.onFlagStatusFetched()
+        }
     }
 }

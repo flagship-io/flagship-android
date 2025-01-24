@@ -1,6 +1,7 @@
 package com.abtasty.flagship.hits
 
 import com.abtasty.flagship.utils.FlagshipConstants
+import org.json.JSONObject
 
 
 /**
@@ -9,16 +10,18 @@ import com.abtasty.flagship.utils.FlagshipConstants
  * @param category category of the event (ACTION_TRACKING or USER_ENGAGEMENT) @required
  * @param action the event action @required
  */
-open class Event(val category: EventCategory, val action : String) : Hit<Event>(Companion.Type.EVENT) {
+open class Event: Hit<Event> {
 
     enum class EventCategory(val label : String) {
         ACTION_TRACKING("Action Tracking"), USER_ENGAGEMENT("User Engagement")
     }
 
-    init {
+    constructor(category: EventCategory, action : String): super(Companion.Type.EVENT) {
         this.data.put(FlagshipConstants.HitKeyMap.EVENT_CATEGORY, category.label);
         this.data.put(FlagshipConstants.HitKeyMap.EVENT_ACTION, action);
     }
+
+    internal constructor(jsonObject: JSONObject): super(Companion.Type.EVENT, jsonObject)
 
     /**
      * Specifies a label for this event (optional)
@@ -41,13 +44,12 @@ open class Event(val category: EventCategory, val action : String) : Hit<Event>(
         return this
     }
 
-    override fun checkData(): Boolean {
-        return try {
-            data.getString(FlagshipConstants.HitKeyMap.EVENT_CATEGORY)
-            data.getString(FlagshipConstants.HitKeyMap.EVENT_ACTION)
-            true
-        } catch (e: Exception) {
-            return false
+    override fun checkHitValidity(): Boolean {
+        return when(true) {
+            (!super.checkHitValidity()) -> false
+            (data.optString(FlagshipConstants.HitKeyMap.EVENT_CATEGORY).isEmpty()) -> false
+            (data.optString(FlagshipConstants.HitKeyMap.EVENT_ACTION).isEmpty()) -> false
+            else -> true
         }
     }
 }

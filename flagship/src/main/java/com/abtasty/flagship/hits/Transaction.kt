@@ -1,7 +1,7 @@
 package com.abtasty.flagship.hits
 
 import com.abtasty.flagship.utils.FlagshipConstants
-import java.util.*
+import org.json.JSONObject
 
 
 /**
@@ -11,12 +11,14 @@ import java.util.*
  *  @param affiliation affiliation name.
  *
  */
-class Transaction(transactionId : String, affiliation : String) : Hit<Transaction>(Companion.Type.TRANSACTION) {
+class Transaction: Hit<Transaction> {
 
-    init {
+    constructor(transactionId: String, affiliation: String): super(Companion.Type.TRANSACTION) {
         this.data.put(FlagshipConstants.HitKeyMap.TRANSACTION_ID, transactionId)
         this.data.put(FlagshipConstants.HitKeyMap.TRANSACTION_AFFILIATION, affiliation)
     }
+
+    internal constructor(jsonObject: JSONObject): super(Companion.Type.TRANSACTION, jsonObject)
 
 
     /**
@@ -99,18 +101,13 @@ class Transaction(transactionId : String, affiliation : String) : Hit<Transactio
         return this
     }
 
-    override fun checkData(): Boolean {
-        return try {
-            data.getString(FlagshipConstants.HitKeyMap.TRANSACTION_ID)
-            data.getString(FlagshipConstants.HitKeyMap.TRANSACTION_AFFILIATION)
-            if (data.has(FlagshipConstants.HitKeyMap.TRANSACTION_CURRENCY)) {
-                val currency : String? = data.getString(FlagshipConstants.HitKeyMap.TRANSACTION_CURRENCY)
-                if (!Currency.getAvailableCurrencies().any { c -> c.currencyCode == currency })
-                    return false
-            }
-            return true
-        } catch (e: Exception) {
-            false
+    override fun checkHitValidity(): Boolean {
+        return when(true) {
+            (!super.checkHitValidity()) -> false
+            (this.data.isNull(FlagshipConstants.HitKeyMap.TRANSACTION_ID)) -> true
+            (this.data.isNull(FlagshipConstants.HitKeyMap.TRANSACTION_AFFILIATION)) -> true
+            (this.data.isNull(FlagshipConstants.HitKeyMap.TRANSACTION_AFFILIATION)) -> true
+            else -> true
         }
     }
 }

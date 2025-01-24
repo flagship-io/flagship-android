@@ -1,10 +1,11 @@
 package com.abtasty.flagship.visitor
 
+import android.app.Activity
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.model.Flag
+import com.abtasty.flagship.model.FlagCollection
 import com.abtasty.flagship.utils.FlagshipContext
 import kotlinx.coroutines.Deferred
-import org.json.JSONObject
 import java.util.*
 
 /**
@@ -51,14 +52,12 @@ interface IVisitor {
      */
     fun clearContext()
 
-    /// New Flag
-
     /**
      * This function will update all the campaigns flags from the server according to the visitor context.
      *
-     * @return a CompletableFuture for this synchronization
+     * @return a Deferred<Visitor> for synchronization.
      */
-    fun fetchFlags(): Deferred<Unit>
+    fun fetchFlags(): Deferred<IVisitor>
 
 
     /**
@@ -66,9 +65,13 @@ interface IVisitor {
      * If the key is not found an empty Flag object with the default value will be returned.
      *
      * @param key          key associated to the flag.
-     * @param defaultValue fallback default value to use.
      */
-    fun <T : Any?> getFlag(key: String, defaultValue : T) : Flag<T>
+    fun getFlag(key: String) : Flag
+
+    /**
+     * This function will return a FlagCollection object which contains all the Flags assigned to this Visitor. @see Flag.
+     */
+    fun getFlags() : FlagCollection
 
     /**
      * Send a Hit to Flagship servers for reporting.
@@ -100,5 +103,12 @@ interface IVisitor {
      * @return return a true if the visitor has given consent, false otherwise.
      */
     fun hasConsented(): Boolean?
+
+    /**
+     * Start collecting events for the EmotionAI Feature if it is enabled on platform side.
+     * Return the EAI segment when the collect has ended successfully, false otherwise.
+     * @param activity pass the current activity reference where Emotion AI events need to be collected first.
+     */
+    fun collectEmotionsAIEvents(activity: Activity? = null): Deferred<Boolean>
 
 }

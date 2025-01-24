@@ -1,8 +1,7 @@
 package com.abtasty.flagship.hits
 
 import com.abtasty.flagship.utils.FlagshipConstants
-import java.net.MalformedURLException
-import java.net.URISyntaxException
+import org.json.JSONObject
 import java.net.URL
 
 
@@ -11,21 +10,28 @@ import java.net.URL
  *
  * @param location page url.
  */
-class Page(location : String) : Hit<Page>(Companion.Type.PAGEVIEW) {
+class Page: Hit<Page> {
 
-    init {
+    constructor(location : String): super(Companion.Type.PAGEVIEW) {
         this.data.put(FlagshipConstants.HitKeyMap.DOCUMENT_LOCATION, location)
     }
 
-    override fun checkData(): Boolean {
-        val dl = data.optString(FlagshipConstants.HitKeyMap.DOCUMENT_LOCATION, "")
-        return try {
-            URL(dl).toURI()
-            true
-        } catch (e: MalformedURLException) {
-            false
-        } catch (e: URISyntaxException) {
-            false
+    internal constructor(jsonObject: JSONObject) : super(Hit.Companion.Type.PAGEVIEW, jsonObject)
+
+    override fun checkHitValidity(): Boolean {
+        val isURL = data.optString(FlagshipConstants.HitKeyMap.DOCUMENT_LOCATION, "").let {
+            try {
+                URL(it).toURI()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+        return when(true) {
+            (!super.checkHitValidity()) -> false
+            (data.optString(FlagshipConstants.HitKeyMap.DOCUMENT_LOCATION).isEmpty()) -> false
+            (!isURL) -> false
+            else -> true
         }
     }
 }

@@ -1,19 +1,27 @@
 package com.abtasty.flagship.visitor
 
+import android.app.Activity
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.main.ConfigManager
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.Flag
+import com.abtasty.flagship.model.FlagCollection
+import com.abtasty.flagship.utils.FlagStatus
 import com.abtasty.flagship.utils.FlagshipContext
+import com.abtasty.flagship.utils.OnFlagStatusChanged
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import org.json.JSONObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.ensureActive
 import java.util.*
 
 /**
  * Flagship visitor representation.
  */
 class Visitor(internal val configManager: ConfigManager, visitorId: String, isAuthenticated: Boolean,
-    hasConsented: Boolean, context: HashMap<String, Any>?) : IVisitor {
+    hasConsented: Boolean, context: HashMap<String, Any>?, onFlagStatusChanged: OnFlagStatusChanged? = null) : IVisitor {
 
     /**
      * Specify if how Flagship SDK should handle the newly create visitor instance.
@@ -33,17 +41,17 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
         NEW_INSTANCE
     }
 
-    internal val delegate: VisitorDelegate = VisitorDelegate(configManager, visitorId, isAuthenticated, hasConsented, context)
+    internal val delegate: VisitorDelegate = VisitorDelegate(configManager, visitorId, isAuthenticated, hasConsented, context, onFlagStatusChanged)
 
     /**
      * This class represents a Visitor builder.
      *
      * Use Flagship.visitorBuilder() method to instantiate it.
      */
-    class Builder(private var instanceType: Instance = Instance.SINGLE_INSTANCE, private val configManager: ConfigManager, private val visitorId: String) {
+    class Builder(private val configManager: ConfigManager, private var instanceType: Instance = Instance.SINGLE_INSTANCE, private val visitorId: String, private var hasConsented: Boolean) {
         private var isAuthenticated = false
-        private var hasConsented = true
         private var context: HashMap<String, Any>? = null
+        private var onFlagStatusChanged: OnFlagStatusChanged? = null
 
         /**
          * Specify if the visitor is authenticated or anonymous.
@@ -53,17 +61,6 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
          */
         fun isAuthenticated(isAuthenticated: Boolean): Builder {
             this.isAuthenticated = isAuthenticated
-            return this
-        }
-
-        /**
-         * Specify if the visitor has consented for personal data usage. When false some features will be deactivated, cache will be deactivated and cleared.
-         *
-         * @param hasConsented @param hasConsented Set to true when the visitor has consented, false otherwise.
-         * @return Builder
-         */
-        fun hasConsented(hasConsented: Boolean): Builder {
-            this.hasConsented = hasConsented
             return this
         }
 
@@ -80,6 +77,17 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
         }
 
         /**
+         * Set a FlagStatusChanged callback to be notified when Flags are out of date and need to be fetched
+         * or when flags have been successfully fetched.
+         *
+         * @param implementation of OnFlagStatusChanged interface.
+         */
+        fun onFlagStatusChanged(onFlagStatusChanged: OnFlagStatusChanged): Builder {
+            this.onFlagStatusChanged = onFlagStatusChanged
+            return this
+        }
+
+        /**
          * Create a new visitor.
          *
          * @param retainInstance set to true to retain the newly created visitor as a single instance within Flagship. Use Flagship.getVisitor() to retrieve this instance. (Default is true)
@@ -87,7 +95,7 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
          * @return The newly created Visitor
          */
         fun build(): Visitor {
-            val visitor = Visitor(configManager, visitorId, isAuthenticated, hasConsented, context)
+            val visitor = Visitor(configManager, visitorId, isAuthenticated, hasConsented, context, onFlagStatusChanged)
             if (instanceType == Instance.SINGLE_INSTANCE)
                 Flagship.setSingleVisitorInstance(visitor)
             return visitor
@@ -114,68 +122,28 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
         delegate.getStrategy().clearContext()
     }
 
-    /// Deprecated
-
-    /**
-     * This function will call the decision api and update all the campaigns modifications from the server according to the visitor context.
-     *
-     * @return a CompletableFuture for this synchronization
-     */
     @Synchronized
-    @Deprecated("Use fetchFlags() instead.", ReplaceWith("fetchFlags()"), DeprecationLevel.WARNING)
-    fun synchronizeModifications(): Deferred<Unit> {
-        return delegate.getStrategy().fetchFlags()
+    override fun fetchFlags(): Deferred<Visitor> {
+        try {
+            return Flagship.coroutineScope().async {
+                ensureActive()
+                configManager.decisionManager?.readyLatch?.await()
+                delegate.getStrategy().fetchFlags().await()
+                this@Visitor
+            }
+        } catch (e: Exception) {
+            return CoroutineScope(Job() + Dispatchers.Default).async { this@Visitor }
+        }
     }
 
-    /**
-     * Retrieve a modification value by its key. If no modification match the given key or if the stored value type and default value type do not match, default value will be returned.
-     *
-     * @param key          key associated to the modification.
-     * @param defaultValue default value to return.
-     * @param activate     Set this parameter to true to automatically report on our server that the
-     * current visitor has seen this modification. It is possible to call activateModification() later.
-     * @return modification value or default value.
-     */
     @Synchronized
-    @Suppress("unchecked_cast")
-    @Deprecated("Use getFlag() instead.", ReplaceWith("getFlag()"), DeprecationLevel.WARNING)
-    fun <T> getModification(key: String, defaultValue: T?, activate: Boolean = false): T? {
-        return delegate.getStrategy().getFlag(key, defaultValue).value(activate)
+    override fun getFlag(key: String): Flag {
+        return delegate.getStrategy().getFlag(key)
     }
 
-    /**
-     * Get the campaign modification information value matching the given key.
-     *
-     * @param key key which identify the modification.
-     * @return JSONObject containing the modification information.
-     */
     @Synchronized
-    @Deprecated("Use getFlag(\"flagkey\").metadata instead.", ReplaceWith("getFlag(s).metadata"), DeprecationLevel.WARNING)
-    fun getModificationInfo(key: String): JSONObject? {
-        val metadata = delegate.getStrategy().getFlag(key, null).metadata()
-        return if (metadata.exists()) metadata.toJson() else null
-    }
-
-    /**
-     * Report this user has seen this modification.
-     *
-     * @param key key which identify the modification to activate.
-     */
-    @Synchronized
-    @Deprecated("Use getFlag(\"flagkey\").visitorExposed() instead.", ReplaceWith("getFlag(s).visitorExposed()"), DeprecationLevel.WARNING)
-    fun activateModification(key: String) {
-        delegate.getStrategy().getFlag(key, null).userExposed()
-    }
-
-    ///// new
-
-    @Synchronized
-    override fun fetchFlags(): Deferred<Unit> {
-        return delegate.getStrategy().fetchFlags()
-    }
-
-    override fun <T : Any?> getFlag(key: String, defaultValue : T): Flag<T> {
-        return delegate.getStrategy().getFlag(key, defaultValue)
+    override fun getFlags(): FlagCollection {
+        return delegate.getStrategy().getFlags()
     }
 
     @Synchronized
@@ -226,5 +194,18 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
     @Synchronized
     override fun toString(): String {
        return delegate.toString()
+    }
+
+    /**
+     * Return the FlagStatus for this visitor.
+     */
+    @Synchronized
+    fun getFlagStatus(): FlagStatus {
+        return delegate.flagStatus
+    }
+
+    @Synchronized
+    override fun collectEmotionsAIEvents(activity: Activity?): Deferred<Boolean> {
+        return delegate.getStrategy().collectEmotionsAIEvents(activity)
     }
 }

@@ -42,25 +42,6 @@ project(':flagship') {
                             dependencyNode.appendNode('version', dependency.version)
                         }
                     }
-                    if (maven_variant == 'compat') {
-                        configurations.compatImplementation.allDependencies.each { dependency ->
-                            if (dependency.name != "unspecified") {
-                                def dependencyNode = dependenciesNode.appendNode('dependency')
-                                dependencyNode.appendNode('groupId', dependency.group)
-                                dependencyNode.appendNode('artifactId', dependency.name)
-                                dependencyNode.appendNode('version', dependency.version)
-                            }
-                        }
-                    } else {
-                        configurations.commonImplementation.allDependencies.each { dependency ->
-                            if (dependency.name != "unspecified") {
-                                def dependencyNode = dependenciesNode.appendNode('dependency')
-                                dependencyNode.appendNode('groupId', dependency.group)
-                                dependencyNode.appendNode('artifactId', dependency.name)
-                                dependencyNode.appendNode('version', dependency.version)
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -79,7 +60,8 @@ project(':flagship') {
 }
 
 signing {
-    if (sonatype_signing_key && sonatype_signing_pwd)
+    if (sonatype_signing_key && sonatype_signing_pwd) {
         useInMemoryPgpKeys(sonatype_signing_key, sonatype_signing_pwd)
-    sign publishing.publications.maven
+        sign publishing.publications.maven
+    }
 }

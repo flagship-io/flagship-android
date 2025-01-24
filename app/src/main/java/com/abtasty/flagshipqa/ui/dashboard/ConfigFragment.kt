@@ -108,12 +108,14 @@ class ConfigFragment : Fragment() {
     }
 
     fun startFlagship() {
-
         dashboardViewModel.startFlagship(
-            {
+            { visitor ->
                 activity?.runOnUiThread {
                     Toast.makeText(requireContext(), "Started", Toast.LENGTH_SHORT).show()
                 }
+                println("#DB here 1: " + Thread.currentThread().name)
+                visitor.collectEmotionsAIEvents(activity)
+                println("#DB here 2: " + Thread.currentThread().name)
             },
             { error ->
                 Toast.makeText(requireContext(), "Error : $error", Toast.LENGTH_SHORT).show()

@@ -1,0 +1,84 @@
+{
+  "campaigns": [
+    {
+      "id": "cagt08da51hg078aaaaa",
+      "name": "qa tracking manager",
+      "type": "ab",
+      "variationGroups": [
+        {
+          "id": "cagt08da51hg078bbbbb",
+          "name": "Default",
+          "targeting": {
+            "targetingGroups": [
+              {
+                "targetings": [
+                  {
+                    "operator": "EQUALS",
+                    "key": "testing_tracking_manager",
+                    "value": true
+                  }
+                ]
+              }
+            ]
+          },
+          "variations": [
+            {
+              "id": "cagt08da51hg078ccccc",
+              "name": "Original",
+              "modifications": {
+                "type": "FLAG",
+                "value": {
+                  "my_flag": null
+                }
+              },
+              "allocation": 25,
+              "reference": true
+            },
+            {
+              "id": "cagt08da51hg078ddddd",
+              "name": "Variation 1",
+              "modifications": {
+                "type": "TEXT",
+                "value": {
+                  "my_flag": "value1"
+                }
+              },
+              "allocation": 25
+            },
+            {
+              "id": "cagt08da51hg078eeeee",
+              "name": "Variation 3",
+              "modifications": {
+                "type": "TEXT",
+                "value": {
+                  "my_flag": "value3"
+                }
+              },
+              "allocation": 25
+            },
+            {
+              "id": "cagt08da51hg078fffff",
+              "name": "Variation 2",
+              "modifications": {
+                "type": "TEXT",
+                "value": {
+                  "my_flag": "value2"
+                }
+              },
+              "allocation": 25
+            }
+          ]
+        }
+      ],
+      "bucketRanges": [
+        {
+          "r": [
+            0,
+            100
+          ]
+        }
+      ]
+    }
+  ],
+  "accountSettings": { }
+}
