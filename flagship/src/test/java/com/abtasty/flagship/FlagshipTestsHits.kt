@@ -1325,40 +1325,40 @@ class FlagshipTestsHits : AFlagshipTest() {
                         TrackingManagerConfig(cachingStrategy = CacheStrategy.CONTINUOUS_CACHING, maxPoolSize = 5)
 
                     )
-            ).await()
+            ).await() //TBS 1 Account Settings
 
 
 //            runBlocking {
 //                delay(100)
 //            }
-            delay(200)
-            val visitor = Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build()
-            delay(200)
+            delay(300)
+            val visitor = Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build() //  1 TBS Consent
+            delay(300)
 //            runBlocking {
-            visitor.fetchFlags().await()
-            delay(200)
+            visitor.fetchFlags().await() // 1 TBS Fetch
+            delay(300)
 //            }
 
             //
-            visitor.getFlag("featureEnabled").value(false) //1 activate
+            visitor.getFlag("featureEnabled").value(false) //1 TBS activate, // 1TBS ERROR ACTIVATE
 //            runBlocking {
 //                delay(100)
 //            }
-            delay(200)
+            delay(300)
             val flagIsRef = visitor.getFlag("isref")
             val flagIsRefValue = flagIsRef.value("default", false)
-            flagIsRef.visitorExposed() //1 activate
+            flagIsRef.visitorExposed() //1 TBS activate, // 1 TBS ERROR ACTIVATE
 
 //            runBlocking {
 //                delay(100)
 //            }
-            delay(200)
+            delay(300)
         }
 
         Assert.assertEquals(
             7,
             FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]?.size
-        ) // 1 Account Settings, 1 Consent, 1 Fetch, 2 activates 2 activate error
+        ) // 1 Account Settings, 1 Consent, 1 Fetch, 1 activate, 1 activate error, 1 activate, 1 activate error
 
 
         fun checkJson(jsonHit: JSONObject) {
