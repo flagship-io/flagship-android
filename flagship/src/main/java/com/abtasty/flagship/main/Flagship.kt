@@ -30,8 +30,11 @@ object Flagship {
     internal var flagshipCoroutineScope = CoroutineScope(supervisorJob + Dispatchers.Default)
     internal var qa = false
 
+//    internal fun coroutineScope(): CoroutineScope {
+//        return flagshipCoroutineScope
+//    }
     internal fun coroutineScope(): CoroutineScope {
-        return flagshipCoroutineScope
+        return  CoroutineScope(supervisorJob + Dispatchers.Default)
     }
 
     internal fun mainCoroutineScope(): CoroutineScope {
