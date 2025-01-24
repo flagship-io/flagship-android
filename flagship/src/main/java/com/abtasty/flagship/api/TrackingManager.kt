@@ -356,9 +356,10 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                 trackingManager.deleteHits(invalidHits)
             println("A 44444444444")
             val result = successHits.ifEmpty { null }
-            println("A 5555555555 : " + result+toString() )
+            println("A 5555555555 : " + result)
             return result
         } catch (e: Exception) {
+            println("A EEEEEEEEEEEE 0")
             FlagshipLogManager.exception(FlagshipException(e))
             println("A EEEEEEEEEEEE")
             null
@@ -784,9 +785,13 @@ class NoPollingStrategy(val trackingManager: TrackingManager) : AbstractCacheStr
 
     override fun addHits(hits: ArrayList<Hit<*>>, new: Boolean): ArrayList<Hit<*>>? {
         val results = super.addHits(hits, new)
+        println("A2 000000000000")
         runBlocking {
+            println("A2 000000000 '")
             polling().await()
+            println("A2 000000000 ''")
         }
+        println("A3 111111111111")
         return results
     }
 
