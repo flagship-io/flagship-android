@@ -27,18 +27,18 @@ object Flagship {
     internal var instanceId = UUID.randomUUID().toString()
     internal var initializationTimeStamp = System.currentTimeMillis()
     internal var supervisorJob = SupervisorJob()
-    internal var flagshipCoroutineScope = CoroutineScope(supervisorJob + Dispatchers.Default)
+    internal var flagshipCoroutineScope = CoroutineScope(supervisorJob + Dispatchers.IO)
     internal var qa = false
 
-//    internal fun coroutineScope(): CoroutineScope {
-//        return flagshipCoroutineScope
-//    }
     internal fun coroutineScope(): CoroutineScope {
-        return  CoroutineScope(supervisorJob + Dispatchers.IO)
+        return flagshipCoroutineScope
     }
+//    internal fun coroutineScope(): CoroutineScope {
+//        return  CoroutineScope(supervisorJob + Dispatchers.IO)
+//    }
 
     internal fun mainCoroutineScope(): CoroutineScope {
-        return CoroutineScope(Job() + Dispatchers.Default)
+        return CoroutineScope(Job() + Dispatchers.IO)
     }
 
     /**

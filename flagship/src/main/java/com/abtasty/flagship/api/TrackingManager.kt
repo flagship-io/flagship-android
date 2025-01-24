@@ -473,11 +473,7 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
         return try {
             println("-1 L 000000000")
             println("-1 L 000000000 = " + Flagship.coroutineScope().toString())
-//            Flagship.coroutineScope().async {
-            GlobalScope.async {
-                println("-1 L - - - -- ")
-            }
-            CoroutineScope(Dispatchers.IO).async {
+            Flagship.coroutineScope().async {
                 try {
                     println("-2 L 000000000")
                     ensureActive()
