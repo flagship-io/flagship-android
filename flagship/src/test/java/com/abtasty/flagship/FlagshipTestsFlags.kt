@@ -445,7 +445,8 @@ class FlagshipTestsFlags : AFlagshipTest() {
 
             delay(200)
 
-            assertEquals(2, FlagshipTestsHelper.interceptor().calls[ACTIVATION_URL]?.size)
+            assertTrue(FlagshipTestsHelper.interceptor().calls[ACTIVATION_URL]?.size in 1..2) // Depending on timing, both hits and be merged in one batch of activates
+//            assertEquals(2, FlagshipTestsHelper.interceptor().calls[ACTIVATION_URL]?.size)
         }
     }
 }

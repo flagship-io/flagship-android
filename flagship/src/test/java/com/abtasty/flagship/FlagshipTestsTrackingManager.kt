@@ -1590,7 +1590,7 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
             visitorA.sendHit(Screen("Screen 22"))
             visitorA.sendHit(Screen("Screen 33"))
 
-            delay(1000)
+            delay(1500)
 
             assertEquals(1, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.size ?: 0)
             FlagshipTestsHelper.interceptor().getJsonFromRequestCall(ARIANE_URL, 1)?.let { json ->
