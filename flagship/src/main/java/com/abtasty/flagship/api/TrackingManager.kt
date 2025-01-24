@@ -315,6 +315,7 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
     override fun addHits(hits: ArrayList<Hit<*>>, new: Boolean): ArrayList<Hit<*>>? {
 
         return try {
+            println("A 1111111111111")
             val successHits = ArrayList<Hit<*>>()
             val invalidHits = ArrayList<Hit<*>>()
             for (h in hits) {
@@ -350,11 +351,14 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                     invalidHits.add(h)
                 }
             }
+            println("A 33333333333")
             if (invalidHits.isNotEmpty())
                 trackingManager.deleteHits(invalidHits)
+            println("A 44444444444")
             return successHits.ifEmpty { null }
         } catch (e: Exception) {
             FlagshipLogManager.exception(FlagshipException(e))
+            println("A EEEEEEEEEEEE")
             null
         }
     }
