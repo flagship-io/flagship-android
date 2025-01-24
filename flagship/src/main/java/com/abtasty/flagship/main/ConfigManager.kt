@@ -33,14 +33,16 @@ class ConfigManager : DefaultLifecycleObserver {
         this.flagshipConfig.withApiKey(apiKey)
         this.decisionManager = if (flagshipConfig.decisionMode == DecisionMode.DECISION_API) ApiManager(flagshipConfig) else BucketingManager(flagshipConfig)
         this.statusListener = statusListener
+        println("222222222222")
         HttpManager.initHttpManager()
         initCacheManager()
+        println("333333333333")
         initTrackingManager()
+        println("444444444444")
         initDecisionManager()
+        println("5555555555")
         if (flagshipConfig.eaiCollectEnabled || flagshipConfig.eaiActivationEnabled)
             initEAIManager()
-//        if (Flagship.eaiCollectEnabled || Flagship.eaiActivationEnabled)
-//            initEAIManager()
     }
 
     private fun initTrackingManager() {

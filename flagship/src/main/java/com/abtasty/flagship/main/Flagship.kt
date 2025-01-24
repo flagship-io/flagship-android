@@ -112,9 +112,11 @@ object Flagship {
             }
             updateStatus(FlagshipStatus.INITIALIZING)
             deviceContext.putAll(FlagshipContext.loadAndroidContext(application))
+            println("1111111111111")
             configManager.init(envId, apiKey, config) { status ->
                 updateStatus(status)
             }
+            println("XXXXXXX")
             if (!configManager.isSet()) {
                 updateStatus(FlagshipStatus.NOT_INITIALIZED)
                 FlagshipLogManager.log(
@@ -122,7 +124,6 @@ object Flagship {
                     FlagshipConstants.Errors.INITIALIZATION_PARAM_ERROR
                 )
             }
-            println("1111111111111")
             readinessLatch.countDown()
         }
 

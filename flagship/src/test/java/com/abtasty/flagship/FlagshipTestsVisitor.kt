@@ -667,7 +667,6 @@ class FlagshipTestsVisitor : AFlagshipTest() {
                 )
             ).await()
         }
-        println("_ _ _ _")
         //Anonymous
         val visitor = Flagship.newVisitor("anonymous", true).build()
 
