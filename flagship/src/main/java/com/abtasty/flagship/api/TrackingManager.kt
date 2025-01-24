@@ -172,14 +172,18 @@ class TrackingManager() : OnConfigChangedListener, TrackingManagerStrategyInterf
         this.flagshipConfig = config
         this.trackingManagerConfig = config.trackingManagerConfig
         this.cacheManager = config.cacheManager
+        println("C 111111111")
         runBlocking(Dispatchers.Default) {
+            println("C 111111111*")
             getStrategy().lookupPool().await() //new
         }
+        println("C 2222222222")
         if (this.trackingManagerConfig!!.disablePolling) {
             this.clearPool()
         } else {
             this.startPollingLoop()
         }
+        println("C 3333333")
     }
 
     internal fun startPollingLoop() {

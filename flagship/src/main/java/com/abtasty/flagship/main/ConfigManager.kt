@@ -46,8 +46,11 @@ class ConfigManager : DefaultLifecycleObserver {
     }
 
     private fun initTrackingManager() {
+        println("T 111111111")
         trackingManager = trackingManager ?: TrackingManager()
+        println("T 2222222")
         trackingManager?.onConfigChanged(this.flagshipConfig)
+        println("T 333333")
     }
 
     private fun initCacheManager() {
