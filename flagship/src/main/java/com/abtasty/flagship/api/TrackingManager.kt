@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import com.abtasty.flagship.utils.FlagshipConstants.Exceptions.Companion.FlagshipException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 
 /**
  *  This class configure the Flagship SDK Tracking Manager which gathers all visitors emitted hits in a pool and
@@ -473,7 +474,10 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
             println("-1 L 000000000")
             println("-1 L 000000000 = " + Flagship.coroutineScope().toString())
 //            Flagship.coroutineScope().async {
-            CoroutineScope(Dispatchers.Default).async {
+            GlobalScope.async {
+                println("-1 L - - - -- ")
+            }
+            CoroutineScope(Dispatchers.IO).async {
                 try {
                     println("-2 L 000000000")
                     ensureActive()
