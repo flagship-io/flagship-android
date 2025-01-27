@@ -18,6 +18,7 @@ project.afterEvaluate {
             description = "Generate Jacoco coverage reports on the ${variantName.capitalize()} build."
 
             reports {
+                xml.required = true
                 html.required = true
                 html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
             }
