@@ -25,13 +25,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew :flagship:assembleDebug
       - name: Unit tests
-        run: bash ./gradlew flagship:testDebugUnitTestCoverage -i --stacktrace
+        run: bash ./gradlew flagship:testJacocoUnitTestCoverage -i --stacktrace
       - name: Generate report
-        run: bash ./gradlew flagship:createDebugUnitTestCoverageReport
+        run: bash ./gradlew flagship:createJacocoUnitTestCoverageReport
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v5
         with:
-          files: flagship/build/reports/coverage/test/debug/index.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: flagship/build/reports/coverage/test/jacoco/report.xml
       - name: Build and Publish
         env:
           SONATYPE_SIGNING_KEY: ${{ secrets.SONATYPE_SIGNING_KEY }}
