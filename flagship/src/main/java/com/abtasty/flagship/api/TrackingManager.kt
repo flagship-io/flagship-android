@@ -53,14 +53,14 @@ open class TrackingManagerConfig(
     var closingStrategy: ClosingStrategy = ClosingStrategy.CACHE_PENDING_HITS,
 
     /**
-     * Specifies a time delay between each batched hit requests in milliseconds. Default value is 30000.
+     * Specifies a time delay between each batched hit requests in milliseconds. Default value is 10000.
      */
-    var batchTimeInterval: Long = 30000,
+    var batchTimeInterval: Long = 10000,
 
     /**
-     * Specifies a max hit pool size that will trigger a batch request once reached. Default value is 20.
+     * Specifies a max hit pool size that will trigger a batch request once reached. Default value is 10.
      */
-    var maxPoolSize: Int = 20,
+    var maxPoolSize: Int = 10,
 
     /**
      * Disable polling and fire hits in separate requests one by one.

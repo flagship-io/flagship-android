@@ -450,8 +450,8 @@ class FlagshipTestsHits : AFlagshipTest() {
                 ACTIVATION_URL,
                 FlagshipTestsHelper.response("", 200)
             ).intercept(
-            TROUBLESHOOTING_URL,
-            FlagshipTestsHelper.response("", 200)
+                TROUBLESHOOTING_URL,
+                FlagshipTestsHelper.response("", 200)
             )
             delay(500)
 
@@ -1341,6 +1341,7 @@ class FlagshipTestsHits : AFlagshipTest() {
             ).await() //TBS 1 Account Settings
 
             delay(300)
+
             val visitor = Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build() //  1 TBS Consent
 
             delay(300)
@@ -1599,11 +1600,9 @@ class FlagshipTestsHits : AFlagshipTest() {
             FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e, visitor.delegate))
         }
 
-
         runBlocking {
             delay(200)
         }
-
 
         Assert.assertEquals(4, FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]?.size) // 1 Account Settings, 1 Fetch, 1 Consent, 1 Error
 
