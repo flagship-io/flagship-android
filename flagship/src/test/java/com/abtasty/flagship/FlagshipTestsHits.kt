@@ -1848,10 +1848,10 @@ class FlagshipTestsHits : AFlagshipTest() {
                     )
                 )
                 .build()
-                .fetchFlags()
-                .await()// +1 Segment
+            delay(200)
+            visitor.fetchFlags().await()// +1 Segment
 
-            delay(100)
+            delay(200)
 
             FlagshipTestsHelper.interceptor().calls[ARIANE_URL]!![1].let { //[0] is Consent
                 val jsonHit = HttpCompat.requestJson(it.first)
@@ -1861,7 +1861,7 @@ class FlagshipTestsHits : AFlagshipTest() {
 
             visitor.updateContext("cnt", 1)
             visitor.fetchFlags().await()// +1 Segment
-            delay(100)
+            delay(200)
 
             FlagshipTestsHelper.interceptor().calls[ARIANE_URL]!![2].let {
                 val jsonHit = HttpCompat.requestJson(it.first)
@@ -1871,25 +1871,25 @@ class FlagshipTestsHits : AFlagshipTest() {
 
             visitor.updateContext("cnt", 1)
             visitor.fetchFlags().await()// +1 Segment
-            delay(100)
+            delay(200)
 
             Assert.assertEquals(3, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]!!.size) // 1 consent + 2 Segment
 
             visitor.updateContext("cnt", 3)
             visitor.fetchFlags().await()// +1 Segment
-            delay(100)
+            delay(200)
 
             Assert.assertEquals(4, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]!!.size) // 1 consent + 3 Segment
 
             visitor.clearContext()
             visitor.fetchFlags().await()// +1 Segment
-            delay(100)
+            delay(200)
 
             Assert.assertEquals(5, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]!!.size) // 1 consent + 4 Segment
 
             visitor.clearContext()
             visitor.fetchFlags().await()// +1 Segment
-            delay(100)
+            delay(200)
 
             Assert.assertEquals(5, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]!!.size) // 1 consent + 4 Segment
         }
