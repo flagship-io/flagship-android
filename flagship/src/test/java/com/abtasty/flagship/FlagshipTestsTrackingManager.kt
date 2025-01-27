@@ -1537,8 +1537,8 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
                 FlagshipConfig.DecisionApi()
                     .withTrackingManagerConfig(
                         TrackingManagerConfig(
-                            batchTimeInterval = 2000,
-                            maxPoolSize = 5
+                            batchTimeInterval = 1000,
+                            maxPoolSize = 10
                         )
                     )
                     .build()
@@ -1582,23 +1582,25 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
 
             visitorA.fetchFlags().await()
 
-            delay(200)
+            delay(1000)
 
             assertTrue(Flagship.configManager.trackingManager?.running == true)
 
             visitorA.sendHit(Screen("Screen 11"))
+            delay(20)
             visitorA.sendHit(Screen("Screen 22"))
+            delay(20)
             visitorA.sendHit(Screen("Screen 33"))
 
-            delay(1500)
+            delay(1000)
 
-            assertEquals(1, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.size ?: 0)
+            assertEquals(2, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.size ?: 0)
             FlagshipTestsHelper.interceptor().getJsonFromRequestCall(ARIANE_URL, 1)?.let { json ->
                 val array = json.getJSONArray("h")
-                assertEquals(4, array.length())
-                assertEquals("Screen 11", array.getJSONObject(1).getString("dl"))
-                assertEquals("Screen 22", array.getJSONObject(2).getString("dl"))
-                assertEquals("Screen 33", array.getJSONObject(3).getString("dl"))
+                assertEquals(3, array.length())
+                assertEquals("Screen 11", array.getJSONObject(0).getString("dl"))
+                assertEquals("Screen 22", array.getJSONObject(1).getString("dl"))
+                assertEquals("Screen 33", array.getJSONObject(2).getString("dl"))
 
             }
         }
