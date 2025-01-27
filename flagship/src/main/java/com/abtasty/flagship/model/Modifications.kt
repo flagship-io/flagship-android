@@ -24,11 +24,11 @@ data class Modifications(
                     if (value is Boolean || value is Number || value is String || value is JSONObject || value is JSONArray || value == null)
                         values[key] = Modification(key, campaignId, variationGroupId, variationId, isReference, value, campaignType, slug)
                     else
-                        FlagshipLogManager.log(FlagshipLogManager.Tag.PARSING, LogManager.Level.ERROR, FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR)
+                        FlagshipLogManager.log(FlagshipLogManager.Tag.PARSING, LogManager.Level.ERROR, FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + " _ _ 3 _ _ ")
                 }
                 Modifications(campaignId, variationGroupId, variationId, isReference, type, values)
             } catch (e: Exception) {
-                FlagshipLogManager.log(FlagshipLogManager.Tag.PARSING, LogManager.Level.ERROR, FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR)
+                FlagshipLogManager.log(FlagshipLogManager.Tag.PARSING, LogManager.Level.ERROR, FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + " _ _ 4 _ _ ")
                 null
             }
         }

@@ -1,145 +1,95 @@
 package com.abtasty.flagship
 
 import android.content.Context
-import androidx.test.core.app.ApplicationProvider
-import com.abtasty.flagship.api.HttpCompat
+import com.abtasty.flagship.utils.FlagshipLogManager
+import com.abtasty.flagship.utils.HttpCompat
+import com.abtasty.flagship.utils.ResponseCompat
 import okhttp3.*
 import okio.Buffer
 import okio.BufferedSource
 import org.json.JSONArray
 import org.json.JSONObject
-import java.lang.Error
+import java.util.concurrent.ConcurrentHashMap
 
 class FlagshipTestsHelper {
 
     class HttpInterceptor : Interceptor {
 
-        //        data class Rule(var url: String, var block: ((Request, Int) -> (Response))? = null, var response: Response.Builder?) {
-        data class Rule(var url: String) {
+        val TAG = "[FlagshipTests Interceptor]"
+        val ERROR = "[ERROR]"
 
-            var responseLambda : ((Request, Int) -> (Response.Builder))? = null
-            var requestLambda : ((Request, Int) -> (Unit))? = null
-            var response: Response.Builder? = null
-            var errors : Throwable? = null
-
-            class Builder(var url: String) {
-
-                var rule = Rule(url)
-
-                fun returnResponse(lambda: ((Request, Int) -> (Response.Builder))): Builder {
-                    rule.responseLambda = lambda
-                    return this
-                }
-
-                fun returnResponse(response: Response.Builder): Builder {
-                    rule.response = response
-                    return this
-                }
-
-                fun verifyRequest(lambda: ((Request, Int) -> (Unit))): Builder {
-                    rule.requestLambda = lambda
-                    return this
-                }
-
-                fun build() : Rule {
-                    return rule
-                }
-            }
-
-            enum class Type(var value : Int) {
-                ALL(0), NB_CALL(1)
-            }
-
-            fun proceed(interceptedRequest: Request, totalCall : Int): Response? {
-//                System.out.println("Intercepted => " + interceptedRequest.url)
-                return try {
-                    if (requestLambda != null) requestLambda?.invoke(interceptedRequest, totalCall)
-                    when (true) {
-                        (response != null) -> response?.request(interceptedRequest)?.build()
-                        (responseLambda != null) -> responseLambda?.invoke(interceptedRequest, totalCall)?.request(interceptedRequest)?.build()
-                        else -> null
-                    }
-                } catch (e : Error) {
-                    errors = e
-                    null
-                } catch (e : Exception) {
-                    errors = e
-                    null
-                }
-            }
-        }
-
-        data class Rules(var url : String) {
-
-            private var calls : Int = 0
-            private var ruleAll : Rule? = null
-            private var rulesByIndex = HashMap<Int, Rule>()
-
-            fun addRule(index: Int, rule: Rule) {
-                rulesByIndex[index] = rule
-            }
-
-            fun addRule(rule: Rule) {
-                ruleAll = rule
-            }
-
-            fun proceed(interceptedRequest: Request) : Response? {
-                calls += 1
-                return if (rulesByIndex.isNotEmpty())
-                    rulesByIndex[calls]?.proceed(interceptedRequest, calls)
-                else
-                    ruleAll?.proceed(interceptedRequest, calls)
-            }
-
-            fun checkErrors() {
-                ruleAll?.errors?.let { throw it }
-                for ((url, rule) in rulesByIndex){
-                    rule.errors?.let { throw it }
-                }
-            }
-        }
-
-        private val rules = HashMap<String, Rules>()
-
+        var rules: ConcurrentHashMap<String, Response.Builder> = ConcurrentHashMap()
+        var calls: ConcurrentHashMap<String, ArrayList<Pair<Request, ResponseCompat>>> = ConcurrentHashMap()
 
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
             val url: String = HttpCompat.requestUrl(request)
-            return rules[url]?.proceed(request) ?: chain.proceed(request)
+
+            val response = consume(url, request)?.also { response ->
+                println("#INTERCEPTED = " + url)
+                call(url, Pair(request, ResponseCompat(response)))
+            }
+                ?: chain.proceed(request)
+                    .also { println("#NOT INTERCEPTED = " + url) }
+//            call(url, Pair(request, ResponseCompat(response)))
+            return response
         }
 
-        private fun addRules(url: String) {
-            if (!rules.containsKey(url))
-                rules[url] = Rules(url)
+        fun intercept(url: String, response: Response.Builder): HttpInterceptor {
+            rules[url] = response
+            return this
         }
 
-        fun addRule(index: Int, rule: Rule): Rule {
-            addRules(rule.url)
-            rules[rule.url]?.addRule(index, rule)
-            return rule
+        private fun consume(url: String, request: Request): Response? {
+            return rules[url]
+                ?.request(request)
+                ?.build()
         }
 
-        fun addRule(rule: Rule): Rule {
-            addRules(rule.url)
-            rules[rule.url]?.addRule(rule)
-            return rule
+        private fun call(url: String, result: Pair<Request, ResponseCompat>) {
+            if (!calls.containsKey(url)) {
+                calls[url] = arrayListOf(result)
+            } else {
+                calls[url]?.add(result)
+            }
+        }
+        public fun calls(url: String): ArrayList<Pair<Request, ResponseCompat>>? {
+            return calls[url]
+        }
+        fun getJsonFromRequestCall(url: String, index: Int): JSONObject? {
+            return try {
+                HttpCompat.requestJson(calls[url]!![index].first)
+            } catch (e: Exception) {
+                null
+            }
         }
 
-        fun clearRules() {
+        fun clear() {
             rules.clear()
+            calls.clear()
         }
 
-        fun rules(): HashMap<String, Rules> {
-            return rules
+        fun verifyRequestContentOrThrow(url: String, consume: Boolean = true, lambda: (content: JSONObject) -> Unit) {
+            if (consume) calls[url]?.removeFirstOrNull() else calls[url]?.firstOrNull()
+                ?.also { (request, response) ->
+                    try {
+                        lambda.invoke(HttpCompat.requestJson(request))
+                    } catch (e: Exception) {
+                        throw Exception(
+                            "$TAG$ERROR Request verification failed:/n%s.".format(
+                                FlagshipLogManager.exceptionToString(e)
+                            )
+                        )
+                    }
+                } ?: throw Exception("$TAG$ERROR URL(%s) haven't been called.".format(url))
         }
-
     }
 
     companion object {
 
         val emptyResponse = response("", 200)
 
-        internal var interceptor = HttpInterceptor()
+        var interceptor = HttpInterceptor()
 
         fun interceptor(): HttpInterceptor {
             return interceptor
@@ -175,6 +125,15 @@ class FlagshipTestsHelper {
             return try {
                 val input = context.assets.open(fileName)
                 val content =  input.bufferedReader().use { it.readText() }
+                response(content, code, headers)
+            } catch (e : Exception) {
+                e.printStackTrace()
+                response("{}", 200)
+            }
+        }
+
+        fun responseFromString(context : Context, content : String, code : Int, headers: HashMap<String, String> = HashMap()): Response.Builder {
+            return try {
                 response(content, code, headers)
             } catch (e : Exception) {
                 e.printStackTrace()

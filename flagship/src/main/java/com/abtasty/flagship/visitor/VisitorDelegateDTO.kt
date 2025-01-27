@@ -10,12 +10,15 @@ open class VisitorDelegateDTO(val visitorDelegate: VisitorDelegate) {
     var visitorId = visitorDelegate.visitorId
     var anonymousId = visitorDelegate.anonymousId
     var context = HashMap(visitorDelegate.getContext())
+    var hasContextChanged = visitorDelegate.hasVisitorContextChanged
     var flags = HashMap(visitorDelegate.flags)
     var activatedVariations = ConcurrentLinkedQueue(visitorDelegate.activatedVariations)
     var hasConsented = visitorDelegate.hasConsented
     var isAuthenticated = visitorDelegate.isAuthenticated
     var visitorStrategy = visitorDelegate.getStrategy()
     var assignmentsHistory = HashMap(visitorDelegate.assignmentsHistory)
+    var eaiScored = visitorDelegate.eaiScored
+    internal var eaiSegment = visitorDelegate.eaiSegment
 
     @Suppress("unchecked_cast")
     override fun toString(): String {
@@ -29,6 +32,8 @@ open class VisitorDelegateDTO(val visitorDelegate: VisitorDelegate) {
 //        json.put("activatedVariations", activatedVariationToJsonArray(activatedVariations))
         json.put("activatedVariations", JSONArray(activatedVariations))
         json.put("assignmentsHistory", JSONObject(assignmentsHistory as Map<Any?, Any?>))
+        json.put("eaiScored", eaiScored)
+        json.put("eaiSegment", eaiSegment ?: "null")
         return json.toString(2)
     }
 
@@ -57,12 +62,4 @@ open class VisitorDelegateDTO(val visitorDelegate: VisitorDelegate) {
         assignmentsHistory[variationGroupId] = variationId
         visitorDelegate.assignmentsHistory[variationGroupId] = variationId
     }
-
-//    private fun activatedVariationToJsonArray(activatedVariations: ConcurrentLinkedQueue<String>) : JSONArray {
-//        val array = JSONArray()
-//        for (variation in activatedVariations) {
-//            array.put(variation)
-//        }
-//        return array
-//    }
 }

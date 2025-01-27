@@ -1,11 +1,15 @@
 package com.abtasty.flagship.visitor
 
+import android.app.Activity
 import com.abtasty.flagship.hits.Hit
+import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.FlagMetadata
 import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import org.json.JSONObject
 
 
@@ -23,7 +27,7 @@ class NoConsentStrategy(val visitorDelegate: VisitorDelegate) : DefaultStrategy(
         FlagshipLogManager.log(tag!!, LogManager.Level.ERROR, String.format(FlagshipConstants.Errors.METHOD_DEACTIVATED_CONSENT_ERROR, methodName, visitorId))
     }
 
-    override fun <T : Any?> sendVisitorExposition(key: String, defaultValue : T?) {
+    override fun <T : Any?> sendVisitorExposition(key: String, defaultValue : T?, valueConsumedTimestamp: Long) {
         logMethodDeactivatedError(FlagshipLogManager.Tag.FLAG_VISITOR_EXPOSED, visitorDelegate.visitorId, "Flag[$key].visitorExposed()")
     }
 
@@ -35,13 +39,8 @@ class NoConsentStrategy(val visitorDelegate: VisitorDelegate) : DefaultStrategy(
 
     override fun cacheVisitor() {} //do nothing
 
-    override fun lookupVisitorCache() {} //do nothing
-
-    override fun lookupHitCache() {} // do nothing
-
-    override fun cacheHit(visitorId: String, data: JSONObject) {
-        if (data.optJSONObject("data")?.optJSONObject("content")?.optString("ea") == "fs_consent") //Only process consent hits
-            super.cacheHit(visitorId, data)
-        // else do nothing
+    override fun collectEmotionsAIEvents(activity: Activity?): Deferred<Boolean> {
+        logMethodDeactivatedError(FlagshipLogManager.Tag.EAI_COLLECT,  visitorDelegate.visitorId,"collectEAI()")
+        return Flagship.coroutineScope().async { false }
     }
 }

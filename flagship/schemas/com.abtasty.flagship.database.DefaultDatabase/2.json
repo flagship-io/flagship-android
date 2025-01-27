@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "153c86145807fbdbf19c1317e3551b74",
+    "identityHash": "50fc10adf01a567fde5514656c328ee0",
     "entities": [
       {
         "tableName": "visitors",
@@ -32,8 +32,14 @@
       },
       {
         "tableName": "hits",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`visitorId` TEXT NOT NULL, `data` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `visitorId` TEXT NOT NULL, `data` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
           {
             "fieldPath": "visitorId",
             "columnName": "visitorId",
@@ -45,16 +51,10 @@
             "columnName": "data",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
             "id"
           ]
@@ -66,7 +66,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '153c86145807fbdbf19c1317e3551b74')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '50fc10adf01a567fde5514656c328ee0')"
     ]
   }
 }

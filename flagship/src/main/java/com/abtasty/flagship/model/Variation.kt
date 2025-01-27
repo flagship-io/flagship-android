@@ -56,15 +56,16 @@ data class Variation(
                         FlagshipLogManager.log(
                             FlagshipLogManager.Tag.PARSING,
                             LogManager.Level.ERROR,
-                            FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR
+                            FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + " _ _ 1 _ _ "
                         )
                 }
                 flags
             } catch (e: Exception) {
+                e.printStackTrace()
                 FlagshipLogManager.log(
                     FlagshipLogManager.Tag.PARSING,
                     LogManager.Level.ERROR,
-                    FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR
+                    FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + " _ _ 2 _ _ "
                 )
                 null
             }

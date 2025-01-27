@@ -1,22 +1,12 @@
 package com.abtasty.flagship.utils
 
-import android.app.UiModeManager
 import android.content.Context
-import android.content.Context.UI_MODE_SERVICE
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.os.Build
+import android.telephony.TelephonyManager
 import com.abtasty.flagship.BuildConfig
 import com.abtasty.flagship.visitor.VisitorDelegate
-import java.util.*
-import kotlin.collections.HashMap
-import android.util.DisplayMetrics
-
-import android.app.Activity
-import android.telephony.TelephonyManager
-import android.view.Display
-import com.abtasty.flagship.main.Flagship
-import java.util.logging.Logger
+import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -37,10 +27,6 @@ abstract class FlagshipContext<T>(
 
     protected open fun verifyValue(value: T): Boolean {
         return true
-    }
-
-    open fun load(visitorDelegate: VisitorDelegate): T? {
-        return null
     }
 
     open fun load(applicationContext: Context) : T? {
@@ -75,10 +61,11 @@ abstract class FlagshipContext<T>(
                 }
 
                 override fun load(applicationContext: Context): String? {
-                    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                        applicationContext.resources.configuration.locales.get(0).isO3Language
-                    else
-                        applicationContext.resources.configuration.locale.isO3Language
+//                    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+//                        applicationContext.resources.configuration.locales.get(0).isO3Language
+//                    else
+//                        applicationContext.resources.configuration.locale.isO3Language
+                    return Utils.getCurrentLocale(applicationContext).isO3Language
                 }
             }
 
@@ -160,11 +147,11 @@ abstract class FlagshipContext<T>(
          */
         @Suppress("Unused")
         val OS_NAME: FlagshipContext<String> = object : FlagshipContext<String>("OS_NAME", "sdk_osName") {
-            override fun load(visitorDelegate: VisitorDelegate): String? {
-                return "Android"
-            }
+//            override fun load(visitorDelegate: VisitorDelegate): String? {
+//                return "Android"
+//            }
 
-            override fun load(applicationContext: Context): String? {
+            override fun load(applicationContext: Context): String {
                 return "Android"
             }
         }
@@ -174,7 +161,7 @@ abstract class FlagshipContext<T>(
          */
         @Suppress("Unused")
         val OS_VERSION_NAME: FlagshipContext<String> = object : FlagshipContext<String>("OS_VERSION_NAME", "sdk_osVersionName") {
-            override fun load(applicationContext: Context): String? {
+            override fun load(applicationContext: Context): String {
                 val fields = Build.VERSION_CODES::class.java.fields
                 return "Android ${Build.VERSION.RELEASE} ${fields[Build.VERSION.SDK_INT].name}"
             }
@@ -190,9 +177,9 @@ abstract class FlagshipContext<T>(
                     return value.toDouble() >= 0
                 }
 
-                override fun load(visitorDelegate: VisitorDelegate): Number {
-                    return Build.VERSION.SDK_INT
-                }
+//                override fun load(visitorDelegate: VisitorDelegate): Number {
+//                    return Build.VERSION.SDK_INT
+//                }
 
                 override fun load(applicationContext: Context): Number {
                     return Build.VERSION.SDK_INT
@@ -254,7 +241,7 @@ abstract class FlagshipContext<T>(
          */
         private val FLAGSHIP_CLIENT: FlagshipContext<String> =
             object : FlagshipContext<String>("FLAGSHIP_CLIENT", "fs_client", true) {
-                override fun load(visitorDelegate: VisitorDelegate): String {
+                override fun load(applicationContext: Context): String {
                     return "android"
                 }
             }
@@ -265,7 +252,7 @@ abstract class FlagshipContext<T>(
         @Suppress("Unused")
         private val FLAGSHIP_VERSION: FlagshipContext<String> =
             object : FlagshipContext<String>("FLAGSHIP_VERSION", "fs_version", true) {
-                override fun load(visitorDelegate: VisitorDelegate): String {
+                override fun load(applicationContext: Context): String {
                     return BuildConfig.FLAGSHIP_VERSION_NAME
                 }
             }
@@ -274,11 +261,11 @@ abstract class FlagshipContext<T>(
          * Define the flagship current visitor in the visitor context. Must be a String.
          */
         @Suppress("Unused")
-        private val FLAGSHIP_VISITOR: FlagshipContext<String> =
+        internal val FLAGSHIP_VISITOR: FlagshipContext<String> =
             object : FlagshipContext<String>("FLAGSHIP_VISITOR", "fs_users", true) {
-                override fun load(visitorDelegate: VisitorDelegate): String {
-                    return visitorDelegate.visitorId ?: ""
-                }
+//                override fun load(visitorDelegate: VisitorDelegate): String {
+//                    return visitorDelegate.visitorId ?: ""
+//                }
             }
 
         val ALL: List<FlagshipContext<*>> = listOf(
@@ -313,7 +300,7 @@ abstract class FlagshipContext<T>(
                             androidContext.put(flagshipContext, value)
                         }
                     } catch (e : Exception) {
-                        FlagshipLogManager.exception(e)
+                        FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
                     }
                 }
             }

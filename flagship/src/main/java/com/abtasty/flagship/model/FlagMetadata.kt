@@ -31,6 +31,7 @@ open class FlagMetadata(variationMetadata: VariationMetadata) : VariationMetadat
                 .put("variationId", variationId)
                 .put("variationName", variationName)
                 .put("isReference", isReference)
+                .put("allocation", allocation)
     }
 
     class EmptyFlagMetadata() : FlagMetadata(
@@ -51,4 +52,31 @@ open class FlagMetadata(variationMetadata: VariationMetadata) : VariationMetadat
             )
         )
     )
+
+    companion object {
+        internal fun fromCacheJSON(jsonObject: JSONObject): FlagMetadata? {
+            return try {
+                FlagMetadata(
+                    VariationMetadata(
+                        jsonObject.getString("variationId"),
+                        jsonObject.getString("variationName"),
+                        jsonObject.getBoolean("isReference"),
+                        jsonObject.getInt("allocation"),
+                        VariationGroupMetadata(
+                            jsonObject.getString("variationGroupId"),
+                            jsonObject.getString("variationGroupName"),
+                            CampaignMetadata(
+                                jsonObject.getString("campaignId"),
+                                jsonObject.getString("campaignName"),
+                                jsonObject.getString("campaignType"),
+                                jsonObject.getString("slug")
+                            )
+                        )
+                    )
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
 }

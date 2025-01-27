@@ -1,5 +1,6 @@
 package com.abtasty.flagship.main
 
+import com.abtasty.flagship.api.TrackingManagerConfig
 import com.abtasty.flagship.cache.CacheManager
 import com.abtasty.flagship.cache.DefaultCacheManager
 import com.abtasty.flagship.model.ExposedFlag
@@ -20,9 +21,20 @@ abstract class FlagshipConfig<T>(internal var decisionMode: Flagship.DecisionMod
     internal var timeout: Long = 2000;
     internal var pollingTime: Long = 60
     internal var pollingUnit: TimeUnit = TimeUnit.SECONDS
-    internal var statusListener: ((Flagship.Status) -> Unit)? = null
-    internal var cacheManager : CacheManager = DefaultCacheManager()
+    internal var statusListener: ((Flagship.FlagshipStatus) -> Unit)? = null
+    internal var trackingManagerConfig: TrackingManagerConfig = TrackingManagerConfig()
+    internal var cacheManager : CacheManager? = DefaultCacheManager()
     internal var onVisitorExposed : ((VisitorExposed, ExposedFlag<*>) -> (Unit))? = null
+    internal var developerUsageTrackingEnabled : Boolean = true
+
+    //AccountSettings
+    internal var eaiCollectEnabled = false
+    internal var eaiActivationEnabled = false
+    internal var oneVisitorOneTestEnabled = false
+    internal var xpcEnabled = false
+    internal var troubleShootingTraffic = -1
+    internal var troubleShootingStartTimestamp : Long = -1
+    internal var troubleShootingEndTimestamp : Long = -1
 
     /**
      * Specify the environment id provided by Flagship, to use.
@@ -99,7 +111,7 @@ abstract class FlagshipConfig<T>(internal var decisionMode: Flagship.DecisionMod
      * @return FlagshipConfig
      */
     @Suppress("UNCHECKED_CAST")
-    fun withStatusListener(listener: ((Flagship.Status) -> Unit)): T {
+    fun withFlagshipStatusListener(listener: ((Flagship.FlagshipStatus) -> Unit)): T {
         statusListener = listener
         return this as T
     }
@@ -113,8 +125,17 @@ abstract class FlagshipConfig<T>(internal var decisionMode: Flagship.DecisionMod
      * @See CacheManager.Builder
      */
     @Suppress("UNCHECKED_CAST")
-    fun withCacheManager(customCacheManager: CacheManager): T {
+    fun withCacheManager(customCacheManager: CacheManager?): T {
         this.cacheManager = customCacheManager
+        return this as T
+    }
+
+    /**
+     * Specify a custom tracking manager configuration.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun withTrackingManagerConfig(trackingManagerConfig: TrackingManagerConfig): T {
+        this.trackingManagerConfig = trackingManagerConfig
         return this as T
     }
 
@@ -128,6 +149,17 @@ abstract class FlagshipConfig<T>(internal var decisionMode: Flagship.DecisionMod
         this.onVisitorExposed = onVisitorExposed
         return this as T
     }
+
+
+    /**
+     * Disable developer usage tracking
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun withDeveloperUsageTrackingDisabled(): T {
+        this.developerUsageTrackingEnabled = false
+        return this as T
+    }
+
 
     fun build(): FlagshipConfig<T> {
         return this

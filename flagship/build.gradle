@@ -8,6 +8,10 @@ plugins {
 
 apply from: 'jacoco.gradle'
 
+kotlin {
+    jvmToolchain(11)
+}
+
 android {
     publishNonDefault true
     compileSdk 34
@@ -26,10 +30,22 @@ android {
 
         unitTests.includeAndroidResources = true
         unitTests.returnDefaultValues = true
+
+
+        unitTests {
+            all {
+                jvmArgs '-noverify'
+            }
+        }
     }
 
     buildTypes {
         debug {
+            kotlinOptions {
+                freeCompilerArgs = ["-Xdebug"]
+            }
+            enableUnitTestCoverage true
+            enableAndroidTestCoverage true
         }
         release {
             minifyEnabled true
@@ -47,34 +63,16 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = '1.8'
     }
 
     android.libraryVariants.all { variant ->
         variant.outputs.all { output ->
-            if (variant.name.contains('Release')) {
-                if (variant.name.contains(android.productFlavors.compat.name))
-                    outputFileName = "flagship-android-compat-${flagship_version_name}.aar"
-                else
-                    outputFileName = "flagship-android-${flagship_version_name}.aar"
-            }
-        }
-    }
-    flavorDimensions 'default'
-    productFlavors {
-        common {
-            dimension 'default'
-            minSdkVersion 21
-            resValue("string", "variant", "common")
-        }
-        compat {
-            dimension 'default'
-            minSdkVersion 16
-            resValue("string", "variant", "compat")
+            outputFileName = "flagship-android-${flagship_version_name}.aar"
         }
     }
     namespace 'com.abtasty.flagship'
@@ -87,26 +85,22 @@ configurations {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation 'androidx.appcompat:appcompat:1.7.0'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'androidx.test:core:1.5.0'
-    testImplementation 'org.robolectric:robolectric:4.10'
-    testImplementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
+    testImplementation 'androidx.test:core:1.6.1'
+    testImplementation 'org.robolectric:robolectric:4.14.1'
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    testCompatImplementation 'org.conscrypt:conscrypt-openjdk-uber:2.5.2'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
-    implementation 'androidx.room:room-runtime:2.6.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
 
-    commonImplementation 'com.squareup.okhttp3:okhttp:4.9.3'
-
-    //keep this old version for compat
-    compatImplementation 'com.squareup.okhttp3:okhttp:3.12.12'
-    compatImplementation 'org.conscrypt:conscrypt-android:2.5.1'
-
-    annotationProcessor("androidx.room:room-compiler:2.6.0")
-    ksp 'androidx.room:room-compiler:2.6.0'
+    annotationProcessor("androidx.room:room-compiler:2.6.1")
+    ksp 'androidx.room:room-compiler:2.6.1'
 }
 
 

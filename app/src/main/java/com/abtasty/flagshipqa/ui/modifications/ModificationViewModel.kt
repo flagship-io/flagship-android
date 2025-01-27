@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.abtasty.flagship.main.Flagship
+import com.abtasty.flagship.model.Flag
 import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.visitor.VisitorDelegate
@@ -17,10 +18,11 @@ import kotlin.reflect.jvm.isAccessible
 class ModificationViewModel(val appContext: Application) : AndroidViewModel(appContext) {
 
 
-    var types = arrayListOf<String>("Boolean", "String", "Number", "Json")
+    var types = arrayListOf<String>("Boolean", "String", "Number", "Json", "Null")
     var modifications = MutableLiveData<String>().apply { this.value = "{\n\n}" }
-    var value = MutableLiveData<Any>().apply { this.value = "" }
-    var info = MutableLiveData<JSONObject>().apply { this.value = JSONObject() }
+//    var value = MutableLiveData<Any>().apply { this.value = "" }
+//    var info = MutableLiveData<JSONObject>().apply { this.value = JSONObject() }
+    var currentFLag = MutableLiveData<Flag?>().apply { this.value = null }
 
 
     init {
@@ -54,8 +56,9 @@ class ModificationViewModel(val appContext: Application) : AndroidViewModel(appC
         modifications.value = json.toString(4)
     }
 
-    fun getTypedValue(type: String, default : String) : Any {
+    fun getTypedValue(type: String, default : String) : Any? {
         return when (type) {
+            "Null" -> null
             "String" -> default
             "Boolean" -> default.toLowerCase().toBoolean()
             "Number" -> {
@@ -87,16 +90,21 @@ class ModificationViewModel(val appContext: Application) : AndroidViewModel(appC
 
     fun getModification(key: String, default: String, type: String) {
         Flagship.getVisitor()?.let { visitor ->
-            value.value = visitor.getModification(key, getTypedValue(type, default))
-            info.value = visitor.getFlag(key, getTypedValue(type, default)).metadata().toJson()
+//            value.value = visitor.getModification(key, getTypedValue(type, default))
+//            value.value = visitor.getFlag(key).value(getTypedValue(type, default),false)
+//            info.value = visitor.getFlag(key).metadata().toJson()
+            currentFLag.value = visitor.getFlag(key)
         }
 
     }
 
     fun activate(key: String, default: String, type: String) {
 //        Flagship.getVisitor()?.activateModification(key)
-        Flagship.getVisitor()?.let { visitor ->
-            visitor.getFlag(key, getTypedValue(type, default)).visitorExposed()
+//        Flagship.getVisitor()?.let { visitor ->
+//            visitor.getFlag(key).visitorExposed()
+//        }
+        if (currentFLag.value != null) {
+            (currentFLag.value as Flag).visitorExposed()
         }
         Toast.makeText(appContext, "Activation sent", Toast.LENGTH_SHORT).show();
     }
