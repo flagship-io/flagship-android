@@ -43,4 +43,3 @@ jobs:
           bash ./gradlew clean
           bash ./gradlew flagship:assembleRelease
           bash ./gradlew publishToSonatype closeSonatypeStagingRepository
-#          bash ./gradlew publishToSonatype -Dvariant=compat closeSonatypeStagingRepository
