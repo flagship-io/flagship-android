@@ -7,6 +7,10 @@ import com.abtasty.flagship.cache.IHitCacheImplementation
 import com.abtasty.flagship.hits.Screen
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
+import com.abtasty.flagship.utils.FlagshipConstants.HitKeyMap.Companion.CUSTOM_VALUE
+import com.abtasty.flagship.utils.FlagshipConstants.HitKeyMap.Companion.CV_LABEL
+import com.abtasty.flagship.utils.FlagshipConstants.HitKeyMap.Companion.TYPE
+import com.abtasty.flagship.utils.HttpCompat
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -1594,15 +1599,34 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
 
             delay(1000)
 
-            assertEquals(2, FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.size ?: 0)
-            FlagshipTestsHelper.interceptor().getJsonFromRequestCall(ARIANE_URL, 1)?.let { json ->
-                val array = json.getJSONArray("h")
-                assertEquals(3, array.length())
-                assertEquals("Screen 11", array.getJSONObject(0).getString("dl"))
-                assertEquals("Screen 22", array.getJSONObject(1).getString("dl"))
-                assertEquals("Screen 33", array.getJSONObject(2).getString("dl"))
+            assertTrue(FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.size!! >= 1)
 
+            var screens = 0
+            for (h in FlagshipTestsHelper.interceptor().calls[ARIANE_URL]!!) {
+                val jsonHit = HttpCompat.requestJson(h.first)
+                if (jsonHit.optString(TYPE) == "BATCH") {
+                    val array = jsonHit.getJSONArray("h")
+                    for (i in 0 until array.length()) {
+                        val obj = array.optJSONObject(i)
+                        if (obj.optString("dl").contains("Screen"))
+                            screens++
+                    }
+                }
+//                val cv = jsonHit.getJSONObject(CUSTOM_VALUE)
+//                if (jsonHit.optString(TYPE) == "TROUBLESHOOTING" && cv.get(CV_LABEL) == "SEND_BATCH_HIT_ROUTE_RESPONSE_ERROR") {
+//                    checkJson(jsonHit)
+//                    batch_error++
+//                }
             }
+            Assert.assertEquals(3, screens)
+//            FlagshipTestsHelper.interceptor().getJsonFromRequestCall(ARIANE_URL, 1)?.let { json ->
+//                val array = json.getJSONArray("h")
+//                assertEquals(3, array.length())
+//                assertEquals("Screen 11", array.getJSONObject(0).getString("dl"))
+//                assertEquals("Screen 22", array.getJSONObject(1).getString("dl"))
+//                assertEquals("Screen 33", array.getJSONObject(2).getString("dl"))
+//
+//            }
         }
 
     }

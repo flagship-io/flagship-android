@@ -1255,8 +1255,7 @@ class FlagshipTestsHits : AFlagshipTest() {
             FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]?.size
         ) // 1 Bucketing, 1 consent, 1 Fetch, (1 Segment, 3 screen), 1 batch error
 
-        FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![7].let {
-            val jsonHit = HttpCompat.requestJson(it.first)
+        fun checkJson(jsonHit: JSONObject) {
             val cv = jsonHit.getJSONObject(CUSTOM_VALUE)
 
             Assert.assertEquals("APP", jsonHit.get(DATA_SOURCE))
@@ -1282,6 +1281,17 @@ class FlagshipTestsHits : AFlagshipTest() {
             Assert.assertTrue(cv.getString(CV_HTTP_RESPONSE_CODE) == "500")
             Assert.assertEquals(true, cv.getString(CV_HTTP_RESPONSE_TIME).isNotBlank())
         }
+
+        var batch_error = 0
+        for (h in FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!!) {
+            val jsonHit = HttpCompat.requestJson(h.first)
+            val cv = jsonHit.getJSONObject(CUSTOM_VALUE)
+            if (jsonHit.optString(TYPE) == "TROUBLESHOOTING" && cv.get(CV_LABEL) == "SEND_BATCH_HIT_ROUTE_RESPONSE_ERROR") {
+                checkJson(jsonHit)
+                batch_error++
+            }
+        }
+        assertEquals(1, batch_error)
     }
 
     @Test
