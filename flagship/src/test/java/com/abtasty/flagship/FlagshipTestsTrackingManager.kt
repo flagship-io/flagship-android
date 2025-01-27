@@ -1582,7 +1582,7 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
 
             visitorA.fetchFlags().await()
 
-            delay(1000)
+            delay(500)
 
             assertTrue(Flagship.configManager.trackingManager?.running == true)
 

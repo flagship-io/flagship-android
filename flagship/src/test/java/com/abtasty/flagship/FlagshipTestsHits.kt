@@ -1228,29 +1228,32 @@ class FlagshipTestsHits : AFlagshipTest() {
 
                     )
             ).await()
+
             delay(500) // +1 TS Bucketing file
-        }
 
-        val visitor =
-            Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build() // +1 Consent, +1 TS
-        runBlocking {
-            visitor.fetchFlags().await() // +1 Context, +2 TS (Context, Fetch)
-            delay(500)
-        }
-        //
-        visitor.sendHit(Screen("screen-1")) // +1 Screen, +1 TS
-        visitor.sendHit(Screen("screen-2")) // +1 Screen, +1 TS
-        visitor.sendHit(Screen("screen-3")) // +1 Screen, +1 TS
-        //
+            val visitor =
+                Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true))
+                    .build() // +1 Consent, + 1 TS Consent
+            runBlocking {
+                visitor.fetchFlags().await() // +1 Context, +2 TS (Context, Fetch)
+            }
+            //
+            delay(20)
+            visitor.sendHit(Screen("screen-1")) // +1 Screen, +1 TS
+            delay(20)
+            visitor.sendHit(Screen("screen-2")) // +1 Screen, +1 TS
+            delay(20)
+            visitor.sendHit(Screen("screen-3")) // +1 Screen, +1 TS
+            //
 
-        runBlocking {
-            delay(500) // +1 Batch event error
+
+            delay(1000) // +1 Batch event error
         }
 
         Assert.assertEquals(
             8,
             FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]?.size
-        ) // 1 Bucketing, 1, consent, 1 Fetch, (1 Segment, 3 screen), 1 batch erreur
+        ) // 1 Bucketing, 1 consent, 1 Fetch, (1 Segment, 3 screen), 1 batch error
 
         FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![7].let {
             val jsonHit = HttpCompat.requestJson(it.first)
@@ -1327,31 +1330,21 @@ class FlagshipTestsHits : AFlagshipTest() {
                     )
             ).await() //TBS 1 Account Settings
 
-
-//            runBlocking {
-//                delay(100)
-//            }
             delay(300)
             val visitor = Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build() //  1 TBS Consent
+
             delay(300)
-//            runBlocking {
+
             visitor.fetchFlags().await() // 1 TBS Fetch
             delay(300)
-//            }
 
-            //
             visitor.getFlag("featureEnabled").value(false) //1 TBS activate, // 1TBS ERROR ACTIVATE
-//            runBlocking {
-//                delay(100)
-//            }
+
             delay(300)
             val flagIsRef = visitor.getFlag("isref")
             val flagIsRefValue = flagIsRef.value("default", false)
             flagIsRef.visitorExposed() //1 TBS activate, // 1 TBS ERROR ACTIVATE
 
-//            runBlocking {
-//                delay(100)
-//            }
             delay(300)
         }
 
@@ -1390,15 +1383,26 @@ class FlagshipTestsHits : AFlagshipTest() {
 
         }
 
-        FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![4].let {
-            val jsonHit = HttpCompat.requestJson(it.first)
-            checkJson(jsonHit)
+        var activate_error = 0
+        for (h in FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!!) {
+            val jsonHit = HttpCompat.requestJson(h.first)
+            val cv = jsonHit.getJSONObject(CUSTOM_VALUE)
+            if (jsonHit.optString(TYPE) == "TROUBLESHOOTING" && cv.get(CV_LABEL) == "SEND_ACTIVATE_HIT_ROUTE_ERROR") {
+                checkJson(jsonHit)
+                activate_error++
+            }
         }
+        assertEquals(2, activate_error)
 
-        FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![6].let {
-            val jsonHit = HttpCompat.requestJson(it.first)
-            checkJson(jsonHit)
-        }
+//        FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![4].let {
+//            val jsonHit = HttpCompat.requestJson(it.first)
+//            checkJson(jsonHit)
+//        }
+//
+//        FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![6].let {
+//            val jsonHit = HttpCompat.requestJson(it.first)
+//            checkJson(jsonHit)
+//        }
         //
     }
 
