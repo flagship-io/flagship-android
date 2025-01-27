@@ -1608,25 +1608,14 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
                     val array = jsonHit.getJSONArray("h")
                     for (i in 0 until array.length()) {
                         val obj = array.optJSONObject(i)
-                        if (obj.optString("dl").contains("Screen"))
+                        if (obj.optString("dl").contains("Screen 11") ||
+                            obj.optString("dl").contains("Screen 22") ||
+                            obj.optString("dl").contains("Screen 33"))
                             screens++
                     }
                 }
-//                val cv = jsonHit.getJSONObject(CUSTOM_VALUE)
-//                if (jsonHit.optString(TYPE) == "TROUBLESHOOTING" && cv.get(CV_LABEL) == "SEND_BATCH_HIT_ROUTE_RESPONSE_ERROR") {
-//                    checkJson(jsonHit)
-//                    batch_error++
-//                }
             }
             Assert.assertEquals(3, screens)
-//            FlagshipTestsHelper.interceptor().getJsonFromRequestCall(ARIANE_URL, 1)?.let { json ->
-//                val array = json.getJSONArray("h")
-//                assertEquals(3, array.length())
-//                assertEquals("Screen 11", array.getJSONObject(0).getString("dl"))
-//                assertEquals("Screen 22", array.getJSONObject(1).getString("dl"))
-//                assertEquals("Screen 33", array.getJSONObject(2).getString("dl"))
-//
-//            }
         }
 
     }
