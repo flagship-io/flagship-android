@@ -36,8 +36,9 @@ jobs:
       - name: Generate report
         run: bash ./gradlew flagship:createJacocoUnitTestCoverageReport
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: flagship/build/reports/coverage/test/jacoco/report.xml
       - name: Build
         run: bash ./gradlew flagship:clean flagship:assembleRelease
