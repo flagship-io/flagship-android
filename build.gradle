@@ -17,17 +17,17 @@ buildscript {
         }
         flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "4.0.0-beta1"
         flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 20
-        sonatype_signing_key = System.getenv('SONATYPE_SIGNING_KEY')
-        sonatype_signing_pwd = System.getenv('SONATYPE_SIGNING_PWD')
-        sonatype_username = System.getenv('SONATYPE_USERNAME') ?: ossrhUsername
-        sonatype_password = System.getenv('SONATYPE_PASSWORD') ?: ossrhPassword
-        sonatype_repository_id = System.getenv('SONATYPE_REPOSITORY') ?: stagingRepositoryId
+//        sonatype_signing_key = System.getenv('SONATYPE_SIGNING_KEY')
+//        sonatype_signing_pwd = System.getenv('SONATYPE_SIGNING_PWD')
+//        sonatype_username = System.getenv('SONATYPE_USERNAME') ?: mavenCentralUsername
+//        sonatype_password = System.getenv('SONATYPE_PASSWORD') ?: mavenCentralPassword
+//        sonatype_repository_id = System.getenv('SONATYPE_REPOSITORY') ?: stagingRepositoryId
     }
 
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+//        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.5.2'
@@ -49,18 +49,17 @@ allprojects {
         mavenCentral()
     }
 }
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-            stagingProfileId = sonatype_repository_id
-            username = sonatype_username
-            password = sonatype_password
-        }
-    }
-}
+//nexusPublishing {
+//    repositories {
+//        sonatype {
+//            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+//            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+//            stagingProfileId = sonatype_repository_id
+//            username = sonatype_username
+//            password = sonatype_password
+//        }
+//    }
+//}
 
 task clean(type: Delete) {
     delete rootProject.buildDir

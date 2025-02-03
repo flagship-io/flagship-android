@@ -1,11 +1,14 @@
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id 'com.google.devtools.ksp'
+    id 'com.vanniktech.maven.publish' version "0.30.0"
 }
 
+apply plugin: 'signing'
 apply from: 'jacoco.gradle'
 
 kotlin {
@@ -109,4 +112,48 @@ repositories {
     mavenCentral()
 }
 
-apply from: 'flagship-publishing.gradle'
+//apply from: 'flagship-publishing.gradle'
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+
+    signAllPublications()
+
+    coordinates(maven_group_id, maven_artifact_id, flagship_version_name)
+
+    pom {
+        name = maven_artifact_id
+        description = 'Visit https://developers.flagship.io/ to get started with Flagship.'
+        url = 'https://github.com/flagship-io/flagship-android'
+        licenses {
+            license {
+                name = 'Apache License 2.0'
+                url = 'https://github.com/flagship-io/flagship-android/blob/master/LICENSE'
+            }
+        }
+        developers {
+            developer {
+                id = 'raf-abtasty'
+                name = 'Raphael'
+                email = 'raphael@abtasty.com'
+            }
+        }
+        scm {
+            connection = 'scm:git:github.com/flagship-io/flagship-android.git'
+            developerConnection = 'scm:git:ssh:github.com/flagship-io/flagship-android.git'
+            url = 'https://github.com/flagship-io/flagship-android/blob/master/'
+        }
+    }
+//    pom.withXml {
+//        def dependenciesNode = asNode().appendNode('dependencies')
+//        configurations.implementation.allDependencies.each { dependency ->
+//            if (dependency.name != "unspecified") {
+//                def dependencyNode = dependenciesNode.appendNode('dependency')
+//                dependencyNode.appendNode('groupId', dependency.group)
+//                dependencyNode.appendNode('artifactId', dependency.name)
+//                dependencyNode.appendNode('version', dependency.version)
+//            }
+//        }
+//    }
+
+}

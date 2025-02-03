@@ -1,63 +1,64 @@
-apply plugin: 'signing'
-apply plugin: 'maven-publish'
+//import com.vanniktech.maven.publish.SonatypeHost
+//apply plugin: 'signing'
+//apply plugin: 'maven-publish'
 
-project(':flagship') {
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                groupId = maven_group_id
-                artifactId = maven_artifact_id
-                version = flagship_version_name
-                artifact "$buildDir/outputs/aar/" + maven_artifact_id + "-" + flagship_version_name + ".aar"
-                pom {
-                    name = maven_artifact_id
-                    description = 'Visit https://developers.flagship.io/ to get started with Flagship.'
-                    url = 'https://github.com/flagship-io/flagship-android'
-                    licenses {
-                        license {
-                            name = 'Apache License 2.0'
-                            url = 'https://github.com/flagship-io/flagship-android/blob/master/LICENSE'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 'raf-abtasty'
-                            name = 'Raphael'
-                            email = 'raphael@abtasty.com'
-                        }
-                    }
-                    scm {
-                        connection = 'scm:git:github.com/flagship-io/flagship-android.git'
-                        developerConnection = 'scm:git:ssh:github.com/flagship-io/flagship-android.git'
-                        url = 'https://github.com/flagship-io/flagship-android/blob/master/'
-                    }
-                }
-                pom.withXml {
-                    def dependenciesNode = asNode().appendNode('dependencies')
-                    configurations.implementation.allDependencies.each { dependency ->
-                        if (dependency.name != "unspecified") {
-                            def dependencyNode = dependenciesNode.appendNode('dependency')
-                            dependencyNode.appendNode('groupId', dependency.group)
-                            dependencyNode.appendNode('artifactId', dependency.name)
-                            dependencyNode.appendNode('version', dependency.version)
-                        }
-                    }
-                }
-            }
-        }
-
-        repositories {
-            maven {
-                name = "OSSRH"
-                url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
-                credentials {
-                    username = sonatype_username
-                    password = sonatype_password
-                }
-            }
-        }
-    }
-}
+//project(':flagship') {
+//    publishing {
+//        publications {
+//            maven(MavenPublication) {
+//                groupId = maven_group_id
+//                artifactId = maven_artifact_id
+//                version = flagship_version_name
+//                artifact "$buildDir/outputs/aar/" + maven_artifact_id + "-" + flagship_version_name + ".aar"
+//                pom {
+//                    name = maven_artifact_id
+//                    description = 'Visit https://developers.flagship.io/ to get started with Flagship.'
+//                    url = 'https://github.com/flagship-io/flagship-android'
+//                    licenses {
+//                        license {
+//                            name = 'Apache License 2.0'
+//                            url = 'https://github.com/flagship-io/flagship-android/blob/master/LICENSE'
+//                        }
+//                    }
+//                    developers {
+//                        developer {
+//                            id = 'raf-abtasty'
+//                            name = 'Raphael'
+//                            email = 'raphael@abtasty.com'
+//                        }
+//                    }
+//                    scm {
+//                        connection = 'scm:git:github.com/flagship-io/flagship-android.git'
+//                        developerConnection = 'scm:git:ssh:github.com/flagship-io/flagship-android.git'
+//                        url = 'https://github.com/flagship-io/flagship-android/blob/master/'
+//                    }
+//                }
+//                pom.withXml {
+//                    def dependenciesNode = asNode().appendNode('dependencies')
+//                    configurations.implementation.allDependencies.each { dependency ->
+//                        if (dependency.name != "unspecified") {
+//                            def dependencyNode = dependenciesNode.appendNode('dependency')
+//                            dependencyNode.appendNode('groupId', dependency.group)
+//                            dependencyNode.appendNode('artifactId', dependency.name)
+//                            dependencyNode.appendNode('version', dependency.version)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        repositories {
+//            maven {
+//                name = "OSSRH"
+//                url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+//                credentials {
+//                    username = sonatype_username
+//                    password = sonatype_password
+//                }
+//            }
+//        }
+//    }
+//}
 
 signing {
     if (sonatype_signing_key && sonatype_signing_pwd) {
@@ -65,3 +66,10 @@ signing {
         sign publishing.publications.maven
     }
 }
+
+//mavenPublishing {
+//    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+//    signAllPublications()
+//
+//    coordinates(maven_group_id, maven_artifact_id, flagship_version_name)
+//}
