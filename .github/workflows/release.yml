@@ -26,6 +26,9 @@ jobs:
         run: ./gradlew :flagship:assembleDebug
       - name: Unit tests
         run: bash ./gradlew flagship:testJacocoUnitTestCoverage -i --stacktrace
+      - name: Get version
+        run: |
+           echo "FLAGSHIP_VERSION_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Generate report
         run: bash ./gradlew flagship:createJacocoUnitTestCoverageReport
       - name: Upload coverage to codecov
@@ -48,4 +51,5 @@ jobs:
         run: |
           bash ./gradlew clean
           bash ./gradlew flagship:assembleRelease
-          bash ./gradlew publishToSonatype closeSonatypeStagingRepository --stacktrace
+#          bash ./gradlew publishToSonatype closeSonatypeStagingRepository --stacktrace
+          bash ./gradlew ./gradlew publishToMavenCentral --stacktrace
