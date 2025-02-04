@@ -38,17 +38,12 @@ jobs:
           files: flagship/build/reports/coverage/test/jacoco/report.xml
       - name: Build and Publish
         env:
-          #          SONATYPE_SIGNING_KEY: ${{ secrets.SONATYPE_SIGNING_KEY }}
-          #          SONATYPE_SIGNING_PWD: ${{ secrets.SONATYPE_SIGNING_PWD }}
-          #          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          #          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          #          SONATYPE_REPOSITORY: ${{ secrets.SONATYPE_REPOSITORY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME}}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY }}
         run: |
-               bash ./gradlew clean
-               bash ./gradlew flagship:assembleRelease
-               bash ./gradlew publishToMavenCentral --stacktrace
+          bash ./gradlew clean
+          bash ./gradlew flagship:assembleRelease
+          bash ./gradlew ./gradlew publishToMavenCentral --stacktrace
