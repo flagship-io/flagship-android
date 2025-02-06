@@ -3,78 +3,85 @@ apply plugin: 'jacoco'
 
 tasks.withType(Test) {
     jacoco.includeNoLocationClasses = true
-    jacoco.excludes = ['jdk.internal.*']
+    jacoco.excludes = ['jdk.internal.*',
+                       'com/abtasty/flagship/database/**'
+    ]
     maxParallelForks = 1
 }
 
 project.afterEvaluate {
-
+//
     android.libraryVariants.all { variant ->
         def variantName = variant.name
         def testTaskName = "test${variantName.capitalize()}UnitTest"
-
+//
         tasks.create(name: "${testTaskName}Coverage", type: JacocoReport, dependsOn: "$testTaskName") {
+            println("#TASK -> " + "${testTaskName}Coverage")
             group = "Reporting"
             description = "Generate Jacoco coverage reports on the ${variantName.capitalize()} build."
-
+//
             reports {
                 xml.required = true
                 html.required = true
                 html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
             }
 
-            def excludes = [
-                    '**/R.class',
-                    '**/R$*.class',
-                    '**/BuildConfig.*',
-                    '**/Manifest*.*',
-                    '**/*Test*.*',
-                    'android/**/*.*',
-                    'androidx/**/*.*'
-            ]
-
-            def javaClasses = fileTree(dir: variant.javaCompiler.destinationDir, excludes: excludes)
-                    .filter({ file ->
-                        !file.name.contains('_Impl') &&
-                                !file.name.contains('Creator') &&
-                                !file.name.contains('MIGRATION') &&
-                                !file.name.contains('DefaultImpls')
+            classDirectories.setFrom(
+                    files(classDirectories.files.collect {
+                        fileTree(dir: it, exclude: [
+                                'com/abtasty/flagship/database/**',  // Exclude entire package
+//                                'com/example/service/Helper*'  // Exclude specific pattern
+                        ])
                     })
-            def kotlinClasses = fileTree(dir: "${buildDir}/tmp/kotlin-classes/${variantName}", excludes: excludes)
-                    .filter({ file ->
-                        !file.name.contains('_Impl') &&
-                                !file.name.contains('Creator') &&
-                                !file.name.contains('MIGRATION') &&
-                                !file.name.contains('DefaultImpls')
-                    })
-
-            classDirectories.from = files([javaClasses], [kotlinClasses])
-
-            sourceDirectories.from = files([
-                    "$project.projectDir/src/main/java",
-//                    "$project.projectDir/src/$variantBase/java",
-            ])
-
-            executionData.from = files([
-                    "${project.buildDir}/jacoco/${testTaskName}.exec"
-            ])
-        }
-    }
-}
-
-task testWithCoverage {
-    doLast {
-        exec {
-            workingDir rootProject.projectDir
-            commandLine 'sh', "./gradlew", ":flagship:clean"
-        }
-        exec {
-            workingDir rootProject.projectDir
-            commandLine 'sh', "./gradlew", ":flagship:assembleDebug"
-        }
-        exec {
-            workingDir rootProject.projectDir
-            commandLine 'sh', "./gradlew", ":flagship:testDebugUnitTestCoverage"
+            )
+////            def excludes = [
+////                    '**/R.class',
+////                    '**/R$*.class',
+////                    '**/BuildConfig.*',
+////                    '**/Manifest*.*',
+////                    '**/*Test*.*',
+////                    'android/**/*.*',
+////                    'androidx/**/*.*'
+////            ]
+////
+////            def javaClasses = fileTree(dir: variant.javaCompiler.destinationDir, excludes: excludes)
+////                    .filter({ file ->
+////                        !file.name.contains('_Impl') &&
+////                                !file.name.contains('Creator') &&
+////                                !file.name.contains('MIGRATION') &&
+////                                !file.name.contains('DefaultImpls')
+////                    })
+////            def kotlinClasses = fileTree(dir: "${buildDir}/tmp/kotlin-classes/${variantName}", excludes: excludes)
+////                    .filter({ file ->
+////                        !file.name.contains('_Impl') &&
+////                                !file.name.contains('Creator') &&
+////                                !file.name.contains('MIGRATION') &&
+////                                !file.name.contains('DefaultImpls')
+////                    })
+////
+////
+////            classDirectories.from = files([javaClasses], [kotlinClasses])
+////
+////            println("#P0 = " + variant.javaCompiler.destinationDir)
+////            println("#P1 = " + "${buildDir}/tmp/kotlin-classes/${variantName}")
+////            println("#P2 = " + "${project.buildDir}/jacoco/${testTaskName}.exec")
+////            println("#P3 = " + "${project.projectDir}/jacoco/${testTaskName}.exec")
+////            sourceDirectories.from = files([
+////                    "$project.projectDir/src/main/java",
+////            ])
+////
+//////            executionData.from = files([
+//////                    "${project.buildDir}/jacoco/${testTaskName}.exec"
+//////            ])
+////            executionData.from = files([
+////                    "${project.projectDir}/outputs/unit_test_code_coverage/jacocoUnitTest/${testTaskName}.exec"
+////            ])
+//            afterEvaluate {
+//                classDirectories = files(classDirectories.files.collect {
+//                    fileTree(dir: it,
+//                            exclude: [''])
+//                })
+//            }
         }
     }
 }
