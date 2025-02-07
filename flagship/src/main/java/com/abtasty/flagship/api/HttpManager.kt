@@ -179,26 +179,4 @@ object HttpManager {
             body.toString()
         )
     }
-
-    fun sendDeveloperUsageTrackingRequest(activateList: ArrayList<DeveloperUsageTracking<*>>): Deferred<ResponseCompat?> {
-        val headers: HashMap<String, String> = HashMap<String, String>()
-        headers["x-sdk-client"] = "android"
-        headers["x-sdk-version"] = BuildConfig.FLAGSHIP_VERSION_NAME
-
-
-        val batch = JSONArray()
-        for (a in activateList) {
-            batch.put(a.data())
-        }
-        val body = JSONObject()
-        body.put(FlagshipConstants.HitKeyMap.CLIENT_ID, Flagship.getConfig().envId)
-        body.put("batch", batch)
-
-        return sendAsyncHttpRequest(
-            HttpManager.RequestType.POST,
-            IFlagshipEndpoints.DECISION_API + IFlagshipEndpoints.ACTIVATION,
-            null,
-            body.toString()
-        )
-    }
 }

@@ -480,39 +480,39 @@ class EAIManager() : OnEAIEvents {
     }
 
     override fun onEAIMoveEvent(moves: String) {
-        if (checkEAIEventTimestamp()) {
-            val hit = VisitorEvent("${activityNamePrefix}${activityName}")
-                .withFieldAndValue(FlagshipConstants.HitKeyMap.CLIENT_ID, Flagship.getConfig().envId)
-                .withVisitorIds(visitorDelegate?.visitorId!!, visitorDelegate?.anonymousId)
-                .withFieldAndValue(
-                    FlagshipConstants.HitKeyMap.EAI_WINDOW_SIZE,
-                    "${windowVisibleDisplayFrame.width()},${windowVisibleDisplayFrame.height()};"
-                )
-                .withFieldAndValue(FlagshipConstants.HitKeyMap.EAI_MOVE, moves)
-                .withFieldAndValue(FlagshipConstants.HitKeyMap.EAI_SCROLL, "")
-                .withFieldAndValue(FlagshipConstants.HitKeyMap.EAI_CLICK, "")
-
-            Flagship.flagshipCoroutineScope.launch {
-                val response = HttpManager.sendAsyncHttpRequest(
-                    HttpManager.RequestType.POST,
-                    IFlagshipEndpoints.EAI_COLLECT,
-                    null,
-                    hit.data().toString()
-                ).await()
-                TrackingManager.logHitHttpResponse(response = response)
-                response?.let {
-                    if (response.code in 200..299)
-                        setEAILastEventTimestamp()
-                    Flagship.configManager.decisionManager?.sendTroubleshootingHit(
-                        TroubleShooting.Factory.EMOTION_AI_EVENT.build(
-                            visitorDelegate,
-                            hit,
-                            response
-                        )
-                    )
-                }
-            }
-        }
+//        if (checkEAIEventTimestamp()) {
+//            val hit = VisitorEvent("${activityNamePrefix}${activityName}")
+//                .withFieldAndValue(FlagshipConstants.HitKeyMap.CLIENT_ID, Flagship.getConfig().envId)
+//                .withVisitorIds(visitorDelegate?.visitorId!!, visitorDelegate?.anonymousId)
+//                .withFieldAndValue(
+//                    FlagshipConstants.HitKeyMap.EAI_WINDOW_SIZE,
+//                    "${windowVisibleDisplayFrame.width()},${windowVisibleDisplayFrame.height()};"
+//                )
+//                .withFieldAndValue(FlagshipConstants.HitKeyMap.EAI_MOVE, moves)
+//                .withFieldAndValue(FlagshipConstants.HitKeyMap.EAI_SCROLL, "")
+//                .withFieldAndValue(FlagshipConstants.HitKeyMap.EAI_CLICK, "")
+//
+//            Flagship.flagshipCoroutineScope.launch {
+//                val response = HttpManager.sendAsyncHttpRequest(
+//                    HttpManager.RequestType.POST,
+//                    IFlagshipEndpoints.EAI_COLLECT,
+//                    null,
+//                    hit.data().toString()
+//                ).await()
+//                TrackingManager.logHitHttpResponse(response = response)
+//                response?.let {
+//                    if (response.code in 200..299)
+//                        setEAILastEventTimestamp()
+//                    Flagship.configManager.decisionManager?.sendTroubleshootingHit(
+//                        TroubleShooting.Factory.EMOTION_AI_EVENT.build(
+//                            visitorDelegate,
+//                            hit,
+//                            response
+//                        )
+//                    )
+//                }
+//            }
+//        }
     }
 
     suspend fun startEAISegmentPolling(visitor: VisitorDelegate): Deferred<String?> {
