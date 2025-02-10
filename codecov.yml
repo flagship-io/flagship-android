@@ -3,3 +3,4 @@ codecov:
 
 ignore:
   - "flagship/src/main/java/com/abtasty/flagship/database"
+  - "**/EAIWindowCallBack.kt"
