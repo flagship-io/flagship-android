@@ -1,7 +1,6 @@
 package com.abtasty.flagship
 
 import com.abtasty.flagship.model.CampaignMetadata
-import com.abtasty.flagship.model.Modifications
 import com.abtasty.flagship.model.Variation
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
