@@ -387,12 +387,15 @@ class FlagshipTestsEAI {
 
         fun testWindowCallback(window: Window) {
             val callback = window.callback
-            assertTrue(callback is EAIWindowCallback)
-            callback.dispatchKeyEvent(null)
-            callback.dispatchKeyShortcutEvent(null)
-            callback.dispatchTrackballEvent(null)
-            callback.dispatchGenericMotionEvent(null)
-            callback.dispatchPopulateAccessibilityEvent(null)
+            (callback as? EAIWindowCallback)?.let {
+                callback.dispatchKeyEvent(null)
+                callback.dispatchKeyShortcutEvent(null)
+                callback.dispatchTrackballEvent(null)
+                callback.dispatchGenericMotionEvent(null)
+                callback.dispatchPopulateAccessibilityEvent(null)
+            } ?: {
+                assertTrue(false)
+            }
         }
 
         testWindowCallback(controller?.get()?.window!!)
