@@ -111,8 +111,6 @@ class EAIManager() : OnEAIEvents {
 
     private var eaiCollectLatch : CancelableCountDownLatch? = null
     private var eaiCollectLastEventTimestamp: Long = 0
-//    private var visitorId: String? = null
-//    private var anonymousId: String? = null
     private var visitorDelegate: VisitorDelegate? = null
     private var deviceSize = Size(0, 0)
     private var deviceDensity = 0f

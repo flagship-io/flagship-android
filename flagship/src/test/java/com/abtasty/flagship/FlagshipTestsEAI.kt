@@ -20,6 +20,7 @@ import com.abtasty.flagship.AFlagshipTest.Companion.clientOverridden
 import com.abtasty.flagship.api.TrackingManagerConfig
 import com.abtasty.flagship.cache.CacheManager
 import com.abtasty.flagship.cache.IVisitorCacheImplementation
+import com.abtasty.flagship.eai.EAIWindowCallback
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.utils.FlagshipConstants
@@ -383,6 +384,18 @@ class FlagshipTestsEAI {
             delay(300)
             assertTrue(controller?.get()?.logs?.contains(EAI_COLLECT_VISITOR_ALREADY_SCORED.format(controller?.get()?.visitor?.getVisitorId())) ?: false)
         }
+
+        fun testWindowCallback(window: Window) {
+            val callback = window.callback
+            assertTrue(callback is EAIWindowCallback)
+            callback.dispatchKeyEvent(null)
+            callback.dispatchKeyShortcutEvent(null)
+            callback.dispatchTrackballEvent(null)
+            callback.dispatchGenericMotionEvent(null)
+            callback.dispatchPopulateAccessibilityEvent(null)
+        }
+
+        testWindowCallback(controller?.get()?.window!!)
     }
 
     @Test
@@ -438,7 +451,6 @@ class FlagshipTestsEAI {
                 FlagshipTestsHelper.interceptor().calls[EMOTION_AI_SCORING.format(_ENV_ID_, VID)]?.size
             )
         }
-
     }
 
     @Test
@@ -749,7 +761,6 @@ class FlagshipTestsEAI {
             index++
         }
     }
-
 
     fun simulateClick(x: Float, y: Float, window: Window) {
         // Create the initial ACTION_DOWN event
