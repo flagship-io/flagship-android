@@ -2,9 +2,7 @@ package com.abtasty.flagship.cache
 
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.CampaignMetadata
-import com.abtasty.flagship.model.Flag
 import com.abtasty.flagship.model.FlagMetadata
-import com.abtasty.flagship.model.Modification
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
 import com.abtasty.flagship.model._Flag
