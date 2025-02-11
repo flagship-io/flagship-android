@@ -247,7 +247,7 @@ class TrackingManager() : OnConfigChangedListener, TrackingManagerStrategyInterf
     }
 
 
-    private fun getStrategy(): AbstractCacheStrategy {
+    internal fun getStrategy(): AbstractCacheStrategy {
 
         return when (true) {
             (Flagship.getStatus() == Flagship.FlagshipStatus.PANIC) ->
