@@ -6,6 +6,7 @@ import com.abtasty.flagship.AFlagshipTest.Companion._ENV_ID_
 import com.abtasty.flagship.AFlagshipTest.Companion.clientOverridden
 import com.abtasty.flagship.AFlagshipTest.Companion.getApplication
 import com.abtasty.flagship.api.ContinuousCacheStrategy
+import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.PanicStrategy
 import com.abtasty.flagship.hits.Screen
 import com.abtasty.flagship.main.Flagship
@@ -17,6 +18,7 @@ import com.abtasty.flagship.model.VariationMetadata
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.After
@@ -52,6 +54,10 @@ class FlagshipTestsBlocks {
     fun after() {
         runBlocking {
             FlagshipTestsHelper.interceptor().clear()
+            clientOverridden = false
+            println("CLEAR CLIENT")
+            HttpManager.clearClient()
+            delay(200)
         }
     }
 
@@ -84,10 +90,12 @@ class FlagshipTestsBlocks {
     @Test
     fun test_block_init_http_client() {
         runBlocking {
+//            HttpManager.clearClient()
             Flagship.start(RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi())
                 .await()
         }
         assert(Flagship.getStatus() == Flagship.FlagshipStatus.INITIALIZED)
+        HttpManager.initHttpManager()
     }
 
     @Test
@@ -103,7 +111,7 @@ class FlagshipTestsBlocks {
             Flagship.start(RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi())
                 .await()
         }
-        assert(Flagship.getStatus() == Flagship.FlagshipStatus.PANIC)
+        assertEquals(Flagship.FlagshipStatus.PANIC, Flagship.getStatus())
         val panicStrategy = Flagship.configManager.trackingManager?.getStrategy()!!
         assertTrue(panicStrategy is PanicStrategy)
         val hit = Screen("test").withVisitorIds("vid_test", null)

@@ -173,43 +173,22 @@ project.afterEvaluate {
                     fileTree(layout.projectDirectory.dir("src/main/java/")) {
                         exclude(exclusions)
                     }.filter { file ->
-                        println("0# -> " + file.name)
                         true
 //                        !file.name.contains("Dao") &&
 //                                !file.name.contains("_Impl") &&
 //                                !file.name.contains("DefaultDatabase")
                     }
-                )
             )
-            println("#: " + layout.projectDirectory.toString() + "/build/tmp/kotlin-classes/")
+            )
             classDirectories.setFrom(files(
                     fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/")) {
                         exclude(exclusions)
                     }.filter { file ->
-                        println("1# -> " + file.name)
-    true
+                        true
 //                        !file.name.contains("Dao") &&
 //                        !file.name.contains("_Impl") &&
 //                        !file.name.contains("DefaultDatabase")
                     }
-
-////                    fileTree(layout.buildDirectory.dir("intermediates/javac/")) {
-////                        exclude(exclusions)
-////                    }.filter { file ->
-//////                        !file.name.contains("Dao") &&
-//////                        !file.name.contains("_Impl") &&
-//////                        !file.name.contains("DefaultDatabase")
-////                    },
-//                    fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/")) {
-////                        exclude(exclusions)
-//                    }.filter { file ->
-//                        println("#-> " + file.name)
-//                        true
-//
-////                        !file.name.contains("Dao") &&
-////                                !file.name.contains("_Impl") &&
-////                                !file.name.contains("DefaultDatabase")
-//                    }
             ))
             executionData.setFrom(files(
                     fileTree(layout.buildDirectory) { include(["**/*.exec", "**/*.ec"]) }

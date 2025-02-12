@@ -14,8 +14,8 @@ class HttpCompat {
             return request.url.toString()
         }
 
-        fun clientInterceptors(client: OkHttpClient): List<Interceptor> {
-            return client.interceptors
+        fun clientInterceptors(client: OkHttpClient?): List<Interceptor> {
+            return client?.interceptors ?: arrayListOf()
         }
 
         fun requestJson(request: Request) : JSONObject {

@@ -34,7 +34,7 @@ import javax.net.ssl.X509TrustManager
 
 object HttpManager {
 
-    lateinit var client: OkHttpClient
+    var client: OkHttpClient? = null
     private var testOn = false
     private var threadPoolExecutor: ThreadPoolExecutor? = null
     private val workerTimeout = 500L
@@ -48,6 +48,11 @@ object HttpManager {
     internal fun overrideClient(client: OkHttpClient) {
         testOn = true
         this.client = client
+    }
+
+    internal fun clearClient() {
+        testOn = false
+        this.client = null
     }
 
     fun initHttpManager() {
@@ -99,8 +104,8 @@ object HttpManager {
         return trustManagerFactory
     }
 
-    private fun initHttpClient() : OkHttpClient {
-        if (!this::client.isInitialized || HttpCompat.clientInterceptors(client).isEmpty()) {
+    private fun initHttpClient() {
+        if (client == null || HttpCompat.clientInterceptors(client!!).isEmpty()) {
             val newClientBuilder = OkHttpClient.Builder()
             if (Build.VERSION.SDK_INT <= 25) {
                 val trustManagerFactory = getTrustManagerFactory()
@@ -113,7 +118,6 @@ object HttpManager {
             newClientBuilder.callTimeout(Flagship.getConfig().timeout, TimeUnit.MILLISECONDS)
             client = newClientBuilder.build()
         }
-        return client
     }
 
     fun getThreadPoolExecutor(): ThreadPoolExecutor? {
@@ -121,6 +125,8 @@ object HttpManager {
     }
 
     fun sendHttpRequest(type : RequestType , uri : String, headers : HashMap<String, String>?, content : String?) : ResponseCompat {
+        if (client == null)
+            initHttpManager()
         val builder = Request.Builder().url(uri)
             .addHeader("Content-Type", "application/json")
         System.getProperty("http.agent")?.let {
@@ -135,7 +141,7 @@ object HttpManager {
             builder.post(body)
         }
         val request = builder.build()
-        val response = client.newCall(request).execute()
+        val response = client!!.newCall(request).execute()
         val responseCompat = ResponseCompat(response)
         response.close()
         return responseCompat
