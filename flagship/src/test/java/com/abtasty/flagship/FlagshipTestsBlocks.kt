@@ -90,7 +90,7 @@ class FlagshipTestsBlocks {
     @Test
     fun test_block_init_http_client() {
         runBlocking {
-//            HttpManager.clearClient()
+            HttpManager.clearClient()
             Flagship.start(RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi())
                 .await()
         }
