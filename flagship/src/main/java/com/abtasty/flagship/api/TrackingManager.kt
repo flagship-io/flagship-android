@@ -906,4 +906,8 @@ class PanicStrategy(val trackingManager: TrackingManager) : AbstractCacheStrateg
         //Log disabled
         return null
     }
+
+    override fun sendDeveloperUsageTrackingHits(): Deferred<ArrayList<Pair<ResponseCompat?, DeveloperUsageTracking<*>>>?>? {
+        return null
+    }
 }

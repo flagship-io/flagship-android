@@ -55,7 +55,6 @@ class FlagshipTestsBlocks {
         runBlocking {
             FlagshipTestsHelper.interceptor().clear()
             clientOverridden = false
-            println("CLEAR CLIENT")
             HttpManager.clearClient()
             delay(200)
         }
@@ -112,21 +111,26 @@ class FlagshipTestsBlocks {
                 .await()
         }
         assertEquals(Flagship.FlagshipStatus.PANIC, Flagship.getStatus())
-        val panicStrategy = Flagship.configManager.trackingManager?.getStrategy()!!
-        assertTrue(panicStrategy is PanicStrategy)
+        val trackingManager = Flagship.configManager.trackingManager
+//        val panicStrategy = Flagship.configManager.trackingManager?.getStrategy()!!
+        assertTrue(trackingManager!!.getStrategy() is PanicStrategy)
         val hit = Screen("test").withVisitorIds("vid_test", null)
-        assertTrue(panicStrategy.addHit(hit) == null)
-        assertTrue(panicStrategy.addHits(arrayListOf(hit)) == null)
-        assertTrue(panicStrategy.deleteHits(arrayListOf(hit)) == null)
-        assertTrue(panicStrategy.deleteHitsByVisitorId("vid_test") == null)
+        assertTrue(trackingManager.addHit(hit) == null)
+        assertTrue(trackingManager.addHits(arrayListOf(hit)) == null)
+        assertTrue(trackingManager.deleteHits(arrayListOf(hit)) == null)
+        assertTrue(trackingManager.deleteHitsByVisitorId("vid_test") == null)
         runBlocking {
-            assertTrue(panicStrategy.lookupPool().await() == null)
-            assertFalse(panicStrategy.cachePool().await())
-            assertTrue(panicStrategy.polling().await() == null)
+            assertTrue(trackingManager.lookupPool().await() == null)
+            assertFalse(trackingManager.cachePool().await())
+            assertTrue(trackingManager.polling().await() == null)
         }
-        assertTrue(panicStrategy.sendHitsBatch() == null)
-        assertTrue(panicStrategy.sendActivateBatch() == null)
+        assertTrue(trackingManager.sendHitsBatch() == null)
+        assertTrue(trackingManager.sendActivateBatch() == null)
+        assertTrue(trackingManager.sendDeveloperUsageTrackingHits() == null)
     }
+
+
+
 
     @Test
     fun test_block_tracking_manager_continuous_strategy() {
