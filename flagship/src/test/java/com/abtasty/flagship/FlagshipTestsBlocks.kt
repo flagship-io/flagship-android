@@ -12,6 +12,7 @@ import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.PanicStrategy
 import com.abtasty.flagship.cache.HitCacheHelper
 import com.abtasty.flagship.hits.Batch
+import com.abtasty.flagship.hits.Item
 import com.abtasty.flagship.hits.Page
 import com.abtasty.flagship.hits.Screen
 import com.abtasty.flagship.hits.VisitorEvent
@@ -171,7 +172,7 @@ class FlagshipTestsBlocks {
     }
 
     @Test
-    fun test_batch_hit() {
+    fun test_hit_batch() {
         val batch = Batch()
         val screen = Screen("test_batch_hit")
         screen.withVisitorIds("vid", null)
@@ -184,11 +185,38 @@ class FlagshipTestsBlocks {
     }
 
     @Test
-    fun test_visitor_event_hit() {
+    fun test_hit_visitor_event() {
         val invalidVisitorEvent = VisitorEvent("invalid_url")
         val validVisitorEvent = VisitorEvent("https://valid_url.io")
         assertFalse(invalidVisitorEvent.checkHitValidity())
         assertTrue(validVisitorEvent.checkHitValidity())
+    }
+
+    @Test
+    fun test_hit_page() {
+        assertFalse(Page("invalid").checkHitValidity())
+        assertFalse(Page("").checkHitValidity())
+        val p = Page("https://page.com")
+        p.timestamp = 1
+        assertFalse(p.checkHitValidity())
+        val page = Page("https://page.com")
+            .withVisitorIds("vid", null)
+        assertTrue(page.checkHitValidity())
+        Page(page.toCacheJSON().getJSONObject("data"))
+    }
+
+    @Test
+    fun test_hit_item() {
+        assertFalse(Item("", "1", "1").checkHitValidity())
+        assertFalse(Item("1", "", "").checkHitValidity())
+        assertFalse(Item("1", "1", "").checkHitValidity())
+        val p = Item("1", "1", "1")
+        p.timestamp = 1
+        assertFalse(p.checkHitValidity())
+        val p2 = Item("1", "1", "1")
+            .withVisitorIds("vid", null)
+        assertTrue(p2.checkHitValidity())
+        Item(p2.toCacheJSON().getJSONObject("data"))
     }
 
     @Test
