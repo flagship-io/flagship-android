@@ -8,6 +8,7 @@ import com.abtasty.flagship.AFlagshipTest.Companion.getApplication
 import com.abtasty.flagship.api.ContinuousCacheStrategy
 import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.PanicStrategy
+import com.abtasty.flagship.cache.HitCacheHelper
 import com.abtasty.flagship.hits.Screen
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
@@ -144,5 +145,18 @@ class FlagshipTestsBlocks {
         val hit = Screen("test").withVisitorIds("vid_test", null)
         assertEquals(hit, strategy.addHit(hit))
         assertEquals(hit, strategy.deleteHits(arrayListOf(hit))!![0])
+    }
+
+    @Test
+    fun test_cache_helper() {
+        val hitCacheHelper = HitCacheHelper()
+        val json12 = HitCacheHelper.HitMigrations.MIGRATION_1_2.migrate(JSONObject("{\"time\":10}"))
+        assertTrue(json12.getLong("id") > 0)
+        val json23 = HitCacheHelper.HitMigrations.MIGRATION_2_3.migrate(json12)
+        assertFalse(json23.has("time"))
+        assertEquals(10, json23.getLong("timestamp"))
+        assertEquals(json12.getLong("id").toString(), json23.getString("id"))
+
+        assertEquals(null, HitCacheHelper.HitMigrations.apply(json23))
     }
 }
