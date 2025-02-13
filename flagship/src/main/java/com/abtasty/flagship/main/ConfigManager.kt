@@ -15,6 +15,7 @@ import com.abtasty.flagship.main.Flagship.DecisionMode
 import com.abtasty.flagship.main.FlagshipConfig.DecisionApi
 import kotlinx.coroutines.runBlocking
 
+
 interface OnConfigChangedListener {
     fun onConfigChanged(config: FlagshipConfig<*>)
 }
@@ -69,6 +70,7 @@ class ConfigManager : DefaultLifecycleObserver {
     }
 
     suspend fun stop() {
+        println("_ ON STOP _")
         decisionManager?.stop()
         decisionManager = null
         flagshipConfig = DecisionApi()
@@ -95,5 +97,9 @@ class ConfigManager : DefaultLifecycleObserver {
             stop()
         }
         super.onDestroy(owner)
+    }
+
+    internal fun bindToLifeCycle(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(this)
     }
 }

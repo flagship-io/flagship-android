@@ -1,5 +1,7 @@
 package com.abtasty.flagship
 
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.abtasty.flagship.AFlagshipTest.Companion.ACCOUNT_SETTINGS
 import com.abtasty.flagship.AFlagshipTest.Companion._API_KEY_
 import com.abtasty.flagship.AFlagshipTest.Companion._ENV_ID_
@@ -19,26 +21,32 @@ import com.abtasty.flagship.model.CampaignMetadata
 import com.abtasty.flagship.model.Variation
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
-import com.abtasty.flagship.utils.FlagshipConstants
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowLog
 
+
 @RunWith(RobolectricTestRunner::class)
 @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
-@Config(sdk = [24])
+@Config(application = CustomApplication::class, sdk = [24], qualifiers = "fr-rFR-w360dp-h640dp-xhdpi")
 class FlagshipTestsBlocks {
 
     @Before
@@ -135,8 +143,6 @@ class FlagshipTestsBlocks {
     }
 
 
-
-
     @Test
     fun test_block_tracking_manager_continuous_strategy() {
         runBlocking {
@@ -183,5 +189,37 @@ class FlagshipTestsBlocks {
         val validVisitorEvent = VisitorEvent("https://valid_url.io")
         assertFalse(invalidVisitorEvent.checkHitValidity())
         assertTrue(validVisitorEvent.checkHitValidity())
+    }
+
+    @Test
+    fun test_config_lifecycle() {
+        var controller: ActivityController<*>? = null
+        val bundle = Bundle()
+        bundle.putBoolean("useStop", false)
+        runBlocking {
+            CoroutineScope(Job() + Dispatchers.Main).launch {
+                controller =
+                    Robolectric.buildActivity(FlagshipTestsEAI.EAIActivity::class.java).create(bundle).start()
+            }.join()
+            delay(200)
+            val activity = controller?.get() as AppCompatActivity
+
+            CoroutineScope(Job() + Dispatchers.Main).launch {
+                Flagship.configManager.bindToLifeCycle(activity)
+            }.join()
+            delay(200)
+
+            assertEquals(true, Flagship.configManager.trackingManager?.running!!)
+            CoroutineScope(Job() + Dispatchers.Main).launch {
+                controller?.stop()
+            }.join()
+            delay(200)
+            assertEquals(false, Flagship.configManager.trackingManager?.running!!)
+            CoroutineScope(Job() + Dispatchers.Main).launch {
+                controller?.destroy()
+            }.join()
+            delay(200)
+            assertTrue(Flagship.configManager.trackingManager == null)
+        }
     }
 }

@@ -84,12 +84,14 @@ class FlagshipTestsEAI {
 
         var visitor : Visitor? = null
         var logs : ArrayList<String>? = null
+        var useStop = true
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.main)
             val application = application
             val visitorCacheFile = savedInstanceState?.getString("visitorCache")
+            useStop = savedInstanceState?.getBoolean("useStop") ?: true
             logs = ArrayList()
             runBlocking {
                 Flagship.start(
@@ -136,12 +138,14 @@ class FlagshipTestsEAI {
         }
 
         override fun onStop() {
-            super.onStop()
-            logs?.clear()
-            logs = null
-            runBlocking {
-                Flagship.stop().await()
+            if (useStop) {
+                logs?.clear()
+                logs = null
+                runBlocking {
+                    Flagship.stop().await()
+                }
             }
+            super.onStop()
         }
 
         fun eaiCollect() {
