@@ -9,13 +9,17 @@ import com.abtasty.flagship.api.ContinuousCacheStrategy
 import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.PanicStrategy
 import com.abtasty.flagship.cache.HitCacheHelper
+import com.abtasty.flagship.hits.Batch
+import com.abtasty.flagship.hits.Page
 import com.abtasty.flagship.hits.Screen
+import com.abtasty.flagship.hits.VisitorEvent
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.model.CampaignMetadata
 import com.abtasty.flagship.model.Variation
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
+import com.abtasty.flagship.utils.FlagshipConstants
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
@@ -158,5 +162,26 @@ class FlagshipTestsBlocks {
         assertEquals(json12.getLong("id").toString(), json23.getString("id"))
 
         assertEquals(null, HitCacheHelper.HitMigrations.apply(json23))
+    }
+
+    @Test
+    fun test_batch_hit() {
+        val batch = Batch()
+        val screen = Screen("test_batch_hit")
+        screen.withVisitorIds("vid", null)
+        batch.withVisitorIds("vid", null)
+        assertTrue(batch.addChild(screen))
+        assertEquals(1, batch.length())
+        assertFalse(batch.addChild(Page("invalid_url")))
+        assertEquals(1, batch.length())
+        val json = HitCacheHelper.hitsToJSONCache(arrayListOf(batch))
+    }
+
+    @Test
+    fun test_visitor_event_hit() {
+        val invalidVisitorEvent = VisitorEvent("invalid_url")
+        val validVisitorEvent = VisitorEvent("https://valid_url.io")
+        assertFalse(invalidVisitorEvent.checkHitValidity())
+        assertTrue(validVisitorEvent.checkHitValidity())
     }
 }
