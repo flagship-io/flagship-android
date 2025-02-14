@@ -1,5 +1,6 @@
 package com.abtasty.flagship
 
+import android.graphics.Rect
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.abtasty.flagship.AFlagshipTest.Companion.ACCOUNT_SETTINGS
@@ -12,9 +13,11 @@ import com.abtasty.flagship.api.HttpManager
 import com.abtasty.flagship.api.PanicStrategy
 import com.abtasty.flagship.cache.HitCacheHelper
 import com.abtasty.flagship.hits.Batch
+import com.abtasty.flagship.hits.DeveloperUsageTracking
 import com.abtasty.flagship.hits.Item
 import com.abtasty.flagship.hits.Page
 import com.abtasty.flagship.hits.Screen
+import com.abtasty.flagship.hits.TroubleShooting
 import com.abtasty.flagship.hits.VisitorEvent
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
@@ -217,6 +220,44 @@ class FlagshipTestsBlocks {
             .withVisitorIds("vid", null)
         assertTrue(p2.checkHitValidity())
         Item(p2.toCacheJSON().getJSONObject("data"))
+    }
+
+    @Test
+    fun test_hit_troubleshooting() {
+        runBlocking {
+            Flagship.start(RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi())
+                .await()
+        }
+        val visitor = Flagship.newVisitor("vid", true).build()
+        assertTrue(TroubleShooting.Factory.ACCOUNT_SETTINGS.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.VISITOR_SEND_HIT.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.SEND_BATCH_HIT_ROUTE_RESPONSE_ERROR.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.EXPOSURE_FLAG_BEFORE_CALLING_VALUE_METHOD.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.GET_CAMPAIGNS_ROUTE_RESPONSE_ERROR.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.EMOTION_AI_EVENT.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.EMOTION_AI_SCORING_FAILED.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.EMOTION_AI_START_COLLECTING.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.ERROR_CATCHED.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.VISITOR_EXPOSED_FLAG_NOT_FOUND.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.SDK_BUCKETING_FILE.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.SEND_ACTIVATE_HIT_ROUTE_ERROR.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.VISITOR_SEND_ACTIVATE.build(visitor.delegate) == null)
+        assertTrue(TroubleShooting.Factory.VISITOR_AUTHENTICATE.build(null) == null)
+        assertTrue(TroubleShooting.Factory.VISITOR_UNAUTHENTICATE.build(null) == null)
+        assertTrue(TroubleShooting.Factory.VISITOR_FETCH_CAMPAIGNS.build(null) == null)
+        val hit = TroubleShooting.Factory.VISITOR_FETCH_CAMPAIGNS.build(visitor.delegate)
+        hit!!.withVisitorIds("vid", "aid")
+        val json = HitCacheHelper.hitsToJSONCache(arrayListOf(hit!!))
+        TroubleShooting(json[json.keys.first()]!!.getJSONObject("data"))
+    }
+
+    @Test
+    fun test_screen_hit() {
+        assertTrue(Screen("ok").checkHitValidity())
+        assertFalse(Screen("").checkHitValidity())
+        val s = Screen("s")
+        s.timestamp = 1
+        assertFalse(s.checkHitValidity())
     }
 
     @Test
