@@ -14,9 +14,11 @@ import com.abtasty.flagship.api.PanicStrategy
 import com.abtasty.flagship.cache.HitCacheHelper
 import com.abtasty.flagship.hits.Batch
 import com.abtasty.flagship.hits.DeveloperUsageTracking
+import com.abtasty.flagship.hits.Event
 import com.abtasty.flagship.hits.Item
 import com.abtasty.flagship.hits.Page
 import com.abtasty.flagship.hits.Screen
+import com.abtasty.flagship.hits.Segment
 import com.abtasty.flagship.hits.TroubleShooting
 import com.abtasty.flagship.hits.VisitorEvent
 import com.abtasty.flagship.main.Flagship
@@ -25,6 +27,7 @@ import com.abtasty.flagship.model.CampaignMetadata
 import com.abtasty.flagship.model.Variation
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
+import com.abtasty.flagship.utils.FlagshipConstants
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
@@ -259,6 +262,54 @@ class FlagshipTestsBlocks {
         s.timestamp = 1
         assertFalse(s.checkHitValidity())
     }
+
+    @Test
+    fun test_segment_hit() {
+        assertTrue(Segment("vid", hashMapOf("un" to 1)).checkHitValidity())
+        assertFalse(Segment("vid", hashMapOf()).checkHitValidity())
+        val s = Segment("vid", hashMapOf("un" to 1))
+        s.timestamp = 1
+        assertFalse(s.checkHitValidity())
+        val hit = Segment("vid", hashMapOf("un" to 1))
+        hit.withVisitorIds("vid", "aid")
+        val json = HitCacheHelper.hitsToJSONCache(arrayListOf(hit))
+        Segment(json[json.keys.first()]!!.getJSONObject("data"))
+    }
+
+    @Test
+    fun test_event_hit() {
+        assertFalse(Event(Event.EventCategory.ACTION_TRACKING, "").checkHitValidity())
+        val event1 = Event(Event.EventCategory.ACTION_TRACKING, "action")
+        event1.withEventValue(1)
+        event1.withEventValue(-1)
+        event1.withResolution(100, 100)
+        event1.withSessionNumber(1)
+        event1.withFieldAndValue(FlagshipConstants.HitKeyMap.EVENT_CATEGORY, "")
+        assertFalse(event1.checkHitValidity())
+        assertEquals(1, event1.data.getInt(FlagshipConstants.HitKeyMap.EVENT_VALUE))
+        val event2 = Event(Event.EventCategory.ACTION_TRACKING, "action")
+        event2.timestamp = 1
+        assertFalse(event2.checkHitValidity())
+        val event3 = Event(Event.EventCategory.ACTION_TRACKING, "action")
+        event3.withVisitorIds("vid", "aid")
+        val json = HitCacheHelper.hitsToJSONCache(arrayListOf(event3))
+        Event(json[json.keys.first()]!!.getJSONObject("data"))
+    }
+
+    @Test
+    fun test_hit() {
+        val screen = Screen("home")
+        screen.withId("6274870L")
+        screen.withFieldAndValue("a", 0)
+        screen.withRemovedField("a")
+        screen.withTimestamp(948327409L)
+        assertFalse(screen.data().has("a"))
+        assertEquals(948327409, screen.timestamp)
+        assertEquals("6274870L", screen.id)
+        screen.fromCacheJSON(JSONObject("{}"))
+    }
+
+
 
     @Test
     fun test_config_lifecycle() {
