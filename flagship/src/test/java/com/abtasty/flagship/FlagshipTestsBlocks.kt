@@ -28,6 +28,10 @@ import com.abtasty.flagship.model.Variation
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
 import com.abtasty.flagship.utils.FlagshipConstants
+import com.abtasty.flagship.utils.FlagshipContext
+import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.visitor.NotReadyStrategy
+import com.abtasty.flagship.visitor.Visitor
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
@@ -49,6 +53,7 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowLog
+import kotlin.math.log
 
 
 @RunWith(RobolectricTestRunner::class)
@@ -341,5 +346,84 @@ class FlagshipTestsBlocks {
             delay(200)
             assertTrue(Flagship.configManager.trackingManager == null)
         }
+    }
+
+    @Test
+    fun test_visitor_not_ready_strategy() {
+        val visitor = Flagship.newVisitor("vid1", true).build()
+        val strategy = NotReadyStrategy(visitor.delegate)
+        strategy.sendVisitorExposition("flag", "default", 37L)
+        strategy.sendHit(Screen("Home"))
+        strategy.sendHit(TroubleShooting.Factory.VISITOR_EXPOSED_FLAG_NOT_FOUND.build(visitor.delegate, "flag", "default")!!)
+        strategy.sendContextRequest()
+        strategy.cacheVisitor()
+        var eaiResult = true
+        runBlocking {
+            strategy.fetchFlags().await()
+            eaiResult = strategy.collectEmotionsAIEvents().await()
+        }
+        assertEquals(false, eaiResult)
+    }
+
+    @Test
+    fun test_visitor_panic_strategy() {
+        val logs = arrayListOf<String>()
+        val customLogManager = object : LogManager() {
+            override fun onLog(level: Level, tag: String, message: String) {
+                logs.add(message)
+            }
+
+        }
+        runBlocking {
+            Flagship.start(RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi()
+                .withLogManager(customLogManager))
+                .await()
+        }
+        val visitor = Flagship.newVisitor("vid", true).build()
+        logs.clear()
+        val panicStrategy = com.abtasty.flagship.visitor.PanicStrategy(visitor.delegate)
+        panicStrategy.updateContext(hashMapOf("a" to 0)) // 1
+        panicStrategy.updateContext(FlagshipContext.APP_VERSION_CODE, 0) // 1
+        panicStrategy.clearContext() // 1
+        panicStrategy.sendContextRequest() // no request
+        panicStrategy.loadContext(hashMapOf("b" to 1)) // 0
+        panicStrategy.sendConsentRequest()
+        panicStrategy.lookupVisitorCache()
+        var eaiResult = true
+        runBlocking {
+            eaiResult = panicStrategy.collectEmotionsAIEvents().await() // 1
+        }
+        assertEquals(false, eaiResult)
+        assertFalse(panicStrategy.visitorDelegate.visitorContext.keys.contains("a"))
+        assertFalse(panicStrategy.visitorDelegate.visitorContext.keys.contains("b"))
+        assertEquals(4, logs.size)
+    }
+
+    @Test
+    fun test_visitor_no_consent_strategy() {
+        val logs = arrayListOf<String>()
+        val customLogManager = object : LogManager() {
+            override fun onLog(level: Level, tag: String, message: String) {
+                logs.add(message)
+            }
+
+        }
+        runBlocking {
+            Flagship.start(
+                RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi()
+                    .withLogManager(customLogManager)
+            )
+                .await()
+        }
+        val visitor = Flagship.newVisitor("vid", true).build()
+        logs.clear()
+        val noConsentStrategy = com.abtasty.flagship.visitor.NoConsentStrategy(visitor.delegate)
+        noConsentStrategy.sendContextRequest()
+        var eaiResult = true
+        runBlocking {
+            eaiResult = noConsentStrategy.collectEmotionsAIEvents().await() // 1
+        }
+        assertEquals(false, eaiResult)
+        assertEquals(1, logs.size)
     }
 }
