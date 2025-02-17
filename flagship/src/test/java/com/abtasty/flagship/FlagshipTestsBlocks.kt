@@ -397,6 +397,7 @@ class FlagshipTestsBlocks {
                 .await()
         }
         val visitor = Flagship.newVisitor("vid", true).build()
+        runBlocking { delay(200) }
         logs.clear()
         val panicStrategy = com.abtasty.flagship.visitor.PanicStrategy(visitor.delegate)
         panicStrategy.updateContext(hashMapOf("a" to 0)) // 1
@@ -433,9 +434,11 @@ class FlagshipTestsBlocks {
                 .await()
         }
         val visitor = Flagship.newVisitor("vid", true).build()
-        logs.clear()
+
         val noConsentStrategy = com.abtasty.flagship.visitor.NoConsentStrategy(visitor.delegate)
         noConsentStrategy.sendContextRequest()
+        runBlocking { delay(200) }
+        logs.clear()
         var eaiResult = true
         runBlocking {
             eaiResult = noConsentStrategy.collectEmotionsAIEvents().await() // 1
