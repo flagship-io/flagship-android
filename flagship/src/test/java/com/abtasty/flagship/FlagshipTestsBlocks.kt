@@ -4,6 +4,9 @@ import android.graphics.Rect
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.abtasty.flagship.AFlagshipTest.Companion.ACCOUNT_SETTINGS
+import com.abtasty.flagship.AFlagshipTest.Companion.ACTIVATION_URL
+import com.abtasty.flagship.AFlagshipTest.Companion.ARIANE_URL
+import com.abtasty.flagship.AFlagshipTest.Companion.CAMPAIGNS_URL
 import com.abtasty.flagship.AFlagshipTest.Companion._API_KEY_
 import com.abtasty.flagship.AFlagshipTest.Companion._ENV_ID_
 import com.abtasty.flagship.AFlagshipTest.Companion.clientOverridden
@@ -27,9 +30,15 @@ import com.abtasty.flagship.model.CampaignMetadata
 import com.abtasty.flagship.model.Variation
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
+import com.abtasty.flagship.utils.ETargetingComp
+import com.abtasty.flagship.utils.FetchFlagsRequiredStatusReason
+import com.abtasty.flagship.utils.FlagStatus
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.utils.FlagshipContext
+import com.abtasty.flagship.utils.HttpCompat
 import com.abtasty.flagship.utils.LogManager
+import com.abtasty.flagship.utils.MurmurHash.Companion.getAllocationFromMurmur
+import com.abtasty.flagship.utils.OnFlagStatusChanged
 import com.abtasty.flagship.visitor.NotReadyStrategy
 import com.abtasty.flagship.visitor.Visitor
 import junit.framework.TestCase.assertEquals
@@ -41,6 +50,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Before
@@ -315,7 +325,6 @@ class FlagshipTestsBlocks {
     }
 
 
-
     @Test
     fun test_config_lifecycle() {
         var controller: ActivityController<*>? = null
@@ -354,7 +363,13 @@ class FlagshipTestsBlocks {
         val strategy = NotReadyStrategy(visitor.delegate)
         strategy.sendVisitorExposition("flag", "default", 37L)
         strategy.sendHit(Screen("Home"))
-        strategy.sendHit(TroubleShooting.Factory.VISITOR_EXPOSED_FLAG_NOT_FOUND.build(visitor.delegate, "flag", "default")!!)
+        strategy.sendHit(
+            TroubleShooting.Factory.VISITOR_EXPOSED_FLAG_NOT_FOUND.build(
+                visitor.delegate,
+                "flag",
+                "default"
+            )!!
+        )
         strategy.sendContextRequest()
         strategy.cacheVisitor()
         var eaiResult = true
@@ -375,8 +390,10 @@ class FlagshipTestsBlocks {
 
         }
         runBlocking {
-            Flagship.start(RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi()
-                .withLogManager(customLogManager))
+            Flagship.start(
+                RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi()
+                    .withLogManager(customLogManager)
+            )
                 .await()
         }
         val visitor = Flagship.newVisitor("vid", true).build()
@@ -425,5 +442,106 @@ class FlagshipTestsBlocks {
         }
         assertEquals(false, eaiResult)
         assertEquals(1, logs.size)
+    }
+
+    @Test
+    fun test_on_fetch_flags_status() {
+        FlagshipTestsHelper.interceptor()
+            .intercept(
+                CAMPAIGNS_URL.format(_ENV_ID_),
+                FlagshipTestsHelper.responseFromAssets(getApplication(), "api_response_1.json", 200)
+            ).intercept(
+                ARIANE_URL,
+                FlagshipTestsHelper.response("", 500)
+            ).intercept(
+                ACTIVATION_URL,
+                FlagshipTestsHelper.response("", 200)
+            )
+        runBlocking {
+            Flagship.start(
+                RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi()
+
+            ).await()
+        }
+        val statusHistory = arrayListOf<FlagStatus>()
+        val visitor = Flagship.newVisitor("vid", true)
+            .onFlagStatusChanged(onFlagStatusChanged = object : OnFlagStatusChanged {
+                override fun onFlagStatusChanged(newStatus: FlagStatus) {
+                    statusHistory.add(newStatus)
+                    super.onFlagStatusChanged(newStatus)
+                }
+
+                override fun onFlagStatusFetchRequired(reason: FetchFlagsRequiredStatusReason) {
+                    super.onFlagStatusFetchRequired(reason)
+                }
+
+                override fun onFlagStatusFetched() {
+                    super.onFlagStatusFetched()
+                }
+            })
+            .build()
+        runBlocking {
+            visitor.fetchFlags().await()
+        }
+        assertEquals(FlagStatus.FETCH_REQUIRED, statusHistory[0])
+        assertEquals(FlagStatus.FETCHING, statusHistory[1])
+        assertEquals(FlagStatus.FETCHED, statusHistory[2])
+    }
+
+    @Test
+    fun test_targeting_comp() {
+        assertTrue(ETargetingComp.EQUALS.compareNumbers(1, 1))
+        assertFalse(ETargetingComp.EQUALS.compareNumbers(0, 1))
+        assertFalse(ETargetingComp.EQUALS.compareInJsonArray(2,
+            JSONArray("[\n" +
+                    "  \"a\",\n" +
+                    "  \"b\",\n" +
+                    "  1\n" +
+                    "]")))
+        assertTrue(ETargetingComp.EQUALS.compareInJsonArray(1,
+            JSONArray("[\n" +
+                    "  \"a\",\n" +
+                    "  \"b\",\n" +
+                    "  1\n" +
+                    "]")))
+        assertFalse(ETargetingComp.NOT_EQUALS.compareNumbers(1, 1))
+        assertTrue(ETargetingComp.NOT_EQUALS.compareNumbers(0, 1))
+        assertTrue(ETargetingComp.NOT_EQUALS.compareInJsonArray(2,
+            JSONArray("[\n" +
+                    "  \"a\",\n" +
+                    "  \"b\",\n" +
+                    "  1\n" +
+                    "]")))
+        assertFalse(ETargetingComp.NOT_EQUALS.compareInJsonArray(1,
+            JSONArray("[\n" +
+                    "  \"a\",\n" +
+                    "  \"b\",\n" +
+                    "  1\n" +
+                    "]")))
+        assertFalse(ETargetingComp.GREATER_THAN.compareNumbers(2,6))
+        assertTrue(ETargetingComp.GREATER_THAN.compareNumbers(6,2))
+        assertTrue(ETargetingComp.LOWER_THAN.compareNumbers(2,6))
+        assertFalse(ETargetingComp.LOWER_THAN.compareNumbers(6,2))
+        assertFalse(ETargetingComp.GREATER_THAN_OR_EQUALS.compareNumbers(2,6))
+        assertTrue(ETargetingComp.GREATER_THAN_OR_EQUALS.compareNumbers(2,2))
+        assertTrue(ETargetingComp.GREATER_THAN_OR_EQUALS.compareNumbers(6,2))
+        assertFalse(ETargetingComp.GREATER_THAN_OR_EQUALS.compare("A","B"))
+        assertTrue(ETargetingComp.GREATER_THAN_OR_EQUALS.compare("A","A"))
+        assertTrue(ETargetingComp.GREATER_THAN_OR_EQUALS.compare("B","A"))
+        assertTrue(ETargetingComp.LOWER_THAN_OR_EQUALS.compareNumbers(2,6))
+        assertTrue(ETargetingComp.LOWER_THAN_OR_EQUALS.compareNumbers(2,2))
+        assertFalse(ETargetingComp.LOWER_THAN_OR_EQUALS.compareNumbers(6,2))
+        assertTrue(ETargetingComp.LOWER_THAN_OR_EQUALS.compare("A","B"))
+        assertTrue(ETargetingComp.LOWER_THAN_OR_EQUALS.compare("A","A"))
+        assertFalse(ETargetingComp.LOWER_THAN_OR_EQUALS.compare("B","A"))
+        assertTrue(ETargetingComp.get("do_not_exists") == null)
+    }
+
+    @Test
+    fun test_murmur() {
+        val result1 = getAllocationFromMurmur("variationId", "visitorId")
+        val result2 = getAllocationFromMurmur(null, null)
+        assertTrue(result1 in 0..100)
+        assertTrue(result2 in 0..100)
     }
 }
