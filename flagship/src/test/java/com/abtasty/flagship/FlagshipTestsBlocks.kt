@@ -26,7 +26,10 @@ import com.abtasty.flagship.hits.TroubleShooting
 import com.abtasty.flagship.hits.VisitorEvent
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
+import com.abtasty.flagship.model.Campaign
 import com.abtasty.flagship.model.CampaignMetadata
+import com.abtasty.flagship.model.Targeting
+import com.abtasty.flagship.model.TargetingList
 import com.abtasty.flagship.model.Variation
 import com.abtasty.flagship.model.VariationGroupMetadata
 import com.abtasty.flagship.model.VariationMetadata
@@ -63,6 +66,7 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowLog
+import java.util.LinkedList
 import kotlin.math.log
 
 
@@ -93,6 +97,93 @@ class FlagshipTestsBlocks {
             HttpManager.clearClient()
             delay(200)
         }
+    }
+
+    @Test
+    fun test_block_campaign() {
+        assertTrue(Campaign.parse(JSONObject("{}")) == null)
+        assertTrue(Campaign.parse(JSONArray("[]"))?.size == 0)
+        val c = Campaign(CampaignMetadata("id", "name", "type", "slug"), LinkedList())
+        assertTrue(c.toString().contains("name"))
+    }
+
+    @Test
+    fun test_block_flag() {
+        FlagshipTestsHelper.interceptor()
+            .intercept(
+                CAMPAIGNS_URL.format(_ENV_ID_),
+                FlagshipTestsHelper.responseFromAssets(getApplication(), "api_response_1.json", 200)
+            ).intercept(
+                ARIANE_URL,
+                FlagshipTestsHelper.response("", 500)
+            ).intercept(
+                ACTIVATION_URL,
+                FlagshipTestsHelper.response("", 200)
+            )
+        runBlocking {
+            Flagship.start(
+                RuntimeEnvironment.getApplication(), _ENV_ID_, _API_KEY_, FlagshipConfig.DecisionApi()
+
+            ).await()
+        }
+        val visitor = Flagship.newVisitor("isVIPUser", true)
+            .build()
+        runBlocking {
+            visitor.fetchFlags().await()
+        }
+        val flag = visitor.getFlag("featureEnabled")
+        assertFalse(flag.value(true)!!)
+        assertTrue(flag.toString().contains("featureEnabled"))
+    }
+
+    @Test
+    fun test_block_targeting_list() {
+        assertTrue(TargetingList.parse(JSONObject("{}")) == null)
+        val targetingList = TargetingList.parse(JSONObject("{\n" +
+                "                \"targetings\": [\n" +
+                "                  {\n" +
+                "                  }\n" +
+                "                ]\n" +
+                "              }"))
+        assertTrue(targetingList!!.isTargetingValid(hashMapOf()))
+        assertTrue(TargetingList(null).isTargetingValid(hashMapOf()))
+    }
+
+    @Test
+    fun test_block_targeting() {
+        assertTrue(Targeting.parse(JSONObject("{}")) == null)
+        val targeting = Targeting.parse(
+            JSONObject(
+                "{\n" +
+                        "                    \"operator\": \"EQUALS\",\n" +
+                        "                    \"key\": \"isVIPUser\",\n" +
+                        "                    \"value\": true\n" +
+                        "                  }"
+            )
+        )
+        assertTrue(targeting?.isTargetingValid(hashMapOf("isVIPUser" to true))!!)
+        assertFalse(targeting?.isTargetingValid(hashMapOf("isVIPUser" to false))!!)
+        assertFalse(targeting?.isTargetingValid(hashMapOf("bool" to false))!!)
+        val targeting2 = Targeting.parse(
+            JSONObject(
+                "{\n" +
+                        "                    \"operator\": \"EQUALS\",\n" +
+                        "                    \"key\": \"fs_all_users\",\n" +
+                        "                    \"value\": true\n" +
+                        "                  }"
+            )
+        )
+        assertTrue(targeting2?.isTargetingValid(hashMapOf("bool" to false))!!)
+        val targeting3 = Targeting.parse(
+            JSONObject(
+                "{\n" +
+                        "                    \"operator\": \"unknown\",\n" +
+                        "                    \"key\": \"fs_all_users\",\n" +
+                        "                    \"value\": true\n" +
+                        "                  }"
+            )
+        )
+        assertFalse(targeting3?.isTargetingValid(hashMapOf("bool" to false))!!)
     }
 
     @Test
