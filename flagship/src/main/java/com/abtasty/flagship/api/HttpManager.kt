@@ -105,18 +105,25 @@ object HttpManager {
     }
 
     private fun initHttpClient() {
-        if (client == null || HttpCompat.clientInterceptors(client!!).isEmpty()) {
-            val newClientBuilder = OkHttpClient.Builder()
-            if (Build.VERSION.SDK_INT <= 25) {
-                val trustManagerFactory = getTrustManagerFactory()
-                val sslContext = SSLContext.getInstance("TLS")
-                sslContext.init(null, trustManagerFactory.trustManagers, null)
-                newClientBuilder.sslSocketFactory(sslContext.socketFactory, trustManagerFactory.trustManagers[0] as X509TrustManager)
+        try {
+            if (client == null || HttpCompat.clientInterceptors(client!!).isEmpty()) {
+                val newClientBuilder = OkHttpClient.Builder()
+                if (Build.VERSION.SDK_INT <= 25) {
+                    val trustManagerFactory = getTrustManagerFactory()
+                    val sslContext = SSLContext.getInstance("TLS")
+                    sslContext.init(null, trustManagerFactory.trustManagers, null)
+                    newClientBuilder.sslSocketFactory(
+                        sslContext.socketFactory,
+                        trustManagerFactory.trustManagers[0] as X509TrustManager
+                    )
+                }
+                newClientBuilder.retryOnConnectionFailure(false)
+                newClientBuilder.dispatcher(Dispatcher(threadPoolExecutor as ExecutorService))
+                newClientBuilder.callTimeout(Flagship.getConfig().timeout, TimeUnit.MILLISECONDS)
+                client = newClientBuilder.build()
             }
-            newClientBuilder.retryOnConnectionFailure(false)
-            newClientBuilder.dispatcher(Dispatcher(threadPoolExecutor as ExecutorService))
-            newClientBuilder.callTimeout(Flagship.getConfig().timeout, TimeUnit.MILLISECONDS)
-            client = newClientBuilder.build()
+        } catch (e: Exception) {
+            FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
         }
     }
 
@@ -124,9 +131,13 @@ object HttpManager {
         return threadPoolExecutor
     }
 
-    fun sendHttpRequest(type : RequestType , uri : String, headers : HashMap<String, String>?, content : String?) : ResponseCompat {
-        if (client == null)
-            initHttpManager()
+    fun sendHttpRequest(
+        type: RequestType,
+        uri: String,
+        headers: HashMap<String, String>?,
+        content: String?
+    ): ResponseCompat? {
+
         val builder = Request.Builder().url(uri)
             .addHeader("Content-Type", "application/json")
         System.getProperty("http.agent")?.let {
@@ -141,10 +152,14 @@ object HttpManager {
             builder.post(body)
         }
         val request = builder.build()
-        val response = client!!.newCall(request).execute()
-        val responseCompat = ResponseCompat(response)
-        response.close()
-        return responseCompat
+        if (client == null)
+            initHttpManager()
+        client?.newCall(request)?.execute()?.let { response ->
+            val responseCompat = ResponseCompat(response)
+            response.close()
+            return responseCompat
+        }
+        return null
     }
 
     fun sendAsyncHttpRequest(type: RequestType, uri: String, headers: HashMap<String, String>?, content: String?): Deferred<ResponseCompat?> {

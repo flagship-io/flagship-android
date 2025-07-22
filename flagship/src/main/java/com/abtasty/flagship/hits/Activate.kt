@@ -1,20 +1,22 @@
 package com.abtasty.flagship.hits
 
 import com.abtasty.flagship.model.ExposedFlag
+import com.abtasty.flagship.model.FlagMetadata
 import com.abtasty.flagship.utils.FlagshipConstants
 import com.abtasty.flagship.visitor.VisitorExposed
 import org.json.JSONObject
+import java.util.HashMap
 
 
 /**
  * Internal Hit for activations
  */
-class Activate: Hit<Activate> {
+class Activate : Hit<Activate> {
 
-    lateinit var exposedVisitor: VisitorExposed
-    lateinit var exposedFlag: ExposedFlag<*>
+    var exposedVisitor: VisitorExposed = VisitorExposed("", null, hashMapOf<String, Any>(), false, false)
+    var exposedFlag: ExposedFlag<*> = ExposedFlag("", "", "", FlagMetadata.EmptyFlagMetadata())
 
-    constructor(exposedVisitor: VisitorExposed, exposedFlag: ExposedFlag<*>): super(Hit.Companion.Type.ACTIVATION) {
+    constructor(exposedVisitor: VisitorExposed, exposedFlag: ExposedFlag<*>) : super(Hit.Companion.Type.ACTIVATION) {
         this.withVisitorIds(exposedVisitor.visitorId, exposedVisitor.anonymousId)
         this.exposedVisitor = exposedVisitor
         this.exposedFlag = exposedFlag
@@ -38,14 +40,25 @@ class Activate: Hit<Activate> {
         return this
     }
 
-    internal constructor(jsonObject: JSONObject): super(Hit.Companion.Type.ACTIVATION, jsonObject) {
-        exposedVisitor = VisitorExposed.fromCacheJSON(jsonObject.getJSONObject("exposedVisitor"))!!
-        exposedFlag = ExposedFlag.fromCacheJSON(jsonObject.getJSONObject("exposedFlag"))!!
+    internal constructor(jsonObject: JSONObject) : super(Hit.Companion.Type.ACTIVATION, jsonObject) {
+        exposedVisitor = VisitorExposed.fromCacheJSON(jsonObject.getJSONObject("exposedVisitor")) ?: VisitorExposed(
+            "",
+            null,
+            hashMapOf<String, Any>(),
+            false,
+            false
+        )
+        exposedFlag = ExposedFlag.fromCacheJSON(jsonObject.getJSONObject("exposedFlag")) ?: ExposedFlag(
+            "",
+            "",
+            "",
+            FlagMetadata.EmptyFlagMetadata()
+        )
     }
 
 
     override fun checkHitValidity(): Boolean {
-        return when(true) {
+        return when (true) {
             (!checkTimestampValidity()) -> false
             (!checkSizeValidity()) -> false
             this.data.isNull(FlagshipConstants.HitKeyMap.VISITOR_ID) -> false

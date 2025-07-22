@@ -23,7 +23,7 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
     private var db: DefaultDatabase? = null
 
     override fun openDatabase(envId: String) {
-        if (db == null || !db!!.isOpen) {
+        if (db == null || db?.isOpen == false) {
             db = Room.databaseBuilder(Flagship.application, DefaultDatabase::class.java, "flagship-$envId-cache.db")
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onOpen(db: SupportSQLiteDatabase) {

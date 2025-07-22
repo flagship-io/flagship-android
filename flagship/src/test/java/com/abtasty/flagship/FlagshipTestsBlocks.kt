@@ -241,8 +241,8 @@ class FlagshipTestsBlocks {
 //        val panicStrategy = Flagship.configManager.trackingManager?.getStrategy()!!
         assertTrue(trackingManager!!.getStrategy() is PanicStrategy)
         val hit = Screen("test").withVisitorIds("vid_test", null)
-        assertTrue(trackingManager.addHit(hit) == null)
-        assertTrue(trackingManager.addHits(arrayListOf(hit)) == null)
+            assertTrue(trackingManager.addHit(hit) == null)
+            assertTrue(trackingManager.addHits(arrayListOf(hit)) == null)
         assertTrue(trackingManager.deleteHits(arrayListOf(hit)) == null)
         assertTrue(trackingManager.deleteHitsByVisitorId("vid_test") == null)
         runBlocking {
@@ -266,7 +266,7 @@ class FlagshipTestsBlocks {
         val strategy = Flagship.configManager.trackingManager?.getStrategy()!!
         assertTrue(strategy is ContinuousCacheStrategy)
         val hit = Screen("test").withVisitorIds("vid_test", null)
-        assertEquals(hit, strategy.addHit(hit))
+            assertEquals(hit, strategy.addHit(hit))
         assertEquals(hit, strategy.deleteHits(arrayListOf(hit))!![0])
     }
 
@@ -425,13 +425,15 @@ class FlagshipTestsBlocks {
             CoroutineScope(Job() + Dispatchers.Main).launch {
                 controller =
                     Robolectric.buildActivity(FlagshipTestsEAI.EAIActivity::class.java).create(bundle).start()
-            }.join()
-            delay(200)
-            val activity = controller?.get() as AppCompatActivity
-
-            CoroutineScope(Job() + Dispatchers.Main).launch {
+                val activity = controller?.get() as AppCompatActivity
                 Flagship.configManager.bindToLifeCycle(activity)
             }.join()
+            delay(200)
+//            val activity = controller?.get() as AppCompatActivity
+//
+//            CoroutineScope(Job() + Dispatchers.Main).launch {
+//                Flagship.configManager.bindToLifeCycle(activity)
+//            }.join()
             delay(200)
 
             assertEquals(true, Flagship.configManager.trackingManager?.running!!)

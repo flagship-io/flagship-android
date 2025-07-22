@@ -1,25 +1,12 @@
 package com.abtasty.flagshipqa
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.abtasty.flagship.api.CacheStrategy
-import com.abtasty.flagship.api.TrackingManagerConfig
-import com.abtasty.flagship.hits.Screen
-import com.abtasty.flagship.main.Flagship
-import com.abtasty.flagship.main.FlagshipConfig
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
 

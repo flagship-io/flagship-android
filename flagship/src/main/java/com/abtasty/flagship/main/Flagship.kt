@@ -108,7 +108,7 @@ object Flagship {
             instanceId = UUID.randomUUID().toString()
             initializationTimeStamp = System.currentTimeMillis()
             supervisorJob = SupervisorJob()
-            flagshipCoroutineScope = CoroutineScope(supervisorJob + Dispatchers.Default)
+            flagshipCoroutineScope = CoroutineScope(supervisorJob + Dispatchers.IO)
             val handler = Handler(Looper.getMainLooper())
             handler.post {
                 ProcessLifecycleOwner.get().lifecycle.addObserver(configManager)

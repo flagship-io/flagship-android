@@ -99,7 +99,7 @@ class FlagshipTestsEAI {
                     _ENV_ID_,
                     _API_KEY_,
                     FlagshipConfig.DecisionApi().withTrackingManagerConfig(
-                        TrackingManagerConfig(disablePolling = true)
+                        TrackingManagerConfig()
                     ).withLogLevel(LogManager.Level.ALL)
                         .withLogManager(object : LogManager() {
                             override fun onLog(level: Level, tag: String, message: String) {
