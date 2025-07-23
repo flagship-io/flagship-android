@@ -22,7 +22,7 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
 
     override fun init(listener: ((Flagship.FlagshipStatus) -> Unit)?) {
         super.init(listener)
-        sendAccountSettingsJsonRequest() //todo
+        sendAccountSettingsJsonRequest()
         readyLatch?.countDown()
         if (getStatus().lessThan(Flagship.FlagshipStatus.INITIALIZED)) {
             statusListener?.invoke(
