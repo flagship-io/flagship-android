@@ -25,17 +25,23 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew :flagship:assembleDebug
       - name: Unit tests
-        run: bash ./gradlew flagship:testJacocoUnitTestCoverage -i --stacktrace
-      - name: Get version
-        run: |
-          echo "FLAGSHIP_VERSION_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      - name: Generate report
-        run: bash ./gradlew flagship:createJacocoUnitTestCoverageReport
+        id: unit_tests
+        continue-on-error: true
+        run: bash ./gradlew flagship:jacocoDebugCodeCoverage -i --stacktrace
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: flagship/build/reports/tests/testDebugUnitTest/
+      - name: Stop if tests failed
+        if: steps.unit_tests.conclusion == 'failure'
+        run: exit 1
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: flagship/build/reports/coverage/test/jacoco/report.xml
+          files: flagship/build/reports/jacoco/jacocoDebugCodeCoverage/jacocoDebugCodeCoverage.xml
       - name: Build and Publish
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYID }}
