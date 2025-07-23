@@ -14,16 +14,19 @@ import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagship.main.OnConfigChangedListener
 import com.abtasty.flagship.utils.FlagshipConstants
+import com.abtasty.flagship.utils.FlagshipConstants.Exceptions.Companion.FlagshipException
 import com.abtasty.flagship.utils.FlagshipLogManager
 import com.abtasty.flagship.utils.LogManager
 import com.abtasty.flagship.utils.ResponseCompat
 import com.abtasty.flagship.utils.Utils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -31,15 +34,14 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import com.abtasty.flagship.utils.FlagshipConstants.Exceptions.Companion.FlagshipException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 
 /**
  *  This class configure the Flagship SDK Tracking Manager which gathers all visitors emitted hits in a pool and
  *  fire them in batch requests at regular time intervals withing a dedicated thread.
  */
+
 open class TrackingManagerConfig(
+
     /**
      * Specifies the strategy to use for hits caching. It relies on the CacheManager provided in FlagshipConfig.
      * Default value is CacheStrategy.CONTINUOUS_CACHING.
@@ -55,18 +57,23 @@ open class TrackingManagerConfig(
     /**
      * Specifies a time delay between each batched hit requests in milliseconds. Default value is 10000.
      */
-    var batchTimeInterval: Long = 10000,
+    var batchTimeInterval: Long = TrackingManagerConfig.DEFAULT_BATCH_TIME_INTERVAL,
 
     /**
      * Specifies a max hit pool size that will trigger a batch request once reached. Default value is 10.
      */
-    var maxPoolSize: Int = 10,
+    var maxPoolSize: Int = TrackingManagerConfig.DEFAULT_MAX_POOL_SIZE,
 
     /**
      * Disable polling and fire hits in separate requests one by one.
      */
     open var disablePolling: Boolean = false
-) {}
+) {
+    companion object {
+        val DEFAULT_BATCH_TIME_INTERVAL: Long = 10000
+        val DEFAULT_MAX_POOL_SIZE: Int = 10
+    }
+}
 
 
 interface TrackingManagerStrategyInterface {
@@ -174,33 +181,44 @@ class TrackingManager() : OnConfigChangedListener, TrackingManagerStrategyInterf
         this.flagshipConfig = config
         this.trackingManagerConfig = config.trackingManagerConfig
         this.cacheManager = config.cacheManager
-        runBlocking(Dispatchers.Default) {
-            getStrategy().lookupPool().await() //new
-        }
-        if (this.trackingManagerConfig!!.disablePolling) {
-            this.clearPool()
-        } else {
-            this.startPollingLoop()
+        restartPollingIfNeeded()
+    }
+
+    private fun restartPollingIfNeeded() {
+        Flagship.coroutineScope().async {
+            getStrategy().lookupPool().await()
+            startPollingLoop()
         }
     }
 
     internal fun startPollingLoop() {
-
-        if (!running) {
-            executor ?: run {
-                executor = Executors.newSingleThreadScheduledExecutor { r ->
-                    val t: Thread = Executors.defaultThreadFactory().newThread(r)
-                    t.isDaemon = true
-                    t
+        try {
+            if (this.trackingManagerConfig?.disablePolling == true) {
+                this.clearPool()
+            } else {
+                if (!running) {
+                    executor ?: run {
+                        executor = Executors.newSingleThreadScheduledExecutor { r ->
+                            val t: Thread = Executors.defaultThreadFactory().newThread(r)
+                            t.isDaemon = true
+                            t
+                        }
+                        scheduledFuture = executor?.scheduleWithFixedDelay(
+                            {
+                                log(FlagshipConstants.Debug.TRACKING_MANAGER_POLLING)
+                                getStrategy().polling()
+                            },
+                            0,
+                            trackingManagerConfig?.batchTimeInterval
+                                ?: TrackingManagerConfig.DEFAULT_BATCH_TIME_INTERVAL,
+                            TimeUnit.MILLISECONDS
+                        )
+                        this.running = true
+                    }
                 }
-                scheduledFuture = executor!!.scheduleWithFixedDelay(
-                    {
-                        log(FlagshipConstants.Debug.TRACKING_MANAGER_POLLING)
-                        getStrategy().polling()
-                    }, 0, trackingManagerConfig!!.batchTimeInterval, TimeUnit.MILLISECONDS
-                )
-                this.running = true
             }
+        } catch (e: Exception) {
+            FlagshipLogManager.exception(FlagshipException(e))
         }
     }
 
@@ -247,17 +265,21 @@ class TrackingManager() : OnConfigChangedListener, TrackingManagerStrategyInterf
     }
 
 
-    private fun getStrategy(): AbstractCacheStrategy {
+    internal fun getStrategy(): AbstractCacheStrategy {
 
         return when (true) {
             (Flagship.getStatus() == Flagship.FlagshipStatus.PANIC) ->
                 PanicStrategy(this)
+
             (this.trackingManagerConfig?.disablePolling == true) ->
                 NoPollingStrategy(this)
+
             (this.trackingManagerConfig?.cachingStrategy == CacheStrategy.CONTINUOUS_CACHING) ->
                 ContinuousCacheStrategy(this)
+
             (this.trackingManagerConfig?.cachingStrategy == CacheStrategy.PERIODIC_CACHING) ->
                 PeriodicCacheStrategy(this)
+
             else -> ContinuousCacheStrategy(this)
         }
     }
@@ -325,6 +347,7 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                             if (new)
                                 sendActivateBatch()
                         }
+
                         is DeveloperUsageTracking -> {
                             if (h is Usage || (h is TroubleShooting && Utils.isTroubleShootingEnabled())) {
                                 trackingManager.developerUsageTrackingQueue.add(h)
@@ -332,6 +355,7 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                                     sendDeveloperUsageTrackingHits()
                             }
                         }
+
                         else -> {
                             trackingManager.hitQueue.add(h)
                             TrackingManager.log(
@@ -362,7 +386,8 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                 (if (h is Activate) trackingManager.activateQueue else trackingManager.hitQueue).remove(h)
             }
             if (hits.isNotEmpty()) {
-                TrackingManager.log(FlagshipConstants.Debug.TRACKING_MANAGER_REMOVED_HITS,
+                TrackingManager.log(
+                    FlagshipConstants.Debug.TRACKING_MANAGER_REMOVED_HITS,
                     hits.joinToString { it.id })
             }
             hits
@@ -466,7 +491,7 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            CoroutineScope(Dispatchers.Default).async { null }
+            CoroutineScope(Dispatchers.IO).async { null }
         }
     }
 
@@ -492,21 +517,28 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                             }
                         }
                     }
-                    val response = HttpManager.sendAsyncHttpRequest(
-                        HttpManager.RequestType.POST,
-                        IFlagshipEndpoints.Companion.EVENTS,
-                        null,
-                        batch.data().toString()
-                    ).await()
-                    TrackingManager.logHitHttpResponse(response = response)
-                    if (response == null || response.code !in 200..204) {
-                        trackingManager.hitQueue.addAll(batch.hitList)
-                        if (Utils.isTroubleShootingEnabled()) {
-                            trackingManager.developerUsageTrackingQueue.add(TroubleShooting.Factory.SEND_BATCH_HIT_ROUTE_RESPONSE_ERROR.build(null, response))
-                            sendDeveloperUsageTrackingHits()
+                    if (batch.hitList.size > 0) {
+                        val response = HttpManager.sendAsyncHttpRequest(
+                            HttpManager.RequestType.POST,
+                            IFlagshipEndpoints.Companion.EVENTS,
+                            null,
+                            batch.data().toString()
+                        ).await()
+                        TrackingManager.logHitHttpResponse(response = response)
+                        if (response == null || response.code !in 200..204) {
+                            trackingManager.hitQueue.addAll(batch.hitList)
+                            if (Utils.isTroubleShootingEnabled()) {
+                                trackingManager.developerUsageTrackingQueue.add(
+                                    TroubleShooting.Factory.SEND_BATCH_HIT_ROUTE_RESPONSE_ERROR.build(
+                                        null,
+                                        response
+                                    )
+                                )
+                                sendDeveloperUsageTrackingHits()
+                            }
                         }
-                    }
-                    Pair(response, batch)
+                        Pair(response, batch)
+                    } else null
                 } else null
             }
         } catch (e: Exception) {
@@ -527,22 +559,29 @@ abstract class AbstractCacheStrategy(private val trackingManager: TrackingManage
                             activateList.add(hit as Activate)
                         }
                     }
-                    val response = HttpManager.sendActivatesRequest(activateList).await()
-                    TrackingManager.logHitHttpResponse(response = response)
-                    if (response == null || response.code !in 200..204) {
-                        trackingManager.activateQueue.addAll(activateList)
-                        if (Utils.isTroubleShootingEnabled()) {
-                            trackingManager.developerUsageTrackingQueue.add(TroubleShooting.Factory.SEND_ACTIVATE_HIT_ROUTE_ERROR.build(null, response))
-                            sendDeveloperUsageTrackingHits()
+                    if (activateList.size > 0) {
+                        val response = HttpManager.sendActivatesRequest(activateList).await()
+                        TrackingManager.logHitHttpResponse(response = response)
+                        if (response == null || response.code !in 200..204) {
+                            trackingManager.activateQueue.addAll(activateList)
+                            if (Utils.isTroubleShootingEnabled()) {
+                                trackingManager.developerUsageTrackingQueue.add(
+                                    TroubleShooting.Factory.SEND_ACTIVATE_HIT_ROUTE_ERROR.build(
+                                        null,
+                                        response
+                                    )
+                                )
+                                sendDeveloperUsageTrackingHits()
+                            }
+                        } else {
+                            for (a in activateList) {
+                                trackingManager.flagshipConfig?.onVisitorExposed?.invoke(
+                                    a.exposedVisitor, a.exposedFlag
+                                )
+                            }
                         }
-                    } else {
-                        for (a in activateList) {
-                            trackingManager.flagshipConfig?.onVisitorExposed?.invoke(
-                                a.exposedVisitor, a.exposedFlag
-                            )
-                        }
-                    }
-                    Pair(response, activateList)
+                        Pair(response, activateList)
+                    } else null
                 } else null
             }
         } catch (e: Exception) {
@@ -768,14 +807,20 @@ class PeriodicCacheStrategy(val trackingManager: TrackingManager) : AbstractCach
 
 class NoPollingStrategy(val trackingManager: TrackingManager) : AbstractCacheStrategy(trackingManager) {
 
+    private val pollingMutex = Mutex()
+
     override fun addHit(hit: Hit<*>, new: Boolean): Hit<*>? {
         return this.addHits(arrayListOf(hit), new)?.get(0)
     }
 
     override fun addHits(hits: ArrayList<Hit<*>>, new: Boolean): ArrayList<Hit<*>>? {
         val results = super.addHits(hits, new)
-        runBlocking {
-            polling().await()
+        Flagship.coroutineScope().launch {
+            kotlin.runCatching {
+                pollingMutex.withLock {
+                    polling().await()
+                }
+            }
         }
         return results
     }
@@ -801,13 +846,13 @@ class NoPollingStrategy(val trackingManager: TrackingManager) : AbstractCacheStr
                 ensureActive()
                 super.sendHitsBatch()?.await()?.also { (response, batch) ->
                     if (response != null && response.code in 200..204) {
-                        deleteHits(batch.hitList)
+                        deleteHits(ArrayList(batch.hitList))
                         (trackingManager.cacheManager as? IHitCacheImplementation)?.flushHits(
-                            batch.hitList.map { it.id } as ArrayList<String>
+                            ArrayList(batch.hitList).map { it.id } as ArrayList<String>
                         )
                     } else {
                         (trackingManager.cacheManager as? IHitCacheImplementation)?.cacheHits(
-                            HitCacheHelper.hitsToJSONCache(batch.hitList)
+                            HitCacheHelper.hitsToJSONCache(ArrayList(batch.hitList))
                         )
                     }
                 }
@@ -904,6 +949,10 @@ class PanicStrategy(val trackingManager: TrackingManager) : AbstractCacheStrateg
 
     override fun sendActivateBatch(): Deferred<Pair<ResponseCompat?, ArrayList<Activate>>?>? {
         //Log disabled
+        return null
+    }
+
+    override fun sendDeveloperUsageTrackingHits(): Deferred<ArrayList<Pair<ResponseCompat?, DeveloperUsageTracking<*>>>?>? {
         return null
     }
 }

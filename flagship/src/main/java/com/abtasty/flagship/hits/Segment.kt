@@ -12,7 +12,8 @@ internal class Segment: Hit<Segment> {
             obj.put(c.key, c.value)
         }
         this.data.put(FlagshipConstants.HitKeyMap.VISITOR_ID, visitorId)
-        this.data.put(FlagshipConstants.HitKeyMap.SEGMENT_LIST, obj)
+        if (obj.length() > 0)
+            this.data.put(FlagshipConstants.HitKeyMap.SEGMENT_LIST, obj)
     }
 
     internal constructor(jsonObject: JSONObject): super(Companion.Type.SEGMENT, jsonObject)
@@ -20,7 +21,7 @@ internal class Segment: Hit<Segment> {
     override fun checkHitValidity(): Boolean {
         return when(true) {
             (!super.checkHitValidity()) -> false
-            (this.data.isNull(FlagshipConstants.HitKeyMap.SEGMENT_LIST)) -> true
+            (this.data.isNull(FlagshipConstants.HitKeyMap.SEGMENT_LIST)) -> false
             else -> true
         }
     }

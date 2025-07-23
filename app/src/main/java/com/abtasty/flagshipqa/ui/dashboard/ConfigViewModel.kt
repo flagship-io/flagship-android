@@ -77,8 +77,9 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
             error(errorStr)
         else {
             val flagshipConfig = if (useBucketing.value == true) FlagshipConfig.Bucketing() else FlagshipConfig.DecisionApi()
-            if (flagshipConfig is FlagshipConfig.Bucketing)
+            if (flagshipConfig is FlagshipConfig.Bucketing) {
                 flagshipConfig.withPollingIntervals(pollingIntervalTime.value!!, getPollingIntervalUnit())
+            }
             flagshipConfig.withTimeout(timeout.value ?: 2000)
             flagshipConfig.withLogLevel(LogManager.Level.ALL)
             flagshipConfig.withFlagshipStatusListener { status ->
@@ -103,6 +104,7 @@ class ConfigViewModel(val appContext: Application) : AndroidViewModel(appContext
                 TrackingManagerConfig(
                     maxPoolSize = 5,
                     batchTimeInterval = 10000
+//                    disablePolling = true
                 )
             )
             //

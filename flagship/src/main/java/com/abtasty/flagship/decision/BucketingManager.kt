@@ -35,6 +35,7 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
         super.init(listener)
         if (getStatus().lessThan(Flagship.FlagshipStatus.INITIALIZED)) statusListener?.invoke(Flagship.FlagshipStatus.INITIALIZING)
         startPolling()
+        initialized = true
     }
 
 //    override fun parseTroubleShooting(json: JSONObject) {
@@ -62,10 +63,14 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
             }
             val time: Long = flagshipConfig.pollingTime
             val unit: TimeUnit = flagshipConfig.pollingUnit
-            if (time == 0L)
-                executor!!.execute(runnable)
-            else
-                executor!!.scheduleWithFixedDelay(runnable, 0, time, unit)
+            try {
+                if (time == 0L)
+                    executor!!.execute(runnable)
+                else
+                    executor!!.scheduleWithFixedDelay(runnable, 0, time, unit)
+            } catch (e: Exception) {
+                FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
+            }
         }
     }
 

@@ -132,7 +132,7 @@ class Visitor(internal val configManager: ConfigManager, visitorId: String, isAu
                 this@Visitor
             }
         } catch (e: Exception) {
-            return CoroutineScope(Job() + Dispatchers.Default).async { this@Visitor }
+            return CoroutineScope(Job() + Dispatchers.IO).async { this@Visitor }
         }
     }
 

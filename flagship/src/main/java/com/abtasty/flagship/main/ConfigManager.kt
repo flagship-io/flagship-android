@@ -13,7 +13,12 @@ import com.abtasty.flagship.decision.DecisionManager
 import com.abtasty.flagship.eai.EAIManager
 import com.abtasty.flagship.main.Flagship.DecisionMode
 import com.abtasty.flagship.main.FlagshipConfig.DecisionApi
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+
 
 interface OnConfigChangedListener {
     fun onConfigChanged(config: FlagshipConfig<*>)
@@ -69,31 +74,41 @@ class ConfigManager : DefaultLifecycleObserver {
     }
 
     suspend fun stop() {
-        decisionManager?.stop()
-        decisionManager = null
-        flagshipConfig = DecisionApi()
-        trackingManager?.stop()?.await()
-        trackingManager = null
-        cacheManager.closeDatabase()
-        eaiManager?.onStop()
+        kotlin.runCatching {
+            decisionManager?.stop()
+            decisionManager = null
+            flagshipConfig = DecisionApi()
+            trackingManager?.stop()?.await()
+            trackingManager = null
+            cacheManager.closeDatabase()
+            eaiManager?.onStop()
+        }
     }
 
     override fun onStart(owner: LifecycleOwner) {
         trackingManager?.startPollingLoop()
-        (decisionManager as? BucketingManager)?.startPolling()
+        if (decisionManager?.initialized == true) {
+            (decisionManager as? BucketingManager)?.startPolling()
+        }
         super.onStart(owner)
     }
 
     override fun onStop(owner: LifecycleOwner) {
         trackingManager?.stopPollingLoop()
-        (decisionManager as? BucketingManager)?.stop()
+        if (decisionManager?.initialized == true)
+            (decisionManager as? BucketingManager)?.stop()
         super.onStop(owner)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
-        runBlocking {
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            ensureActive()
             stop()
         }
         super.onDestroy(owner)
+    }
+
+    internal fun bindToLifeCycle(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(this)
     }
 }

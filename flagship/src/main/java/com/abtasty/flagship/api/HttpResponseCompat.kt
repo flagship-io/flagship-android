@@ -20,11 +20,18 @@ abstract class HttpResponseCompat(protected var response: Response) {
 
     fun toJSON(): JSONObject {
 
-        val content = try {
-            JSONObject(content!!)
-        } catch (e: Exception) {
-            content
-        }
+//        val content = try {
+//            JSONObject(content!!)
+//        } catch (e: Exception) {
+//            content
+//        }
+        val contentAsJsonString = this.content?.let { content ->
+            try {
+                JSONObject(content)
+            } catch (e: Exception) {
+                content
+            }
+        } ?: content
         val jsonRequestHeaders = JSONObject()
         requestHeaders?.toMultimap()?.forEach { (k, v) ->
             jsonRequestHeaders.put(k, v.toString())
@@ -35,6 +42,6 @@ abstract class HttpResponseCompat(protected var response: Response) {
             .put("requestHeaders", jsonRequestHeaders)
             .put("requestBody", try { JSONObject(requestContent) } catch (e: Exception) { JSONObject()})
             .put("responseHeaders", jsonResponseHeaders)
-            .put("responseBody", content)
+            .put("responseBody", contentAsJsonString ?: JSONObject.NULL)
     }
 }

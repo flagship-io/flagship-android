@@ -68,6 +68,11 @@ data class Campaign(val campaignMetadata: CampaignMetadata, val variationGroups:
     }
 
     override fun toString(): String {
-        return "Campaign(id='${campaignMetadata.campaignId}', variationGroups=$variationGroups)"
+        return "Campaign(campaignMetadata=$campaignMetadata, variationGroups=$variationGroups)"
     }
+
+//    override fun toString(): String {
+//        return "Campaign(id='${campaignMetadata.campaignId}', variationGroups=$variationGroups)"
+//    }
+
 }

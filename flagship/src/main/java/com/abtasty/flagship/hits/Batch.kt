@@ -14,12 +14,10 @@ class Batch: Hit<Batch> {
         this.data.put(FlagshipConstants.HitKeyMap.HIT_BATCH, JSONArray())
     }
 
-    internal constructor(jsonObject: JSONObject): super(Companion.Type.BATCH, jsonObject) {
-
-    }
+    internal constructor(jsonObject: JSONObject) : super(Companion.Type.BATCH, jsonObject) {}
 
     fun addChild(childHit: Hit<*>): Boolean {
-        if (childHit.checkHitValidity() && checkSizeValidity(childHit.size())) {
+        if (checkHitValidity() && childHit.checkHitValidity() && checkSizeValidity(childHit.size())) {
             this.hitList.add(childHit)
             this.data.getJSONArray(FlagshipConstants.HitKeyMap.HIT_BATCH).put(childHit.data)
             return true

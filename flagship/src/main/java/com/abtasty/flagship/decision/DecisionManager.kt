@@ -19,10 +19,10 @@ import java.util.concurrent.CountDownLatch
 
 abstract class DecisionManager(var flagshipConfig: FlagshipConfig<*>) : IDecisionManager {
 
+    internal var initialized = false
     internal var panic : Boolean = false
     internal var statusListener : ((Flagship.FlagshipStatus) -> Unit)? = null
     internal var readyLatch : CountDownLatch? = null
-
     internal var lastResponseTimestamp = 0L
     internal var lastResponse : ResponseCompat? = null
 

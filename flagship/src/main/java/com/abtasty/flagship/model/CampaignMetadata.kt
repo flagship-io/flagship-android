@@ -27,4 +27,10 @@ open class CampaignMetadata(
         campaignMetadata.campaignType,
         campaignMetadata.slug
     )
+
+    override fun toString(): String {
+        return "CampaignMetadata(campaignId='$campaignId', campaignName='$campaignName', campaignType='$campaignType', slug='$slug')"
+    }
+
+
 }

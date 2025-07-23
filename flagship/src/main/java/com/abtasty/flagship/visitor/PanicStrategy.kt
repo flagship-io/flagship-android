@@ -4,13 +4,10 @@ import android.app.Activity
 import com.abtasty.flagship.hits.Hit
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.model.FlagMetadata
-import com.abtasty.flagship.model.Modification
-import com.abtasty.flagship.model._Flag
 import com.abtasty.flagship.utils.FlagshipContext
 import com.abtasty.flagship.utils.FlagshipLogManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import org.json.JSONObject
 
 
 class PanicStrategy(val visitorDelegate: VisitorDelegate) : DefaultStrategy(visitorDelegate) {

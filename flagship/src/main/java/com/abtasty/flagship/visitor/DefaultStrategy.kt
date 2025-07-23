@@ -6,7 +6,6 @@ import com.abtasty.flagship.cache.IVisitorCacheImplementation
 import com.abtasty.flagship.cache.VisitorCacheHelper
 import com.abtasty.flagship.decision.DecisionManager
 import com.abtasty.flagship.eai.EAIManager
-import com.abtasty.flagship.eai.EAIManager.Companion.pollEAISegment
 import com.abtasty.flagship.hits.Activate
 import com.abtasty.flagship.hits.Consent
 import com.abtasty.flagship.hits.Hit
@@ -102,7 +101,6 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
         return Flagship.coroutineScope().async {
             visitor.updateFlagsStatus(FlagStatus.FETCHING, FetchFlagsRequiredStatusReason.NONE)
             ensureActive()
-
             if (decisionManager?.flagshipConfig?.eaiActivationEnabled == true) {
                 if (!visitor.eaiScored)
                     visitor.eaiSegment = EAIManager.pollEAISegment(visitor)
@@ -345,7 +343,7 @@ open class DefaultStrategy(visitor: VisitorDelegate) : VisitorStrategy(visitor) 
 
     override fun collectEmotionsAIEvents(activity: Activity?): Deferred<Boolean> {
         return if (Flagship.configManager.eaiManager != null)
-            Flagship.configManager.eaiManager!!.startEAICollect(visitor, activity)
+            Flagship.configManager.eaiManager?.startEAICollect(visitor, activity) ?: Flagship.coroutineScope().async { false }
         else  Flagship.coroutineScope().async { false }
     }
 

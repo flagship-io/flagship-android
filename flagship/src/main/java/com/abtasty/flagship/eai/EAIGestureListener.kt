@@ -41,7 +41,7 @@ class EAIGestureListener(
         val y = abs(e.y - windowVisibleDisplayFrame.top).roundToInt()
         val time = e.eventTime.toString().takeLast(5)
         val duration = e.eventTime - e.downTime
-        log(message = "# DB click: $y $x")
+//        log(message = "# DB click: $y $x")
         onEAIEvents.onEAIClickEvent("$y,$x,$time,$duration;")
         return result
     }
