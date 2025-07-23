@@ -1,10 +1,5 @@
 buildscript {
 
-    /*
-        ./gradlew publishToSonatype closeSonatypeStagingRepository
-        ./gradlew publishToSonatype -Dvariant=compat  closeSonatypeStagingRepository
-     */
-
     ext {
         kotlin_version = '1.9.25'
         maven_artifact_id = "flagship-android"
@@ -15,32 +10,26 @@ buildscript {
         if (!maven_variant.isEmpty()) {
             maven_artifact_id = maven_artifact_id + '-' + maven_variant
         }
-        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "4.0.0-beta1"
-        flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 20
-        sonatype_signing_key = System.getenv('SONATYPE_SIGNING_KEY')
-        sonatype_signing_pwd = System.getenv('SONATYPE_SIGNING_PWD')
-        sonatype_username = System.getenv('SONATYPE_USERNAME') ?: ossrhUsername
-        sonatype_password = System.getenv('SONATYPE_PASSWORD') ?: ossrhPassword
-        sonatype_repository_id = System.getenv('SONATYPE_REPOSITORY') ?: stagingRepositoryId
+        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "4.0.0-beta2"
+        flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 21
     }
 
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.5.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.16"
-        classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
+//        classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
     }
 }
 
 plugins {
-    id 'com.google.devtools.ksp' version '1.9.10-1.0.13' apply false
+    id 'com.google.devtools.ksp' version '1.9.25-1.0.20' apply false
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id 'org.jetbrains.kotlin.android' version '1.9.20' apply false
+    id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
 }
 
 allprojects {
@@ -50,19 +39,7 @@ allprojects {
     }
 }
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-            stagingProfileId = sonatype_repository_id
-            username = sonatype_username
-            password = sonatype_password
-        }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
 }
 

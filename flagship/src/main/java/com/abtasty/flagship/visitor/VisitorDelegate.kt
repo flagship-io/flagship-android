@@ -25,7 +25,7 @@ class VisitorDelegate(
     var onFlagStatusChanged: OnFlagStatusChanged? = null
 ) {
 
-    lateinit var sessionId: String
+    var sessionId: String = UUID.randomUUID().toString()
     var visitorId: String
     var anonymousId: String? = null
     var visitorContext: ConcurrentMap<String, Any> = ConcurrentHashMap()
@@ -41,7 +41,6 @@ class VisitorDelegate(
     internal var eaiSegment: String? = null
 
     init {
-        sessionId = UUID.randomUUID().toString()
         updateFlagsStatus(FlagStatus.FETCH_REQUIRED, FetchFlagsRequiredStatusReason.FLAGS_NEVER_FETCHED)
         this.visitorId = if (visitorId == null || visitorId.isEmpty()) generateUUID() else visitorId
         this.isAuthenticated = isAuthenticated
@@ -65,7 +64,7 @@ class VisitorDelegate(
 
     internal fun logVisitor(tag: FlagshipLogManager.Tag?) {
         val visitorStr = String.format(FlagshipConstants.Errors.VISITOR, visitorId, this)
-        FlagshipLogManager.log(tag!!, LogManager.Level.DEBUG, visitorStr)
+        FlagshipLogManager.log(tag ?: FlagshipLogManager.Tag.VISITOR, LogManager.Level.DEBUG, visitorStr)
     }
 
     internal fun loadContext(newContext: HashMap<String, Any>?) {

@@ -22,15 +22,17 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
 
     override fun init(listener: ((Flagship.FlagshipStatus) -> Unit)?) {
         super.init(listener)
-        sendAccountSettingsJsonRequest() //todo
+        sendAccountSettingsJsonRequest()
         readyLatch?.countDown()
-        if (getStatus().lessThan(Flagship.FlagshipStatus.INITIALIZED))
+        if (getStatus().lessThan(Flagship.FlagshipStatus.INITIALIZED)) {
             statusListener?.invoke(
                 if (panic)
                     Flagship.FlagshipStatus.PANIC
                 else
                     Flagship.FlagshipStatus.INITIALIZED
             )
+        }
+        initialized = true
     }
 
 //    override fun parseTroubleShooting(json: JSONObject) {
@@ -48,6 +50,7 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
 
     @Throws(IOException::class)
     private fun sendCampaignRequest(visitorDelegateDTO: VisitorDelegateDTO): ArrayList<Campaign>? {
+        var results : ArrayList<Campaign>? = null
         val json = JSONObject()
         val headers: HashMap<String, String> = HashMap<String, String>()
         headers["x-api-key"] = flagshipConfig.apiKey
@@ -58,22 +61,23 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
         json.put("trigger_hit", false)
         json.put("visitor_consent", visitorDelegateDTO.hasConsented)
         json.put("context", visitorDelegateDTO.contextToJson())
-        val response: ResponseCompat = HttpManager.sendHttpRequest(HttpManager.RequestType.POST,
+        HttpManager.sendHttpRequest(HttpManager.RequestType.POST,
             DECISION_API + flagshipConfig.envId + CAMPAIGNS, headers, json.toString()
-        )
-        lastResponse = response
-        lastResponseTimestamp = System.currentTimeMillis()
-        logResponse(response)
-        val results = if (response.code < 400) {
-            parseCampaignsResponse(response.content)
-        } else {
-            sendTroubleshootingHit(
-                TroubleShooting.Factory.GET_CAMPAIGNS_ROUTE_RESPONSE_ERROR.build(
-                    visitorDelegateDTO.visitorDelegate,
-                    response
+        ) ?.let { response ->
+            lastResponse = response
+            lastResponseTimestamp = System.currentTimeMillis()
+            logResponse(response)
+            results = if (response.code < 400) {
+                parseCampaignsResponse(response.content)
+            } else {
+                sendTroubleshootingHit(
+                    TroubleShooting.Factory.GET_CAMPAIGNS_ROUTE_RESPONSE_ERROR.build(
+                        visitorDelegateDTO.visitorDelegate,
+                        response
+                    )
                 )
-            )
-            null
+                null
+            }
         }
         updateFlagshipStatus(if (panic) Flagship.FlagshipStatus.PANIC else Flagship.FlagshipStatus.INITIALIZED)
         return results
@@ -109,7 +113,7 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
                 null,
                 null
             )
-            response.let {
+            response?.let {
                 lastResponse = response
                 lastResponseTimestamp = System.currentTimeMillis()
                 logResponse(response)
@@ -135,5 +139,6 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
         }
     }
 
-    override fun stop() {}
+    override fun stop() {
+    }
 }

@@ -995,7 +995,7 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
             val visitorA = Flagship.newVisitor("visitor-A", true)
                 .context(hashMapOf(Pair("testing_tracking_manager", true)))
                 .isAuthenticated(true)
-                .build()
+                .build() //+1 Consent
 
             delay(100)
 
@@ -1012,7 +1012,7 @@ class FlagshipTestsTrackingManager : AFlagshipTest() {
             assertEquals(0, cachedHits?.size)
 
             visitorA.fetchFlags().await()
-            val valueA = visitorA.getFlag("my_flag").value("default")
+            val valueA = visitorA.getFlag("my_flag").value("default") //+1 Activate
             delay(100)
 
             assertEquals(1, FlagshipTestsHelper.interceptor().calls[ACTIVATION_URL]?.size)

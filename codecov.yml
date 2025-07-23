@@ -1,0 +1,6 @@
+codecov:
+  require_ci_to_pass: yes
+
+ignore:
+  - "flagship/src/main/java/com/abtasty/flagship/database"
+  - "**/EAIWindowCallBack.kt"

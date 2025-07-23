@@ -1,19 +1,20 @@
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id 'com.google.devtools.ksp'
+    id 'com.vanniktech.maven.publish' version "0.30.0"
+    id 'jacoco'
 }
-
-apply from: 'jacoco.gradle'
 
 kotlin {
     jvmToolchain(11)
 }
 
 android {
-    publishNonDefault true
+    namespace 'com.abtasty.flagship'
     compileSdk 34
 
     defaultConfig {
@@ -30,8 +31,6 @@ android {
 
         unitTests.includeAndroidResources = true
         unitTests.returnDefaultValues = true
-
-
         unitTests {
             all {
                 jvmArgs '-noverify'
@@ -44,21 +43,19 @@ android {
             kotlinOptions {
                 freeCompilerArgs = ["-Xdebug"]
             }
-            enableUnitTestCoverage true
-            enableAndroidTestCoverage true
+//            enableUnitTestCoverage true
+//            enableAndroidTestCoverage true
+            testCoverageEnabled true
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        all {
+        configureEach {
             buildConfigField "String", "FLAGSHIP_VERSION_NAME", "\"${flagship_version_name}\""
             buildConfigField "int", "FLAGSHIP_VERSION_CODE", "${flagship_version_code}"
             resValue("integer", "ABTastyVersionCode", "${flagship_version_code}")
             resValue("string", "ABTastyVersion", "${flagship_version_name}")
-        }
-        jacoco {
-            version = '0.8.11'
         }
     }
 
@@ -70,17 +67,15 @@ android {
         jvmTarget = '1.8'
     }
 
-    android.libraryVariants.all { variant ->
+    android.libraryVariants.configureEach { variant ->
         variant.outputs.all { output ->
             outputFileName = "flagship-android-${flagship_version_name}.aar"
         }
     }
-    namespace 'com.abtasty.flagship'
-}
 
-configurations {
-    common
-    compat
+    jacoco {
+        version = '0.8.12'
+    }
 }
 
 dependencies {
@@ -94,9 +89,9 @@ dependencies {
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'org.robolectric:robolectric:4.14.1'
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0"
 
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
 
     annotationProcessor("androidx.room:room-compiler:2.6.1")
@@ -109,4 +104,95 @@ repositories {
     mavenCentral()
 }
 
-apply from: 'flagship-publishing.gradle'
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+
+    signAllPublications()
+
+    coordinates(maven_group_id, maven_artifact_id, flagship_version_name)
+
+    pom {
+        name = maven_artifact_id
+        description = 'Visit https://developers.flagship.io/ to get started with Flagship.'
+        url = 'https://github.com/flagship-io/flagship-android'
+        licenses {
+            license {
+                name = 'Apache License 2.0'
+                url = 'https://github.com/flagship-io/flagship-android/blob/master/LICENSE'
+            }
+        }
+        developers {
+            developer {
+                id = 'raf-abtasty'
+                name = 'Raphael'
+                email = 'raphael@abtasty.com'
+            }
+        }
+        scm {
+            connection = 'scm:git:github.com/flagship-io/flagship-android.git'
+            developerConnection = 'scm:git:ssh:github.com/flagship-io/flagship-android.git'
+            url = 'https://github.com/flagship-io/flagship-android/blob/master/'
+        }
+    }
+}
+
+tasks.withType(Test).configureEach {
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+}
+
+
+project.afterEvaluate {
+    android.libraryVariants.configureEach { variant ->
+        def variantName = variant.name
+        def unitTestTaskName = "test${variantName.capitalize()}UnitTest"
+
+
+        def exclusions = [
+                "**/R.class",
+                "**/R\$*.class",
+                "**/BuildConfig.*",
+                "**/Manifest*.*",
+                "**/*Test*.*"
+        ]
+
+        //gradle flagship:jacocoDebugCodeCoverage
+        tasks.register("jacoco${variantName.capitalize()}CodeCoverage", JacocoReport) {
+            dependsOn(["$unitTestTaskName"])
+
+            group = "Reporting"
+            description = "Execute UI and unit tests, generate and combine Jacoco coverage report"
+
+            reports {
+                xml.required = true
+                html.required = true
+            }
+
+            sourceDirectories.setFrom(files(
+                    fileTree(layout.projectDirectory.dir("src/main/java/")) {
+                        exclude(exclusions)
+                    }.filter { file ->
+                        true
+//                        !file.name.contains("Dao") &&
+//                                !file.name.contains("_Impl") &&
+//                                !file.name.contains("DefaultDatabase")
+                    }
+            )
+            )
+            classDirectories.setFrom(files(
+                    fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/")) {
+                        exclude(exclusions)
+                    }.filter { file ->
+                        true
+//                        !file.name.contains("Dao") &&
+//                        !file.name.contains("_Impl") &&
+//                        !file.name.contains("DefaultDatabase")
+                    }
+            ))
+            executionData.setFrom(files(
+                    fileTree(layout.buildDirectory) { include(["**/*.exec", "**/*.ec"]) }
+            ))
+        }
+    }
+}

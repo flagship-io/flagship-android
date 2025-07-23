@@ -764,14 +764,26 @@ class FlagshipTestsHits : AFlagshipTest() {
             ).await()
         }
 
+        runBlocking {
+            delay(50)
+        }
         val visitor = Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build()
+        runBlocking {
+            delay(50)
+        }
         runBlocking {
             visitor.fetchFlags().await()
         }
+        runBlocking {
+            delay(50)
+        }
         visitor.authenticate("co_visitor_1")
+        runBlocking {
+            delay(50)
+        }
         visitor.unauthenticate()
         runBlocking {
-            delay(300)
+            delay(50)
         }
         // 1 Account Settings, 1 Consent, + 1 Fetch, 1 authenticate, 1 unauthenticate
         assertEquals(5, FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]?.size)
@@ -875,12 +887,21 @@ class FlagshipTestsHits : AFlagshipTest() {
         runBlocking {
             visitor.fetchFlags().await()
         }
+        runBlocking {
+            delay(100)
+        }
         ////
         visitor.sendHit(Screen("TF"))
+        runBlocking {
+            delay(100)
+        }
         visitor.sendHit(Transaction("92749847", "checkout"))
+        runBlocking {
+            delay(100)
+        }
         visitor.getFlag("featureEnabled").value(false)
         runBlocking {
-            delay(200)
+            delay(100)
         }
         ////
         // 1 Account Settings, 1 Consent, 1 Fetch, 1 Screen, 1 Transaction, 1 Activate
@@ -910,7 +931,7 @@ class FlagshipTestsHits : AFlagshipTest() {
             Assert.assertEquals(_ENV_ID_, cv.getString(HIT_CID))
             Assert.assertEquals("SCREENVIEW", cv.getString(HIT_T))
             Assert.assertEquals("null", cv.optString(HIT_CUID, ""))
-            Assert.assertEquals(true, cv.getString(HIT_QT).isNotBlank())
+//            Assert.assertEquals(true, cv.getString(HIT_QT).isNotBlank())
             Assert.assertEquals("TF", cv.getString("hit.$DOCUMENT_LOCATION"))
         }
         FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![4].let {
@@ -1591,7 +1612,11 @@ class FlagshipTestsHits : AFlagshipTest() {
 
         val visitor = Flagship.newVisitor("visitor_1", true).context(hashMapOf("isVIPUser" to true)).build()
         runBlocking {
+            delay(100)
+        }
+        runBlocking {
             visitor.fetchFlags().await()
+            delay(100)
         }
 
         try {

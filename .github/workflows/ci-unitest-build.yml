@@ -31,14 +31,27 @@ jobs:
         run: ./gradlew :flagship:clean
       - name: Build with Gradle
         run: ./gradlew :flagship:assembleDebug
+#      - name: Unit tests
+#        run: bash ./gradlew flagship:testJacocoUnitTestCoverage -i --stacktrace
+#      - name: Generate report
+#        run: bash ./gradlew flagship:createJacocoUnitTestCoverageReport
       - name: Unit tests
-        run: bash ./gradlew flagship:testJacocoUnitTestCoverage -i --stacktrace
-      - name: Generate report
-        run: bash ./gradlew flagship:createJacocoUnitTestCoverageReport
+        id: unit_tests
+        continue-on-error: true
+        run: bash ./gradlew flagship:jacocoDebugCodeCoverage -i --stacktrace
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: flagship/build/reports/tests/testDebugUnitTest/
+      - name: Stop if tests failed
+        if: steps.unit_tests.conclusion == 'failure'
+        run: exit 1
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: flagship/build/reports/coverage/test/jacoco/report.xml
+          files: flagship/build/reports/jacoco/jacocoDebugCodeCoverage/jacocoDebugCodeCoverage.xml
       - name: Build
         run: bash ./gradlew flagship:clean flagship:assembleRelease

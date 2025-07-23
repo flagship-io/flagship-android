@@ -24,7 +24,7 @@ class NoConsentStrategy(val visitorDelegate: VisitorDelegate) : DefaultStrategy(
     // Call default getModificationValue
 
     private fun logMethodDeactivatedError(tag: FlagshipLogManager.Tag?, visitorId: String?, methodName: String?) {
-        FlagshipLogManager.log(tag!!, LogManager.Level.ERROR, String.format(FlagshipConstants.Errors.METHOD_DEACTIVATED_CONSENT_ERROR, methodName, visitorId))
+        FlagshipLogManager.log(tag ?: FlagshipLogManager.Tag.VISITOR, LogManager.Level.ERROR, String.format(FlagshipConstants.Errors.METHOD_DEACTIVATED_CONSENT_ERROR, methodName, visitorId))
     }
 
     override fun <T : Any?> sendVisitorExposition(key: String, defaultValue : T?, valueConsumedTimestamp: Long) {

@@ -668,22 +668,31 @@ class FlagshipTestsVisitor : AFlagshipTest() {
             ).await()
         }
         //Anonymous
-        val visitor = Flagship.newVisitor("anonymous", true).build()
+        val visitor = Flagship.newVisitor("anonymous", true).build()  //+1 Consent
 
         runBlocking {
             visitor.fetchFlags().await()
         }
 
-        visitor.getFlag("target").value("default") //activate
+        runBlocking {
+            delay(100)
+        }
 
-        visitor.sendHit(Screen("Unit test"))
+
+        visitor.getFlag("target").value("default") //+1 activate
 
         runBlocking {
-            delay(200)
+            delay(100)
+        }
+
+        visitor.sendHit(Screen("Unit test")) //+1 Screen
+
+        runBlocking {
+            delay(100)
         }
 
         FlagshipTestsHelper.interceptor().calls(CAMPAIGNS_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val json = HttpCompat.requestJson(request)
                 assertEquals(json.getString("visitorId"), "anonymous")
@@ -691,7 +700,7 @@ class FlagshipTestsVisitor : AFlagshipTest() {
             }
         }
         FlagshipTestsHelper.interceptor().calls(ACTIVATION_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val json = HttpCompat.requestJson(request)
                 val batch = json.getJSONArray("batch").getJSONObject(0)
@@ -701,7 +710,7 @@ class FlagshipTestsVisitor : AFlagshipTest() {
         }
 
         FlagshipTestsHelper.interceptor().calls(ARIANE_URL)?.let { calls ->
-            assert(calls.size == 2)
+            assertEquals(2, calls.size)
             calls[1].let { (request, response) ->
                 val json = HttpCompat.requestJson(request)
                 Assert.assertTrue(json.getString("t") == "BATCH")
@@ -716,7 +725,7 @@ class FlagshipTestsVisitor : AFlagshipTest() {
             }
         }
 
-        Thread.sleep(200)
+        Thread.sleep(100)
 
         //Logged
         FlagshipTestsHelper.interceptor().calls.clear()
@@ -727,13 +736,21 @@ class FlagshipTestsVisitor : AFlagshipTest() {
             visitor.fetchFlags().await()
         }
 
-        visitor.getFlag("target").value("default") //activate
+        runBlocking {
+            delay(100)
+        }
 
-        visitor.sendHit(Screen("Unit test"))
-        Thread.sleep(200)
+        visitor.getFlag("target").value("default") //+1 activate
+
+        runBlocking {
+            delay(100)
+        }
+
+        visitor.sendHit(Screen("Unit test")) //+1 Screen
+        Thread.sleep(100)
 
         FlagshipTestsHelper.interceptor().calls(CAMPAIGNS_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val content = HttpCompat.requestJson(request)
                 assertEquals("anonymous", content.getString("anonymousId"))
@@ -741,7 +758,7 @@ class FlagshipTestsVisitor : AFlagshipTest() {
             }
         }
         FlagshipTestsHelper.interceptor().calls(ACTIVATION_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val json = HttpCompat.requestJson(request)
                 val content = json.getJSONArray("batch").getJSONObject(0)
@@ -751,7 +768,7 @@ class FlagshipTestsVisitor : AFlagshipTest() {
         }
 
         FlagshipTestsHelper.interceptor().calls(ARIANE_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val json = HttpCompat.requestJson(request)
                 Assert.assertTrue(json.getString("t") == "BATCH")
@@ -775,13 +792,18 @@ class FlagshipTestsVisitor : AFlagshipTest() {
             visitor.fetchFlags().await()
         }
 
-        visitor.getFlag("target").value("default") //activate
-
-        visitor.sendHit(Screen("Unit test"))
-        Thread.sleep(200)
+        runBlocking {
+            delay(100)
+        }
+        visitor.getFlag("target").value("default") //+1 activate
+        runBlocking {
+            delay(100)
+        }
+        visitor.sendHit(Screen("Unit test")) //+1 Screen
+        Thread.sleep(100)
 
         FlagshipTestsHelper.interceptor().calls(CAMPAIGNS_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val content = HttpCompat.requestJson(request)
                 assertEquals("null", content.optString("anonymousId"))
@@ -789,7 +811,7 @@ class FlagshipTestsVisitor : AFlagshipTest() {
             }
         }
         FlagshipTestsHelper.interceptor().calls(ACTIVATION_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val json = HttpCompat.requestJson(request)
                 val content = json.getJSONArray("batch").getJSONObject(0)
@@ -799,7 +821,7 @@ class FlagshipTestsVisitor : AFlagshipTest() {
         }
 
         FlagshipTestsHelper.interceptor().calls(ARIANE_URL)?.let { calls ->
-            assert(calls.size == 1)
+            assertEquals(1, calls.size)
             calls[0].let { (request, response) ->
                 val json = HttpCompat.requestJson(request)
                 Assert.assertTrue(json.getString("t") == "BATCH")
