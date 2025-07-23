@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: flagship/build/reports/tests/testDebugUnitTest/
+          path: flagship/bu
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@v5
         with:
