@@ -36,10 +36,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-//        if (cnt % 2 == 0) {
-            val intent = Intent(this, MainActivity3::class.java)
-            startActivity(intent)
-            cnt++
-//        }
+////        if (cnt % 2 == 0) {
+//            val intent = Intent(this, MainActivity3::class.java)
+//            startActivity(intent)
+//            cnt++
+////        }
     }
 }
