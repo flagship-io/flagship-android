@@ -42,8 +42,6 @@ android {
             kotlinOptions {
                 freeCompilerArgs = ["-Xdebug"]
             }
-//            enableUnitTestCoverage true
-//            enableAndroidTestCoverage true
             testCoverageEnabled true
         }
         release {
@@ -104,7 +102,7 @@ repositories {
 
 mavenPublishing {
 
-//    publishToMavenCentral("CENTRAL_PORTAL")
+    publishToMavenCentral()
     signAllPublications()
     coordinates(maven_group_id, maven_artifact_id, flagship_version_name)
     pom {
