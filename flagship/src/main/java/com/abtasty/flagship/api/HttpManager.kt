@@ -62,17 +62,21 @@ object HttpManager {
     }
 
     private fun initThreadPoolExecutor() {
-        workers = Runtime.getRuntime().availableProcessors() * 2
-        threadPoolExecutor = ThreadPoolExecutor(
-            workers, workers,
-            workerTimeout, workerTimeoutUnit,
-            LinkedBlockingQueue<Runnable>()
-        ) { r: Runnable? ->
-            val t = Thread(r, "Flagship Worker")
-            t.isDaemon = true
-            t
+        try {
+            workers = Runtime.getRuntime().availableProcessors() * 2
+            threadPoolExecutor = ThreadPoolExecutor(
+                workers, workers,
+                workerTimeout, workerTimeoutUnit,
+                LinkedBlockingQueue<Runnable>()
+            ) { r: Runnable? ->
+                val t = Thread(r, "Flagship Worker")
+                t.isDaemon = true
+                t
+            }
+            threadPoolExecutor?.allowCoreThreadTimeOut(true)
+        } catch (e: Exception) {
+            FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
         }
-        threadPoolExecutor?.allowCoreThreadTimeOut(true)
     }
 
     private fun getTrustManagerFactory(): TrustManagerFactory {

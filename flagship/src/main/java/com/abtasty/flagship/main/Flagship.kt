@@ -62,7 +62,7 @@ object Flagship {
          * Flagship SDK is initializing.
          */
         INITIALIZING(0x1),
-        
+
 
         /**
          * Flagship SDK is ready but is running in Panic mode: All features are disabled except the one which refresh this status.
@@ -88,7 +88,8 @@ object Flagship {
     private var singleVisitorInstance: Visitor? = null
     private var status = FlagshipStatus.NOT_INITIALIZED
     internal var deviceContext = HashMap<FlagshipContext<*>, Any>()
-//    internal var eaiCollectEnabled = false
+
+    //    internal var eaiCollectEnabled = false
 //    internal var eaiActivationEnabled = false
 //    internal var oneVisitorOneTestEnabled = false
 //    internal var xpcEnabled = false
@@ -102,30 +103,36 @@ object Flagship {
      * @param config : SDK configuration. @see FlagshipConfig
      */
     @JvmStatic
-    fun start(application: Application, envId: String, apiKey: String, config: FlagshipConfig<*>) = mainCoroutineScope().async {
-            stop().await()
-            Flagship.application = application
-            instanceId = UUID.randomUUID().toString()
-            initializationTimeStamp = System.currentTimeMillis()
-            supervisorJob = SupervisorJob()
-            flagshipCoroutineScope = CoroutineScope(supervisorJob + Dispatchers.IO)
-            val handler = Handler(Looper.getMainLooper())
-            handler.post {
-                ProcessLifecycleOwner.get().lifecycle.addObserver(configManager)
-            }
-            updateStatus(FlagshipStatus.INITIALIZING)
-            deviceContext.putAll(FlagshipContext.loadAndroidContext(application))
-            configManager.init(envId, apiKey, config) { status ->
-                updateStatus(status)
-            }
-            if (!configManager.isSet()) {
+    fun start(application: Application, envId: String, apiKey: String, config: FlagshipConfig<*>) =
+        mainCoroutineScope().async {
+            try {
+                stop().await()
+                Flagship.application = application
+                instanceId = UUID.randomUUID().toString()
+                initializationTimeStamp = System.currentTimeMillis()
+                supervisorJob = SupervisorJob()
+                flagshipCoroutineScope = CoroutineScope(supervisorJob + Dispatchers.IO)
+                val handler = Handler(Looper.getMainLooper())
+                handler.post {
+                    ProcessLifecycleOwner.get().lifecycle.addObserver(configManager)
+                }
+                updateStatus(FlagshipStatus.INITIALIZING)
+                deviceContext.putAll(FlagshipContext.loadAndroidContext(application))
+                configManager.init(envId, apiKey, config) { status ->
+                    updateStatus(status)
+                }
+                if (!configManager.isSet()) {
+                    updateStatus(FlagshipStatus.NOT_INITIALIZED)
+                    FlagshipLogManager.log(
+                        FlagshipLogManager.Tag.INITIALIZATION, LogManager.Level.ERROR,
+                        FlagshipConstants.Errors.INITIALIZATION_PARAM_ERROR
+                    )
+                }
+                readinessLatch.countDown()
+            } catch (e: Exception) {
+                FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
                 updateStatus(FlagshipStatus.NOT_INITIALIZED)
-                FlagshipLogManager.log(
-                    FlagshipLogManager.Tag.INITIALIZATION, LogManager.Level.ERROR,
-                    FlagshipConstants.Errors.INITIALIZATION_PARAM_ERROR
-                )
             }
-            readinessLatch.countDown()
         }
 
     /**
@@ -137,7 +144,11 @@ object Flagship {
      * @return Visitor.Builder
      */
     @JvmStatic
-    fun newVisitor(visitorId: String, consent: Boolean, instanceType: Visitor.Instance = Visitor.Instance.SINGLE_INSTANCE): Visitor.Builder {
+    fun newVisitor(
+        visitorId: String,
+        consent: Boolean,
+        instanceType: Visitor.Instance = Visitor.Instance.SINGLE_INSTANCE
+    ): Visitor.Builder {
         return Visitor.Builder(this.configManager, instanceType, visitorId, consent)
     }
 
@@ -188,7 +199,7 @@ object Flagship {
      * This method will return any previous created visitor instance initialized with the SINGLE_INSTANCE (Set by default) option.
      */
     @JvmStatic
-    fun getVisitor() : Visitor? {
+    fun getVisitor(): Visitor? {
         return this.singleVisitorInstance
     }
 
@@ -205,8 +216,8 @@ object Flagship {
      * Stop the Flagship SDK. Any data and background job will be cleared or stopped.
      */
     fun stop() = mainCoroutineScope().async {
-        if (Flagship::application.isInitialized) {
-            try {
+        try {
+            if (Flagship::application.isInitialized) {
                 if (readinessLatch.count == 1L)
                     readinessLatch.cancel()
                 readinessLatch = Utils.Companion.CompatScreenMetric.CancelableCountDownLatch(1)
@@ -220,9 +231,10 @@ object Flagship {
                 status = FlagshipStatus.NOT_INITIALIZED
                 if (flagshipCoroutineScope.isActive)
                     flagshipCoroutineScope.cancel()
-            } catch (e: Exception) {
-                e.printStackTrace()
+
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

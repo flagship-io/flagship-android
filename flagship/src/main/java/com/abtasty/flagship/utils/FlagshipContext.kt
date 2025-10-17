@@ -293,16 +293,20 @@ abstract class FlagshipContext<T>(
 
         internal fun loadAndroidContext(applicationContext : Context) : HashMap<FlagshipContext<*>, Any> {
             val androidContext = HashMap<FlagshipContext<*>, Any>()
-            if (autoLoading) {
-                for (flagshipContext in ALL) {
-                    try {
-                        flagshipContext.load(applicationContext)?.let { value: Any ->
-                            androidContext.put(flagshipContext, value)
+            try {
+                if (autoLoading) {
+                    for (flagshipContext in ALL) {
+                        try {
+                            flagshipContext.load(applicationContext)?.let { value: Any ->
+                                androidContext.put(flagshipContext, value)
+                            }
+                        } catch (e: Exception) {
+                            FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
                         }
-                    } catch (e : Exception) {
-                        FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
                     }
                 }
+            } catch (e: Exception) {
+                FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
             }
             return androidContext
         }
