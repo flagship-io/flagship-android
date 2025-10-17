@@ -10,6 +10,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
+    var cnt = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -34,7 +36,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-//        val intent = Intent(this, MainActivity3::class.java)
-//        startActivity(intent)
+////        if (cnt % 2 == 0) {
+//            val intent = Intent(this, MainActivity3::class.java)
+//            startActivity(intent)
+//            cnt++
+////        }
     }
 }

@@ -33,10 +33,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.abtasty.flagship.main.Flagship
 import com.abtasty.flagship.main.FlagshipConfig
 import com.abtasty.flagshipqa.ui.theme.FlagshipandroidTheme
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 
 
 class MainActivity3 : ComponentActivity() {
@@ -49,16 +53,17 @@ class MainActivity3 : ComponentActivity() {
         val callbackWrapper: WindowCallback = WindowCallback(windowCallback)
         window.callback = callbackWrapper
 
-//        CoroutineScope(Dispatchers.Default).async {
-//            delay(5000)
+        CoroutineScope(Dispatchers.IO).async {
+            println("isActive: ${this.isActive}")
             Flagship.start(
                 application,
                 "",
                 "",
-                FlagshipConfig.DecisionApi()
-            )
-
-//        }
+                FlagshipConfig.Bucketing()
+                    .withFlagshipStatusListener { status ->  println("NEW STATUS = " + status) }
+            ).await()
+            println("END OF START  \$status = " + Flagship.getStatus())
+        }
         enableEdgeToEdge()
         setContent {
             FlagshipandroidTheme {
@@ -76,8 +81,9 @@ class MainActivity3 : ComponentActivity() {
         super.onResume()
 
         Flagship.runOnFlagshipIsInitialized {
-            val visitor = Flagship.newVisitor("toto_89edfe742qesq", true).build()
+            val visitor = Flagship.newVisitor("t9BKJZGJDIe62NKSCFs", true).build()
             visitor.collectEmotionsAIEvents(this@MainActivity3)
+            visitor.fetchFlags()
         }
     }
 }
