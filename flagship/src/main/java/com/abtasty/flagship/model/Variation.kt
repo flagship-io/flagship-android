@@ -56,7 +56,7 @@ data class Variation(
                         FlagshipLogManager.log(
                             FlagshipLogManager.Tag.PARSING,
                             LogManager.Level.ERROR,
-                            FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + " _ _ 1 _ _ "
+                            FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + "[$value]"
                         )
                 }
                 flags
@@ -65,7 +65,7 @@ data class Variation(
                 FlagshipLogManager.log(
                     FlagshipLogManager.Tag.PARSING,
                     LogManager.Level.ERROR,
-                    FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + " _ _ 2 _ _ "
+                    FlagshipConstants.Errors.PARSING_MODIFICATION_ERROR + ": ${modificationsObj.toString()}"
                 )
                 null
             }

@@ -1,7 +1,7 @@
 buildscript {
 
     ext {
-        kotlin_version = '1.9.25'
+        kotlin_version = '2.2.20'
         maven_artifact_id = "flagship-android"
         maven_repo = "flagship-android"
         maven_group_id = "com.abtasty"
@@ -10,8 +10,8 @@ buildscript {
         if (!maven_variant.isEmpty()) {
             maven_artifact_id = maven_artifact_id + '-' + maven_variant
         }
-        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "4.0.0-beta2"
-        flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 21
+        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "4.0.0-beta3"
+        flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 24
     }
 
     repositories {
@@ -19,15 +19,15 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.2'
+        classpath 'com.android.tools.build:gradle:8.12.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.16"
-//        classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
+        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
+        classpath "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:$kotlin_version"
     }
 }
 
 plugins {
-    id 'com.google.devtools.ksp' version '1.9.25-1.0.20' apply false
+    id 'com.google.devtools.ksp' version '2.2.20-2.0.3' apply false
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
 }

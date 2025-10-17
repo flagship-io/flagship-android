@@ -2,6 +2,7 @@ package com.abtasty.flagshipqa.ui.modifications
 
 import android.app.Application
 import android.widget.Toast
+import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.abtasty.flagship.main.Flagship
@@ -59,7 +60,7 @@ class ModificationViewModel(val appContext: Application) : AndroidViewModel(appC
         return when (type) {
             "Null" -> null
             "String" -> default
-            "Boolean" -> default.toLowerCase().toBoolean()
+            "Boolean" -> default.lowercase().toBoolean()
             "Number" -> {
                 try {
                     default.toInt()

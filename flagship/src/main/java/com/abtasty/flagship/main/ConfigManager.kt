@@ -13,6 +13,8 @@ import com.abtasty.flagship.decision.DecisionManager
 import com.abtasty.flagship.eai.EAIManager
 import com.abtasty.flagship.main.Flagship.DecisionMode
 import com.abtasty.flagship.main.FlagshipConfig.DecisionApi
+import com.abtasty.flagship.utils.FlagshipConstants
+import com.abtasty.flagship.utils.FlagshipLogManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -42,8 +44,9 @@ class ConfigManager : DefaultLifecycleObserver {
         initCacheManager()
         initTrackingManager()
         initDecisionManager()
-        if (flagshipConfig.eaiCollectEnabled || flagshipConfig.eaiActivationEnabled)
+        if (flagshipConfig.eaiCollectEnabled || flagshipConfig.eaiActivationEnabled) {
             initEAIManager()
+        }
     }
 
     private fun initTrackingManager() {
@@ -53,7 +56,11 @@ class ConfigManager : DefaultLifecycleObserver {
 
     private fun initCacheManager() {
         cacheManager = flagshipConfig.cacheManager ?: NoCache()
-        cacheManager.openDatabase(this.flagshipConfig.envId)
+        try {
+            cacheManager.openDatabase(this.flagshipConfig.envId)
+        } catch (e: Exception) {
+            FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
+        }
     }
 
     private fun initDecisionManager() {

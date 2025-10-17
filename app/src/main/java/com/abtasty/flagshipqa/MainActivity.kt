@@ -1,5 +1,6 @@
 package com.abtasty.flagshipqa
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -9,6 +10,8 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
+
+    var cnt = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +37,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-//        val intent = Intent(this, MainActivity3::class.java)
-//        startActivity(intent)
+//        if (cnt % 2 == 0) {
+            val intent = Intent(this, MainActivity3::class.java)
+            startActivity(intent)
+            cnt++
+//        }
     }
 }

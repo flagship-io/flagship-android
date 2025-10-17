@@ -25,13 +25,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
     override fun openDatabase(envId: String) {
         if (db == null || db?.isOpen == false) {
             db = Room.databaseBuilder(Flagship.application, DefaultDatabase::class.java, "flagship-$envId-cache.db")
-                .addCallback(object : RoomDatabase.Callback() {
-                    override fun onOpen(db: SupportSQLiteDatabase) {
-                        super.onOpen(db)
-                        db.execSQL("CREATE TEMP TABLE IF NOT EXISTS room_table_modification_log(table_id INTEGER PRIMARY KEY, invalidated INTEGER NOT NULL DEFAULT 0)")
-                    }
-                })
-//            .fallbackToDestructiveMigrationFrom(2)
                 .addMigrations(DefaultDatabase.Companion.Migrations.MIGRATION_2_3.getDatabaseMigration())
                 .build()
         }
@@ -41,7 +34,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
     override fun closeDatabase() {
         db?.close()
         super.closeDatabase()
-//        db?.close()
         db = null
     }
 
@@ -56,8 +48,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                     )
                 )
             }
-        } else  {
-            //todo database has been closed
         }
     }
 
@@ -80,8 +70,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                     FlagshipLogManager.exception(FlagshipException(e))
                 }
             }
-        } else {
-            //todo database has been closed
         }
         return result
     }
@@ -94,8 +82,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                     FlagshipConstants.Debug.DEFAULT_CACHE_MANAGER_FLUSH_VISITOR.format(visitorId)
                 )
             }
-        } else {
-            //todo database has been closed
         }
     }
 
@@ -116,13 +102,12 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                 )
             }
         } else {
-            //todo databse has been closed
+            //todo database has been closed
         }
     }
 
     override fun lookupHits(): HashMap<String, JSONObject> {
         val hits = HashMap<String, JSONObject>()
-//        db?.hitDao()?.popAll()?.let { results ->
         if (db?.isOpen == true) {
             db?.hitDao()?.getAll()?.let { results ->
                 for (h in results) {
@@ -135,8 +120,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                     )
                 )
             }
-        } else {
-            //todo database has been closed
         }
         return hits
     }
@@ -151,8 +134,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                     )
                 )
             }
-        } else {
-            //Todo database has been closed
         }
     }
 
@@ -163,8 +144,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                 FlagshipLogManager.Tag.DEFAULT_CACHE_MANAGER, LogManager.Level.INFO,
                 FlagshipConstants.Debug.DEFAULT_CACHE_MANAGER_FLUSH_ALL_HITS
             )
-        } else {
-            //todo database has been closed
         }
     }
 
@@ -175,8 +154,6 @@ class DefaultCacheManager() : CacheManager(), IVisitorCacheImplementation, IHitC
                 FlagshipLogManager.Tag.DEFAULT_CACHE_MANAGER, LogManager.Level.INFO,
                 FlagshipConstants.Debug.DEFAULT_CACHE_MANAGER_FLUSH_ALL_VISITORS
             )
-        } else {
-            //todo database has been closed
         }
     }
 }

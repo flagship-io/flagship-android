@@ -38,17 +38,6 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
         initialized = true
     }
 
-//    override fun parseTroubleShooting(json: JSONObject) {
-//        try {
-//            val troubleshootingJson = json.getJSONObject("accountSettings")
-//                .getJSONObject("troubleshooting")
-//            super.parseTroubleShootingJson(troubleshootingJson)
-//        } catch (e: Exception) {
-//            flagshipConfig.troubleShootingStartTimestamp = -1
-//            flagshipConfig.troubleShootingEndTimestamp = -1
-//        }
-//    }
-
     fun startPolling() {
         if (executor == null) {
             executor = Executors.newSingleThreadScheduledExecutor { r ->
@@ -81,7 +70,8 @@ class BucketingManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flag
             if (decisionFile == null) decisionFile = loadDecisionFile()
             if (lastModified != null) headers["If-Modified-Since"] = lastModified!!
             val response = try {
-                HttpManager.sendHttpRequest(HttpManager.RequestType.GET, String.format(BUCKETING, flagshipConfig.envId), headers, null)
+                val res = HttpManager.sendHttpRequest(HttpManager.RequestType.GET, String.format(BUCKETING, flagshipConfig.envId), headers, null)
+                res
             } catch (e: Exception) {
                 FlagshipLogManager.log(FlagshipLogManager.Tag.BUCKETING, LogManager.Level.ERROR, BUCKETING_POLLING_ERROR.format(e.message ?: ""))
                 decisionFile?.let { decisionFile ->

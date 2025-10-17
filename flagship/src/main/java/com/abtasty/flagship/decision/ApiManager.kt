@@ -35,19 +35,6 @@ class ApiManager(flagshipConfig: FlagshipConfig<*>) : DecisionManager(flagshipCo
         initialized = true
     }
 
-//    override fun parseTroubleShooting(json: JSONObject) {
-//        try {
-//            val troubleshootingJson = json.getJSONObject("extras")
-//                .getJSONObject("accountSettings")
-//                .getJSONObject("troubleshooting")
-//            super.parseTroubleShootingJson(troubleshootingJson)
-//
-//        } catch (e: Exception) {
-//            flagshipConfig.troubleShootingStartTimestamp = -1
-//            flagshipConfig.troubleShootingEndTimestamp = -1
-//        }
-//    }
-
     @Throws(IOException::class)
     private fun sendCampaignRequest(visitorDelegateDTO: VisitorDelegateDTO): ArrayList<Campaign>? {
         var results : ArrayList<Campaign>? = null
