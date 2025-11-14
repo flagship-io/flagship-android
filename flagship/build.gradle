@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id 'com.google.devtools.ksp'
-    id 'com.vanniktech.maven.publish' version "0.34.0"
+    id 'com.vanniktech.maven.publish' version "0.35.0"
     id 'jacoco'
 }
 
@@ -42,8 +42,6 @@ android {
             kotlinOptions {
                 freeCompilerArgs = ["-Xdebug"]
             }
-//            enableUnitTestCoverage true
-//            enableAndroidTestCoverage true
             testCoverageEnabled true
         }
         release {
@@ -83,16 +81,13 @@ dependencies {
     implementation 'androidx.room:room-runtime:2.7.2'
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation 'androidx.appcompat:appcompat:1.7.1'
-
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.7.0'
     testImplementation 'org.robolectric:robolectric:4.16'
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2"
-
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.9.4'
-
     annotationProcessor("androidx.room:room-compiler:2.7.2")
     ksp 'androidx.room:room-compiler:2.7.2'
 }
@@ -106,7 +101,7 @@ repositories {
 
 mavenPublishing {
 
-//    publishToMavenCentral("CENTRAL_PORTAL")
+    publishToMavenCentral()
     signAllPublications()
     coordinates(maven_group_id, maven_artifact_id, flagship_version_name)
     pom {
