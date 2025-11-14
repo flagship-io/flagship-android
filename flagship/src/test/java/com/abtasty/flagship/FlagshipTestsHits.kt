@@ -200,6 +200,64 @@ class FlagshipTestsHits : AFlagshipTest() {
     }
 
     @Test
+    fun test_segment_hit() {
+//
+        val jsonResponse =
+            FlagshipTestsHelper.jsonObjectFromAssets(getApplication(), "bucketing_response_3.json")
+        jsonResponse
+            .getJSONObject("accountSettings")
+
+        FlagshipTestsHelper.interceptor().intercept(
+            BUCKETING_URL.format(_ENV_ID_),
+            FlagshipTestsHelper.responseFromString(getApplication(), jsonResponse.toString(), 200)
+        )
+            .intercept(
+                ARIANE_URL.format(_ENV_ID_),
+                FlagshipTestsHelper.response("", 200)
+            )
+
+        runBlocking {
+            Flagship.start(
+                getApplication(),
+                _ENV_ID_,
+                _API_KEY_,
+                FlagshipConfig.Bucketing().withTrackingManagerConfig(
+                    TrackingManagerConfig(disablePolling = true)
+                )
+            ).await()
+        }
+
+        val visitor = Flagship.newVisitor("visitor_1", true)
+            .context(hashMapOf(
+                "boolValue" to true,
+                "doubleValue" to 3.14,
+                "stringValue" to "string",
+                "intValue" to 434,
+                "jsonValue" to JSONObject("{}")
+            ))
+            .build()
+        Thread.sleep(100)
+        visitor.fetchFlags()
+        Thread.sleep(100)
+        FlagshipTestsHelper.interceptor().calls[ARIANE_URL]?.get(1)?.let {
+            val jsonHit = HttpCompat.requestJson(it.first)
+            Assert.assertEquals("BATCH", jsonHit.getString("t"))
+            Assert.assertEquals(_ENV_ID_, jsonHit.getString("cid"))
+            Assert.assertEquals("APP", jsonHit.getString("ds"))
+            val content = jsonHit.getJSONArray("h").getJSONObject(0)
+            Assert.assertEquals(content.getString("vid"), "visitor_1")
+            Assert.assertEquals(content.getString("ds"), "APP")
+            Assert.assertEquals(content.get("t"), "SEGMENT")
+            Assert.assertEquals(content.getJSONObject("s").get("boolValue"), "true")
+            Assert.assertEquals(content.getJSONObject("s").get("doubleValue"), "3.14")
+            Assert.assertEquals(content.getJSONObject("s").get("stringValue"), "string")
+            Assert.assertEquals(content.getJSONObject("s").get("intValue"), "434")
+            Assert.assertFalse(content.getJSONObject("s").has("jsonValue"))
+//            Assert.assertEquals(content.get("dl"), "https://location.com")
+        }
+    }
+
+    @Test
     fun test_event_hit() {
 
         FlagshipTestsHelper.interceptor()
@@ -1043,6 +1101,7 @@ class FlagshipTestsHits : AFlagshipTest() {
             4,
             FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]?.size
         ) // 1 Bucketing, 1 Fetch, 1 Segment, 1 consent
+
 
         FlagshipTestsHelper.interceptor().calls[TROUBLESHOOTING_URL]!![0].let {
             val jsonHit = HttpCompat.requestJson(it.first)
