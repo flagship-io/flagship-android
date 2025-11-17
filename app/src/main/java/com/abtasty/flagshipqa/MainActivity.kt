@@ -36,5 +36,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+<<<<<<< HEAD
+=======
+////        if (cnt % 2 == 0) {
+//            val intent = Intent(this, MainActivity3::class.java)
+//            startActivity(intent)
+//            cnt++
+////        }
+>>>>>>> 8047656446a97c93c163824fa84ad9096c5522c1
     }
 }

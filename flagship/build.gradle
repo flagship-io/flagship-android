@@ -4,7 +4,11 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id 'com.google.devtools.ksp'
+<<<<<<< HEAD
     id 'com.vanniktech.maven.publish' version "0.35.0"
+=======
+    id 'com.vanniktech.maven.publish' version "0.34.0"
+>>>>>>> 8047656446a97c93c163824fa84ad9096c5522c1
     id 'jacoco'
 }
 
