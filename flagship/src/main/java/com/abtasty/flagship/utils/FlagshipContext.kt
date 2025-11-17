@@ -61,10 +61,6 @@ abstract class FlagshipContext<T>(
                 }
 
                 override fun load(applicationContext: Context): String? {
-//                    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-//                        applicationContext.resources.configuration.locales.get(0).isO3Language
-//                    else
-//                        applicationContext.resources.configuration.locale.isO3Language
                     return Utils.getCurrentLocale(applicationContext).isO3Language
                 }
             }

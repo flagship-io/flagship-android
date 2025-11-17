@@ -1,19 +1,24 @@
 package com.abtasty.flagship.hits
 
 import com.abtasty.flagship.utils.FlagshipConstants
+import com.abtasty.flagship.utils.FlagshipLogManager
 import org.json.JSONObject
 import java.util.HashMap
 
 internal class Segment: Hit<Segment> {
 
     constructor(visitorId: String, context: HashMap<String, Any>): super(Companion.Type.SEGMENT) {
-        val obj = JSONObject()
-        for (c in context) {
-            obj.put(c.key, c.value)
+        try {
+            val obj = JSONObject()
+            for (c in context) {
+                obj.put(c.key, c.value.toString())
+            }
+            this.data.put(FlagshipConstants.HitKeyMap.VISITOR_ID, visitorId)
+            if (obj.length() > 0)
+                this.data.put(FlagshipConstants.HitKeyMap.SEGMENT_LIST, obj)
+        } catch (e: Exception) {
+            FlagshipLogManager.exception(FlagshipConstants.Exceptions.Companion.FlagshipException(e))
         }
-        this.data.put(FlagshipConstants.HitKeyMap.VISITOR_ID, visitorId)
-        if (obj.length() > 0)
-            this.data.put(FlagshipConstants.HitKeyMap.SEGMENT_LIST, obj)
     }
 
     internal constructor(jsonObject: JSONObject): super(Companion.Type.SEGMENT, jsonObject)
