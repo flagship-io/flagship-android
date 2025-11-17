@@ -10,7 +10,7 @@ buildscript {
         if (!maven_variant.isEmpty()) {
             maven_artifact_id = maven_artifact_id + '-' + maven_variant
         }
-        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "4.0.0-beta3"
+        flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME') ?: "4.0.0-beta4"
         flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE') ?: 24
     }
 
